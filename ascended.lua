@@ -34,7 +34,7 @@ function G.FUNCS.get_poker_hand_info(_cards)
 	end
 	local hidden = false
 	for i, v in pairs(scoring_hand) do
-		if v.facing == "back" then
+		if type(v) == "table" and v.facing == "back" then
 			hidden = true
 			break
 		end
