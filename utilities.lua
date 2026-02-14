@@ -561,3 +561,7 @@ end
 function Cryptid.is_big(x)
 	return (type(x) == "table" and is_number(x)) or (is_big and is_big(x))
 end
+
+function Cryptid.clamp(x, min, max)
+    return math.max(min, math.min(x, max))
+end
