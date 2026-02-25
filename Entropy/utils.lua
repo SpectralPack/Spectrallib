@@ -275,7 +275,7 @@ function Spectrallib.random_forcetrigger(card, num,context)
         else
             if (not v.edition or v.edition.key ~= "e_entr_fractured") then
                 Spectrallib.forcetrigger({
-                    card = card, context = context
+                    card = v, context = context, mesasge_card = card
                 })
             end
         end

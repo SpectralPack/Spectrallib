@@ -5,10 +5,7 @@ function Spectrallib.demicolonGetTriggerable(card)
 		return n
 	end
 	if
-		Card.no(card, "demicoloncompat", true)
-		or Card.no(card, "demicolon_compat", true)
-		or Card.no(card, "forcetrigger_compat", true)
-		or Spectrallib.forcetriggerVanillaCheck(card)
+		card.config.center.demicoloncompat or card.config.center.demicolon_compat or card.config.center.forcetrigger_compat or Spectrallib.forcetriggerVanillaCheck(card)
 	then
 		n[1] = true
 	else
@@ -1022,8 +1019,9 @@ function Spectrallib.get_forcetrigger_results(card, context)
 end
 
 function Spectrallib.forcetrigger(args)
+	args.context = args.context or {}
 	if Cryptid.demicolonGetTriggerable(args.card)[1] then
-		if not Spectrallib.disable_animations() and not args.silent then
+		if not Spectrallib.should_skip_animations() and not args.silent then
 			G.E_MANAGER:add_event(Event({
 				trigger = "before",
 				func = function()
@@ -1033,7 +1031,7 @@ function Spectrallib.forcetrigger(args)
 			}))
 		end
 		if not args.silent then
-			SMODS.calculate_effect{card = context.blueprint_card or card, colour = context.blueprint_card and G.C.BLUE or args.colour or G.C.PURPLE, message = args.message or localize("slib_forcetrigger_ex")}
+			SMODS.calculate_effect{card = args.context.blueprint_card or args.message_card, colour = args.context.blueprint_card and G.C.BLUE or args.colour or G.C.PURPLE, message = args.message or localize("slib_forcetrigger_ex")}
 		end
 		local results = Spectrallib.get_forcetrigger_results(args.card, args.context)
 		if results and results.jokers then
