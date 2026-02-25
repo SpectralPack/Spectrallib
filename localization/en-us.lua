@@ -30,6 +30,10 @@ return {
 			cry_set_enable_features = "Use this section to enable or disable entire Thematic Sets.",
 			cry_family = "Family Friendly Mode",
 
+			slib_exp_colours = "Exponential Chips and Mult colours",
+			slib_exp_colour_1 = "Default",
+			slib_exp_colour_2 = "Classic (G.C.DARK_EDITION)",
+
 			b_tag = "Tag",
 			b_blind = "Blind",
 			k_mult = "Mult",
