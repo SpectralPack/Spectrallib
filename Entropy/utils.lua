@@ -1,10 +1,4 @@
-function Spectrallib.get_highlighted_cards(cardareas, ignorecard, min, max, blacklist)
-    return Spectrallib.get_highlighted_cards(cardareas, ignorecard or {}, min or 1, max or 1, type(blacklist) == "table" and function(card)
-        return not blacklist[card.config.center.key]
-    end or blacklist)
-end
-
-function Spectrallib.get_highlighted_cards(areas, ignore, min, max, blacklist, seed)
+function Cryptid.get_highlighted_cards(areas, ignore, min, max, blacklist, seed)
 	ignore.checked = true
 	blacklist = blacklist or function()
 		return true
@@ -53,7 +47,13 @@ function Spectrallib.get_highlighted_cards(areas, ignore, min, max, blacklist, s
 	end
 	return {}
 end
-Cryptid.get_highlighted_cards = Spectrallib.get_highlighted_cards
+
+function Spectrallib.get_highlighted_cards(cardareas, ignorecard, min, max, blacklist)
+    return Cryptid.get_highlighted_cards(cardareas, ignorecard or {}, min or 1, max or 1, type(blacklist) == "table" and function(card)
+        return not blacklist[card.config.center.key]
+    end or blacklist)
+end
+Entropy.get_highlighted_cards = Spectrallib.get_highlighted_cards --idk why this doesnt get redirected
 
 function Spectrallib.filter_table(table, func)
     local temp = {}
@@ -301,10 +301,6 @@ function Spectrallib.get_random_set(has_parakmi)
         set = pool and pool[1] and G.P_CENTERS[pool[1].key] and pool[1].set
     end
     return set
-end
-
-function Spectrallib.blind_is(blind)
-    if G.GAME.blind and G.GAME.blind.config and G.GAME.blind.config.blind.key == blind then return true end
 end
 
 --not really needed any more
@@ -822,18 +818,6 @@ function Spectrallib.calculate_ratios(incl_vanilla, only_vanilla)
         print(i.." = "..v.. " = "..(v/total * 100).."%")
     end
     print("total: "..total)
-end
-
-function Spectrallib.return_to_deck()
-    return Spectrallib.blind_is("bl_entr_cassandra") or Spectrallib.blind_is("bl_entr_pi")
-end
-
-function Spectrallib.get_bg_colour()
-    if TDECKS then
-        local ret = TDECKS.get_bg_colour()
-        if ret then return ret end
-    end
-    return G.GAME.entr_alt and G.C.ALTBG or G.C.BLIND['Small']
 end
 
 function Spectrallib.allow_spawning(center)

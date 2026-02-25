@@ -14,6 +14,7 @@ Spectrallib = {}
 local files = {
 
     {path = "other_utils"},
+    {path = "blind_functions"},
 
     {path = "Cryptlib/main", redirect = "Cryptid"},
     {path = "Cryptlib/talisman", redirect = "Cryptid"}, -- this is probably not needed with amulet existing but back compat so shrug
@@ -43,5 +44,5 @@ for i, v in pairs(files) do
     end
     local file, err = SMODS.load_file(v.path..".lua")
     if file then file() 
-    else error("Error in file: "..v.." "..err) end
+    else error("Error in file: "..v.path.." "..err) end
 end

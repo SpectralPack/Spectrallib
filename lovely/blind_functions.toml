@@ -1,0 +1,36 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = -1
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "draw_card(G.hand, G.discard, i*100/highlighted_count, 'down', false, G.hand.highlighted[i]) "
+position = "at"
+payload = '''draw_card(G.hand, Spectrallib.return_to_deck() and G.deck or G.discard, i*100/highlighted_count, 'down', false, G.hand.highlighted[i])'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "draw_card(G.hand, G.discard, i*100/highlighted_count, 'down', false, G.hand.highlighted[i]) "
+position = "at"
+payload = '''draw_card(G.hand, Spectrallib.return_to_deck() and G.deck or G.discard, i*100/highlighted_count, 'down', false, G.hand.highlighted[i])'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''
+    elseif blindname == 'Small Blind' or blindname == 'Big Blind' or blindname == '' then
+        ease_background_colour{new_colour = G.C.BLIND['Small'], contrast = 1}
+    else
+'''
+position = "at"
+payload = '''
+    elseif blindname == 'Small Blind' or blindname == 'Big Blind' or blindname == '' then
+        ease_background_colour{new_colour = Spectrallib.get_bg_colour(), contrast = 1}
+    else
+'''
+match_indent = true
