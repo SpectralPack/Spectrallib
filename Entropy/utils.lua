@@ -305,7 +305,6 @@ end
 
 function Spectrallib.blind_is(blind)
     if G.GAME.blind and G.GAME.blind.config and G.GAME.blind.config.blind.key == blind then return true end
-    if Spectrallib.is_EE() and G.GAME.blind.config.blind.key == "bl_entr_endless_entropy_phase_four" and Spectrallib.EEWhitelist[blind] then return true end --TODO: change how this works
 end
 
 --not really needed any more
