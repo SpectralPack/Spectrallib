@@ -7,6 +7,7 @@ function Spectrallib.demicolonGetTriggerable(card)
 	if
 		Card.no(card, "demicoloncompat", true)
 		or Card.no(card, "demicolon_compat", true)
+		or Card.no(card, "forcetrigger_compat", true)
 		or Spectrallib.forcetriggerVanillaCheck(card)
 	then
 		n[1] = true
@@ -29,7 +30,7 @@ function Spectrallib.forcetrigger(card, context)
 		G.E_MANAGER:add_event(Event({
 			trigger = "before",
 			func = function()
-				play_sound("Spectrallib_forcetrigger", 1, 0.6)
+				play_sound("slib_forcetrigger", 1, 0.6)
 				return true
 			end,
 		}))
@@ -37,41 +38,49 @@ function Spectrallib.forcetrigger(card, context)
 	if not check and card.ability.set == "Joker" then
 		local demicontext = Spectrallib.deep_copy(context)
 		demicontext.forcetrigger = true
-		results = eval_card(card, demicontext)
+		if card.config.center.forcetrigger then
+			results = {jokers = {
+
+			}}
+			results.jokers = card.config.center:forcetrigger(card)
+			results.jokers.card = card
+		else
+			results = eval_card(card, demicontext)
+		end
 		demicontext = nil
 	elseif check and card.ability.set == "Joker" then
 		results = {}
 		results.jokers = {}
 		-- page 1
 		if card.ability.name == "Joker" then
-			results = { jokers = { mult_mod = card.ability.mult, card = card } }
+			results = { jokers = { mult = card.ability.mult, card = card } }
 		end
 		if card.ability.name == "Greedy Joker" then
-			results = { jokers = { mult_mod = card.ability.extra.s_mult, card = card } }
+			results = { jokers = { mult = card.ability.extra.s_mult, card = card } }
 		end
 		if card.ability.name == "Lusty Joker" then
-			results = { jokers = { mult_mod = card.ability.extra.s_mult, card = card } }
+			results = { jokers = { mult = card.ability.extra.s_mult, card = card } }
 		end
 		if card.ability.name == "Wrathful Joker" then
-			results = { jokers = { mult_mod = card.ability.extra.s_mult, card = card } }
+			results = { jokers = { mult = card.ability.extra.s_mult, card = card } }
 		end
 		if card.ability.name == "Gluttonous Joker" then
-			results = { jokers = { mult_mod = card.ability.extra.s_mult, card = card } }
+			results = { jokers = { mult = card.ability.extra.s_mult, card = card } }
 		end
 		if card.ability.name == "Jolly Joker" then
-			results = { jokers = { mult_mod = card.ability.t_mult, card = card } }
+			results = { jokers = { mult = card.ability.t_mult, card = card } }
 		end
 		if card.ability.name == "Zany Joker" then
-			results = { jokers = { mult_mod = card.ability.t_mult, card = card } }
+			results = { jokers = { mult = card.ability.t_mult, card = card } }
 		end
 		if card.ability.name == "Mad Joker" then
-			results = { jokers = { mult_mod = card.ability.t_mult, card = card } }
+			results = { jokers = { mult = card.ability.t_mult, card = card } }
 		end
 		if card.ability.name == "Crazy Joker" then
-			results = { jokers = { mult_mod = card.ability.t_mult, card = card } }
+			results = { jokers = { mult = card.ability.t_mult, card = card } }
 		end
 		if card.ability.name == "Droll Joker" then
-			results = { jokers = { mult_mod = card.ability.t_mult, card = card } }
+			results = { jokers = { mult = card.ability.t_mult, card = card } }
 		end
 		if card.ability.name == "Sly Joker" then
 			results = { jokers = { chips = card.ability.t_chips, card = card } }
@@ -90,10 +99,10 @@ function Spectrallib.forcetrigger(card, context)
 		end
 		-- page 2
 		if card.ability.name == "Half Joker" then
-			results = { jokers = { mult_mod = card.ability.extra.mult, card = card } }
+			results = { jokers = { mult = card.ability.extra.mult, card = card } }
 		end
 		if card.ability.name == "Joker Stencil" then
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		-- if card.ability.name == "Four Fingers" then results = { jokers = { }, } end
 		-- if card.ability.name == "Mime" then results = { jokers = { }, } end
@@ -127,13 +136,13 @@ function Spectrallib.forcetrigger(card, context)
 					end,
 				}))
 			end
-			results = { jokers = { mult_mod = card.ability.mult, card = card } }
+			results = { jokers = { mult = card.ability.mult, card = card } }
 		end
 		if card.ability.name == "Banner" then
 			results = { jokers = { chips = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Mystic Summit" then
-			results = { jokers = { mult_mod = card.ability.extra.mult, card = card } }
+			results = { jokers = { mult = card.ability.extra.mult, card = card } }
 		end
 		if card.ability.name == "Marble Joker" then
 			G.E_MANAGER:add_event(Event({
@@ -159,7 +168,7 @@ function Spectrallib.forcetrigger(card, context)
 			}))
 		end
 		if card.ability.name == "Loyalty Card" then
-			results = { jokers = { Xmult_mod = card.ability.extra.Xmult, card = card } }
+			results = { jokers = { xmult = card.ability.extra.Xmult, card = card } }
 		end
 		if card.ability.name == "8 Ball" then
 			G.E_MANAGER:add_event(Event({
@@ -175,25 +184,25 @@ function Spectrallib.forcetrigger(card, context)
 			}))
 		end
 		if card.ability.name == "Misprint" then
-			results = { jokers = { mult_mod = card.ability.extra.max, card = card } }
+			results = { jokers = { mult = card.ability.extra.max, card = card } }
 		end
 		-- if card.ability.name == "Dusk" then results = { jokers = { }, } end
 		if card.ability.name == "Raised Fist" then
-			results = { jokers = { mult_mod = 22, card = card } }
+			results = { jokers = { mult = 22, card = card } }
 		end
 		-- if card.ability.name == "Chaos the Clown" then results = { jokers = { }, } end
 		-- page 3
 		if card.ability.name == "Fibonacci" then
-			results = { jokers = { mult_mod = card.ability.extra, card = card } }
+			results = { jokers = { mult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Steel Joker" then
-			results = { jokers = { Xmult_mod = (card.ability.extra + 1), card = card } }
+			results = { jokers = { xmult = (card.ability.extra + 1), card = card } }
 		end
 		if card.ability.name == "Scary Face" then
 			results = { jokers = { chips = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Abstract Joker" then
-			results = { jokers = { mult_mod = card.ability.extra, card = card } }
+			results = { jokers = { mult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Delayed Gratification" then
 			ease_dollars(card.ability.extra)
@@ -223,16 +232,16 @@ function Spectrallib.forcetrigger(card, context)
 				end,
 			}))
 			G.GAME.pool_flags.gros_michel_extinct = true
-			results = { jokers = { mult_mod = card.ability.extra.mult, card = card } }
+			results = { jokers = { mult = card.ability.extra.mult, card = card } }
 		end
 		if card.ability.name == "Even Steven" then
-			results = { jokers = { mult_mod = card.ability.extra, card = card } }
+			results = { jokers = { mult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Odd Todd" then
 			results = { jokers = { chips = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Scholar" then
-			results = { jokers = { chips = card.ability.extra.chips, mult_mod = card.ability.extra.mult, card = card } }
+			results = { jokers = { chips = card.ability.extra.chips, mult = card.ability.extra.mult, card = card } }
 		end
 		if card.ability.name == "Business Card" then
 			ease_dollars(2)
@@ -240,12 +249,12 @@ function Spectrallib.forcetrigger(card, context)
 		if card.ability.name == "Supernova" then
 			local hand = context.other_context and context.other_context.scoring_name or context.scoring_name
 			if hand then
-				results = { jokers = { mult_mod = G.GAME.hands[hand].played, card = card } }
+				results = { jokers = { mult = G.GAME.hands[hand].played, card = card } }
 			end
 		end
 		if card.ability.name == "Ride The Bus" then
 			card.ability.mult = card.ability.mult + card.ability.extra
-			results = { jokers = { mult_mod = card.ability.mult, card = card } }
+			results = { jokers = { mult = card.ability.mult, card = card } }
 		end
 		if card.ability.name == "Space Joker" then
 			if #G.hand.highlighted > 0 then
@@ -280,7 +289,7 @@ function Spectrallib.forcetrigger(card, context)
 			}))
 		end
 		if card.ability.name == "Blackboard" then
-			results = { jokers = { Xmult_mod = card.ability.extra, card = card } }
+			results = { jokers = { xmult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Runner" then
 			card.ability.extra.chips = card.ability.extra.chips + card.ability.extra.chip_mod
@@ -351,14 +360,14 @@ function Spectrallib.forcetrigger(card, context)
 		end
 		if card.ability.name == "Constellation" then
 			card.ability.x_mult = card.ability.x_mult + card.ability.extra
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		-- if card.ability.name == "Hiker" then results = { jokers = { }, } end
 		if card.ability.name == "Faceless Joker" then
 			ease_dollars(card.ability.extra.dollars)
 		end
 		if card.ability.name == "Green Joker" then
-			results = { jokers = { mult_mod = card.ability.mult, card = card } }
+			results = { jokers = { mult = card.ability.mult, card = card } }
 		end
 		if card.ability.name == "Superposition" then
 			G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
@@ -379,7 +388,7 @@ function Spectrallib.forcetrigger(card, context)
 		end
 		-- page 5
 		if card.ability.name == "Cavendish" then
-			results = { jokers = { Xmult_mod = card.ability.extra.Xmult, card = card } }
+			results = { jokers = { xmult = card.ability.extra.Xmult, card = card } }
 			G.E_MANAGER:add_event(Event({
 				trigger = "after",
 				delay = 0.4,
@@ -405,11 +414,11 @@ function Spectrallib.forcetrigger(card, context)
 			}))
 		end
 		if card.ability.name == "Card Sharp" then
-			results = { jokers = { Xmult_mod = card.ability.extra.Xmult, card = card } }
+			results = { jokers = { xmult = card.ability.extra.Xmult, card = card } }
 		end
 		if card.ability.name == "Red Card" then
 			card.ability.mult = card.ability.mult + card.ability.extra
-			results = { jokers = { mult_mod = card.ability.mult, card = card } }
+			results = { jokers = { mult = card.ability.mult, card = card } }
 		end
 		if card.ability.name == "Madness" then
 			card.ability.x_mult = card.ability.x_mult + card.ability.extra
@@ -437,7 +446,7 @@ function Spectrallib.forcetrigger(card, context)
 					end,
 				}))
 			end
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		if card.ability.name == "Square Joker" then
 			card.ability.extra.chips = card.ability.extra.chips + card.ability.extra.chip_mod
@@ -494,12 +503,12 @@ function Spectrallib.forcetrigger(card, context)
 				end
 			end
 			card.ability.x_mult = card.ability.x_mult + (card.ability.extra * #enhanced or 1)
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		-- if card.ability.name == "Shortcut" then results = { jokers = { } } end
 		if card.ability.name == "Hologram" then
 			card.ability.x_mult = card.ability.x_mult + card.ability.extra
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		if card.ability.name == "Vagabond" then
 			G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
@@ -516,7 +525,7 @@ function Spectrallib.forcetrigger(card, context)
 			}))
 		end
 		if card.ability.name == "Baron" then
-			results = { jokers = { Xmult_mod = card.ability.extra, card = card } }
+			results = { jokers = { xmult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Cloud 9" then
 			if card.ability.nine_tally then
@@ -531,7 +540,7 @@ function Spectrallib.forcetrigger(card, context)
 		end
 		if card.ability.name == "Obelisk" then -- Sobelisk
 			card.ability.x_mult = card.ability.x_mult + card.ability.extra
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		-- page 6
 		if card.ability.name == "Midas Mask" then
@@ -571,7 +580,7 @@ function Spectrallib.forcetrigger(card, context)
 			end
 		end
 		if card.ability.name == "Photograph" then
-			results = { jokers = { Xmult_mod = card.ability.extra, card = card } }
+			results = { jokers = { xmult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Gift Card" then
 			for k, v in ipairs(G.jokers.cards) do
@@ -594,7 +603,7 @@ function Spectrallib.forcetrigger(card, context)
 		end
 		if card.ability.name == "Erosion" then
 			results = {
-				jokers = { mult_mod = card.ability.extra * (G.GAME.starting_deck_size - #G.playing_cards), card = card },
+				jokers = { mult = card.ability.extra * (G.GAME.starting_deck_size - #G.playing_cards), card = card },
 			}
 		end
 		if card.ability.name == "Reserved Parking" then
@@ -618,7 +627,7 @@ function Spectrallib.forcetrigger(card, context)
 			}))
 		end
 		if card.ability.name == "Fortune Teller" then
-			results = { jokers = { mult_mod = G.GAME.consumeable_usage_total.tarot or 1, card = card } }
+			results = { jokers = { mult = G.GAME.consumeable_usage_total.tarot or 1, card = card } }
 		end
 		if card.ability.name == "Juggler" then
 			G.hand:change_size(card.ability.h_size)
@@ -635,10 +644,10 @@ function Spectrallib.forcetrigger(card, context)
 		-- page 7
 		if card.ability.name == "Lucky Cat" then
 			card.ability.x_mult = card.ability.x_mult + card.ability.extra
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		if card.ability.name == "Baseball Card" then
-			results = { jokers = { Xmult_mod = card.ability.extra, card = card } }
+			results = { jokers = { xmult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Bull" then
 			results = {
@@ -663,25 +672,25 @@ function Spectrallib.forcetrigger(card, context)
 		end
 		if card.ability.name == "Flash Card" then
 			card.ability.mult = card.ability.mult + card.ability.extra
-			results = { jokers = { mult_mod = card.ability.mult, card = card } }
+			results = { jokers = { mult = card.ability.mult, card = card } }
 		end
 		if card.ability.name == "Popcorn" then
 			card.ability.mult = card.ability.mult - card.ability.extra
-			results = { jokers = { mult_mod = card.ability.mult, card = card } }
+			results = { jokers = { mult = card.ability.mult, card = card } }
 		end
 		if card.ability.name == "Spare Trousers" then
 			card.ability.mult = card.ability.mult + card.ability.extra
-			results = { jokers = { mult_mod = card.ability.mult, card = card } }
+			results = { jokers = { mult = card.ability.mult, card = card } }
 		end
 		if card.ability.name == "Ancient Joker" then
-			results = { jokers = { Xmult_mod = card.ability.extra, card = card } }
+			results = { jokers = { xmult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Ramen" then
 			card.ability.x_mult = card.ability.x_mult - card.ability.extra
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		if card.ability.name == "Walkie Talkie" then
-			results = { jokers = { mult_mod = card.ability.extra.mult, chips = card.ability.extra.chips, card = card } }
+			results = { jokers = { mult = card.ability.extra.mult, chips = card.ability.extra.chips, card = card } }
 		end
 		-- if card.ability.name == "Seltzer" then results = { jokers = { } } end
 		if card.ability.name == "Castle" then
@@ -689,11 +698,11 @@ function Spectrallib.forcetrigger(card, context)
 			results = { jokers = { chips = card.ability.extra.chips, card = card } }
 		end
 		if card.ability.name == "Smiley Face" then
-			results = { jokers = { mult_mod = card.ability.extra, card = card } }
+			results = { jokers = { mult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Campfire" then
 			card.ability.x_mult = card.ability.x_mult + card.ability.extra
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		-- page 8
 		if card.ability.name == "Golden Ticket" then
@@ -701,11 +710,11 @@ function Spectrallib.forcetrigger(card, context)
 		end
 		-- if card.ability.name == "Mr Bones" then results = { jokers = { } } end
 		if card.ability.name == "Acrobat" then
-			results = { jokers = { Xmult_mod = card.ability.extra, card = card } }
+			results = { jokers = { xmult = card.ability.extra, card = card } }
 		end
 		-- if card.ability.name == "Sock and Buskin" then results = { jokers = { } } end
 		if card.ability.name == "Swashbuckler" then
-			results = { jokers = { mult_mod = card.ability.mult, card = card } }
+			results = { jokers = { mult = card.ability.mult, card = card } }
 		end
 		if card.ability.name == "Troubadour" then
 			G.hand:change_size(card.ability.extra.h_size)
@@ -729,29 +738,29 @@ function Spectrallib.forcetrigger(card, context)
 		end
 		-- if card.ability.name == "Smeared Joker" then results = { jokers = { } } end
 		if card.ability.name == "Throwback" then
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		-- if card.ability.name == "Hanging Chad" then results = { jokers = { } } end
 		if card.ability.name == "Rough Gem" then
 			ease_dollars(card.ability.extra)
 		end
 		if card.ability.name == "Bloodstone" then
-			results = { jokers = { Xmult_mod = card.ability.extra.Xmult, card = card } }
+			results = { jokers = { xmult = card.ability.extra.Xmult, card = card } }
 		end
 		if card.ability.name == "Arrowhead" then
 			results = { jokers = { chips = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Onyx Agate" then
-			results = { jokers = { mult_mod = card.ability.extra, card = card } }
+			results = { jokers = { mult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Glass Joker" then
 			card.ability.x_mult = card.ability.x_mult + card.ability.extra
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		-- page 9
 		-- if card.ability.name == "Showman" then results = { jokers = { } } end
 		if card.ability.name == "Flower Pot" then
-			results = { jokers = { Xmult_mod = card.ability.extra, card = card } }
+			results = { jokers = { xmult = card.ability.extra, card = card } }
 		end
 		-- if card.ability.name == "Blueprint" then results = { jokers = { } } end
 		if card.ability.name == "Wee Joker" then
@@ -764,32 +773,32 @@ function Spectrallib.forcetrigger(card, context)
 		end
 		-- if card.ability.name == "Oops! All 6s" then results = { jokers = { } } end
 		if card.ability.name == "The Idol" then
-			results = { jokers = { Xmult_mod = card.ability.extra, card = card } }
+			results = { jokers = { xmult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Seeing Double" then
-			results = { jokers = { Xmult_mod = card.ability.extra, card = card } }
+			results = { jokers = { xmult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Matador" then
 			ease_dollars(card.ability.extra)
 		end
 		if card.ability.name == "Hit The Road" then
 			card.ability.x_mult = card.ability.x_mult + card.ability.extra
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		if card.ability.name == "The Duo" then
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		if card.ability.name == "The Trio" then
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		if card.ability.name == "The Family" then
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		if card.ability.name == "The Order" then
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		if card.ability.name == "The Tribe" then
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		-- page 10
 		if card.ability.name == "Stuntman" then
@@ -836,10 +845,10 @@ function Spectrallib.forcetrigger(card, context)
 			ease_dollars(card.ability.extra * planets_used or 1)
 		end
 		if card.ability.name == "Shoot The Moon" then
-			results = { jokers = { mult_mod = 13, card = card } }
+			results = { jokers = { mult = 13, card = card } }
 		end
 		if card.ability.name == "Driver's License" then
-			results = { jokers = { Xmult_mod = card.ability.extra, card = card } }
+			results = { jokers = { xmult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Cartomancer" then
 			G.E_MANAGER:add_event(Event({
@@ -874,7 +883,7 @@ function Spectrallib.forcetrigger(card, context)
 		if card.ability.name == "Bootstraps" then
 			results = {
 				jokers = {
-					mult_mod = card.ability.mult
+					mult = card.ability.mult
 						* math.floor((G.GAME.dollars + (G.GAME.dollar_buffer or 0)) / card.ability.extra.dollars),
 					card = card,
 				},
@@ -882,14 +891,14 @@ function Spectrallib.forcetrigger(card, context)
 		end
 		if card.ability.name == "Caino" then
 			card.ability.caino_xmult = card.ability.caino_xmult + card.ability.extra
-			results = { jokers = { Xmult_mod = card.ability.caino_xmult, card = card } }
+			results = { jokers = { xmult = card.ability.caino_xmult, card = card } }
 		end
 		if card.ability.name == "Triboulet" then
-			results = { jokers = { Xmult_mod = card.ability.extra, card = card } }
+			results = { jokers = { xmult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Yorick" then
 			card.ability.x_mult = card.ability.x_mult + card.ability.extra.xmult
-			results = { jokers = { Xmult_mod = card.ability.x_mult, card = card } }
+			results = { jokers = { xmult = card.ability.x_mult, card = card } }
 		end
 		if card.ability.name == "Chicot" then
 			if G.GAME.blind and G.GAME.blind:get_type() == "Boss" then
@@ -1190,7 +1199,7 @@ function Spectrallib.forcetriggerConsumableCheck(card)
 	if not card then
 		return false
 	end
-	return card.config.center.demicoloncompat or not card.config.center.original_mod
+	return card.config.center.demicoloncompat or not card.config.center.original_mod or card.config.center.forcetrigger_compat
 end
 
 SMODS.Sound({
