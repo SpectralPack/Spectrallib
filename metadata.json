@@ -16,7 +16,6 @@
 		
 	],
 	"provides": [
-		"Cryptlib",
-		"SpectrumAPI"
+		"Cryptlib"
 	]
 }
