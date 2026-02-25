@@ -1,5 +1,5 @@
 -- everything demicolon needs (not really as simple anymore)
-function Cryptid.demicolonGetTriggerable(card)
+function Spectrallib.demicolonGetTriggerable(card)
 	local n = { false, false }
 	if not card then
 		return n
@@ -7,35 +7,35 @@ function Cryptid.demicolonGetTriggerable(card)
 	if
 		Card.no(card, "demicoloncompat", true)
 		or Card.no(card, "demicolon_compat", true)
-		or Cryptid.forcetriggerVanillaCheck(card)
+		or Spectrallib.forcetriggerVanillaCheck(card)
 	then
 		n[1] = true
 	else
 		n[1] = false
 	end
-	if card.ability.consumeable and Cryptid.forcetriggerConsumableCheck(card) then
+	if card.ability.consumeable and Spectrallib.forcetriggerConsumableCheck(card) then
 		n[1] = true
 	end
 	return n
 end
 
-function Cryptid.forcetrigger(card, context)
+function Spectrallib.forcetrigger(card, context)
 	if not card then
 		return {}
 	end
 	local results = {}
-	local check = Cryptid.forcetriggerVanillaCheck(card)
+	local check = Spectrallib.forcetriggerVanillaCheck(card)
 	if Talisman and not Talisman.config_file.disable_anims then
 		G.E_MANAGER:add_event(Event({
 			trigger = "before",
 			func = function()
-				play_sound("cryl_forcetrigger", 1, 0.6)
+				play_sound("Spectrallib_forcetrigger", 1, 0.6)
 				return true
 			end,
 		}))
 	end
 	if not check and card.ability.set == "Joker" then
-		local demicontext = Cryptid.deep_copy(context)
+		local demicontext = Spectrallib.deep_copy(context)
 		demicontext.forcetrigger = true
 		results = eval_card(card, demicontext)
 		demicontext = nil
@@ -940,7 +940,7 @@ function Cryptid.forcetrigger(card, context)
 				}))
 			end
 		end
-	elseif card.ability.consumeable and Cryptid.forcetriggerConsumableCheck(card) then
+	elseif card.ability.consumeable and Spectrallib.forcetriggerConsumableCheck(card) then
 		G.cry_force_use = true
 		if
 			(card.ability.consumeable.max_highlighted or card.ability.name == "Aura")
@@ -1021,7 +1021,7 @@ function Cryptid.forcetrigger(card, context)
 	return results
 end
 
-function Cryptid.forcetriggerVanillaCheck(card)
+function Spectrallib.forcetriggerVanillaCheck(card)
 	if not card then
 		return false
 	end
@@ -1186,7 +1186,7 @@ function Cryptid.forcetriggerVanillaCheck(card)
 	return false
 end
 
-function Cryptid.forcetriggerConsumableCheck(card)
+function Spectrallib.forcetriggerConsumableCheck(card)
 	if not card then
 		return false
 	end

@@ -5,7 +5,7 @@
 ------------------------
 
 -- designed to work on any object type
-function Cryptid.gameset(card, center)
+function Spectrallib.gameset(card, center)
 	if not center then
 		if not card then
 			return G.PROFILES[G.SETTINGS.profile].cry_gameset or "mainline"
@@ -41,7 +41,7 @@ function Cryptid.gameset(card, center)
 end
 -- set_ability accounts for gamesets
 function Card:get_gameset(center)
-	return Cryptid.gameset(self, center)
+	return Spectrallib.gameset(self, center)
 end
 local csa = Card.set_ability
 function Card:set_ability(center, y, z)
@@ -84,7 +84,7 @@ function Card:set_ability(center, y, z)
 	end
 end
 
--- open gameset config UI when clicking on a card in the Cryptid collection
+-- open gameset config UI when clicking on a card in the Spectrallib collection
 local ccl = Card.click
 function Card:click()
 	ccl(self)
@@ -93,7 +93,7 @@ function Card:click()
 			if
 				self.area == v
 				and G.ACTIVE_MOD_UI
-				and (Cryptid.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Cryptid")
+				and (Spectrallib.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Spectrallib")
 			then
 				if not self.config.center or self.config.center and self.config.center.set == "Default" then
 					--make a fake center
@@ -114,16 +114,16 @@ function Card:click()
 				end
 				if self.gameset_select then
 					Card.cry_set_gameset(self, self.config.center, self.config.center.force_gameset)
-					Cryptid.update_obj_registry()
+					Spectrallib.update_obj_registry()
 				end
-				Cryptid.gameset_config_UI(self.config.center)
+				Spectrallib.gameset_config_UI(self.config.center)
 			end
 		end
 	end
 end
 
 -- gameset config UI
-function Cryptid.gameset_config_UI(center)
+function Spectrallib.gameset_config_UI(center)
 	if not center then
 		center = G.viewedContentSet
 	end
@@ -156,9 +156,9 @@ function Cryptid.gameset_config_UI(center)
 				and center.gameset_config[gamesets[i]].disabled
 			)
 		then
-			local _center = Cryptid.deep_copy(center)
+			local _center = Spectrallib.deep_copy(center)
 			_center.force_gameset = gamesets[i]
-			local card = Cryptid.generic_card(_center)
+			local card = Spectrallib.generic_card(_center)
 			card.gameset_select = true
 			if gamesets[i] == "disabled" then
 				card.debuff = true
@@ -206,7 +206,7 @@ function Cryptid.gameset_config_UI(center)
 			},
 		},
 	}
-	if center.set == "Content Set" and not (SMODS.Mods["Cryptid"] or {}).can_load then
+	if center.set == "Content Set" and not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
 		G.viewedContentSet = center
 		args.back2 = true
 		args.back2_func = "your_collection_current_set"
@@ -221,7 +221,7 @@ end
 
 function G.FUNCS.cry_gameset_config_UI()
 	G.cry_prev_collec = "your_collection_content_sets"
-	Cryptid.gameset_config_UI()
+	Spectrallib.gameset_config_UI()
 end
 
 local collection_shtuff = {
@@ -271,7 +271,7 @@ function get_type_colour(center, card)
 		end
 	end
 	if
-		Cryptid.gameset(card, center) == "disabled"
+		Spectrallib.gameset(card, center) == "disabled"
 		or (center.cry_disabled and (not card.gameset_select or center.cry_disabled.type ~= "manual"))
 	then
 		color = mix_colours(G.C.RED, G.C.GREY, 0.7)
@@ -307,11 +307,11 @@ end
 
 function G.FUNCS.reset_gameset_config()
 	G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides = nil
-	Cryptid.update_obj_registry()
+	Spectrallib.update_obj_registry()
 	G:save_progress()
 end
 
-function Cryptid.enabled(key, iter)
+function Spectrallib.enabled(key, iter)
 	if not iter then
 		iter = 0
 	end --iter is used to prevent infinite loops from freezing on startup
@@ -319,20 +319,20 @@ function Cryptid.enabled(key, iter)
 		print("Warning: Circular dependency with " .. key)
 		return true
 	end
-	local card = Cryptid.get_center(key)
+	local card = Spectrallib.get_center(key)
 	if
 		not card
-		or Cryptid.gameset(card) == "disabled"
+		or Spectrallib.gameset(card) == "disabled"
 		or card.gameset_config
-			and card.gameset_config[Cryptid.gameset(card)]
-			and card.gameset_config[Cryptid.gameset(card)].disabled
+			and card.gameset_config[Spectrallib.gameset(card)]
+			and card.gameset_config[Spectrallib.gameset(card)].disabled
 	then
 		return { type = "manual" }
 	end
 	if card.dependencies then
 		if card.dependencies.items then
 			for i = 1, #card.dependencies.items do
-				if Cryptid.enabled(card.dependencies.items[i], iter + 1) ~= true then
+				if Spectrallib.enabled(card.dependencies.items[i], iter + 1) ~= true then
 					return { type = "card_dependency", key = card.dependencies.items[i] }
 				end
 			end
@@ -357,7 +357,7 @@ function Cryptid.enabled(key, iter)
 	return true
 end
 
-function Cryptid.get_center(key, m)
+function Spectrallib.get_center(key, m)
 	if not m then
 		-- check for non game objects
 		if SMODS.Seals.obj_table and SMODS.Seals.obj_table[key] then
@@ -369,7 +369,7 @@ function Cryptid.get_center(key, m)
 		m = SMODS.GameObject
 		if m.subclasses then
 			for k, v in pairs(m.subclasses) do
-				local c = Cryptid.get_center(key, v)
+				local c = Spectrallib.get_center(key, v)
 				if c then
 					return c
 				end
@@ -379,8 +379,8 @@ function Cryptid.get_center(key, m)
 	return m.obj_table and m.obj_table[key]
 end
 
-function Cryptid.gameset_loc(card, config)
-	local gameset = Cryptid.gameset(card)
+function Spectrallib.gameset_loc(card, config)
+	local gameset = Spectrallib.gameset(card)
 	if config[gameset] then
 		return card.key .. "_" .. config[gameset]
 	else
@@ -551,19 +551,19 @@ SMODS.Edition.enable = function(self)
 	end
 end
 
-function Cryptid.update_obj_registry(m, force_enable)
+function Spectrallib.update_obj_registry(m, force_enable)
 	if not m then
 		m = SMODS.GameObject
 		if m.subclasses then
 			for k, v in pairs(m.subclasses) do
-				Cryptid.update_obj_registry(v, force_enable)
+				Spectrallib.update_obj_registry(v, force_enable)
 			end
 		end
 	end
 	if m.obj_table then
 		for k, v in pairs(m.obj_table) do
-			if v.mod and (v.mod.id == "Cryptid" or Cryptid.mod_gameset_whitelist[v.mod.id]) then
-				local en = force_enable or Cryptid.enabled(k)
+			if v.mod and (v.mod.id == "Spectrallib" or Spectrallib.mod_gameset_whitelist[v.mod.id]) then
+				local en = force_enable or Spectrallib.enabled(k)
 				if en == true then
 					if v.cry_disabled then
 						v:enable()
@@ -577,18 +577,18 @@ function Cryptid.update_obj_registry(m, force_enable)
 		end
 	end
 end
-function Cryptid.index_items(func, m)
+function Spectrallib.index_items(func, m)
 	if not m then
 		m = SMODS.GameObject
 		if m.subclasses then
 			for k, v in pairs(m.subclasses) do
-				Cryptid.index_items(func, v)
+				Spectrallib.index_items(func, v)
 			end
 		end
 	end
 	if m.obj_table then
 		for k, v in pairs(m.obj_table) do
-			if v.mod and (v.mod.id == "Cryptid" or Cryptid.mod_gameset_whitelist[v.mod.id]) then
+			if v.mod and (v.mod.id == "Spectrallib" or Spectrallib.mod_gameset_whitelist[v.mod.id]) then
 				func(v)
 			end
 		end
@@ -596,9 +596,9 @@ function Cryptid.index_items(func, m)
 end
 local init_item_prototypes_ref = Game.init_item_prototypes
 function Game:init_item_prototypes()
-	Cryptid.update_obj_registry(nil, true) --force enable, to prevent issues with profile reloading
+	Spectrallib.update_obj_registry(nil, true) --force enable, to prevent issues with profile reloading
 	init_item_prototypes_ref(self)
-	Cryptid.update_obj_registry()
+	Spectrallib.update_obj_registry()
 end
 
 ------------------------
@@ -690,7 +690,7 @@ function create_UIBox_your_collection_content_sets()
 			if not center then
 				break
 			end
-			local card = Cryptid.generic_card(
+			local card = Spectrallib.generic_card(
 				center,
 				G.your_collection[j].T.x + G.your_collection[j].T.w / 2,
 				G.your_collection[j].T.y
@@ -758,7 +758,7 @@ function create_UIBox_your_collection_current_set()
 			end
 		end
 	end
-	Cryptid.index_items(is_in_set)
+	Spectrallib.index_items(is_in_set)
 	table.sort(joker_pool, function(a, b)
 		return (a.cry_order or a.order or pseudorandom(a.key)) < (b.cry_order or b.order or pseudorandom(b.key))
 	end)
@@ -780,7 +780,7 @@ function create_UIBox_your_collection_current_set()
 			if not center then
 				break
 			end
-			local card = Cryptid.generic_card(
+			local card = Spectrallib.generic_card(
 				center,
 				G.your_collection[j].T.x + G.your_collection[j].T.w / 2,
 				G.your_collection[j].T.y
@@ -843,7 +843,7 @@ G.FUNCS.your_collection_content_set_page = function(args)
 			if not center then
 				break
 			end
-			local card = Cryptid.generic_card(
+			local card = Spectrallib.generic_card(
 				center,
 				G.your_collection[j].T.x + G.your_collection[j].T.w / 2,
 				G.your_collection[j].T.y
@@ -875,7 +875,7 @@ G.FUNCS.your_collection_current_set_page = function(args)
 			end
 		end
 	end
-	Cryptid.index_items(is_in_set)
+	Spectrallib.index_items(is_in_set)
 	table.sort(joker_pool, function(a, b)
 		return (a.cry_order or a.order or pseudorandom(a.key)) < (b.cry_order or b.order or pseudorandom(b.key))
 	end)
@@ -886,7 +886,7 @@ G.FUNCS.your_collection_current_set_page = function(args)
 			if not center then
 				break
 			end
-			local card = Cryptid.generic_card(
+			local card = Spectrallib.generic_card(
 				center,
 				G.your_collection[j].T.x + G.your_collection[j].T.w / 2,
 				G.your_collection[j].T.y
@@ -901,7 +901,7 @@ end
 ---- GENERIC COLLECTIONS -----
 ------------------------------
 
-function Cryptid.generic_card(center, x, y)
+function Spectrallib.generic_card(center, x, y)
 	--todo: make gameset stickers play nicely with resized sprites
 	local is_blind = center.set == "Blind" or center.cry_blind
 	local is_tag = center.set == "Tag" or center.cry_tag
@@ -917,29 +917,29 @@ function Cryptid.generic_card(center, x, y)
 	if center.set == "Edition" then
 		card:set_edition(center.key, true, true)
 	end
-	if Cryptid.safe_get(center, "config", "cry_antimatter") then
+	if Spectrallib.safe_get(center, "config", "cry_antimatter") then
 		card:set_edition("e_negative", true, true)
 		return card
 	end
-	if Cryptid.safe_get(center, "config", "cry_force_edition") then
+	if Spectrallib.safe_get(center, "config", "cry_force_edition") then
 		card:set_edition({ [center.config.cry_force_edition] = true }, true, true)
 	end
 	if center.set == "Seal" then
 		card:set_seal(center.key, true, true)
-		card.config.center = Cryptid.deep_copy(card.config.center)
+		card.config.center = Spectrallib.deep_copy(card.config.center)
 		card.config.center.force_gameset = center.force_gameset
 		card.config.center.key = center.key
 	end
-	if Cryptid.safe_get(center, "config", "cry_force_seal") then
+	if Spectrallib.safe_get(center, "config", "cry_force_seal") then
 		card:set_seal(center.config.cry_force_seal, true, true)
 	end
 	if center.set == "Sticker" then
 		center:apply(card, true)
-		card.config.center = Cryptid.deep_copy(card.config.center)
+		card.config.center = Spectrallib.deep_copy(card.config.center)
 		card.config.center.force_gameset = center.force_gameset
 		card.config.center.key = center.key
 	end
-	if Cryptid.safe_get(center, "config", "cry_force_sticker") then
+	if Spectrallib.safe_get(center, "config", "cry_force_sticker") then
 		SMODS.Stickers[center.config.cry_force_sticker]:apply(card, true)
 	end
 	return card
@@ -948,19 +948,19 @@ end
 -- Hooks for all collection types
 local smcp = SMODS.collection_pool
 SMODS.collection_pool = function(m)
-	if G.ACTIVE_MOD_UI and (Cryptid.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Cryptid") then
+	if G.ACTIVE_MOD_UI and (Spectrallib.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Spectrallib") then
 		-- use SMODS pools instead of vanilla pools, so disabled cards appear
 		if m[1] and m[1].set and m[1].set == "Seal" then
 			m = {}
 			for k, v in pairs(SMODS.Seal.obj_table) do
-				if v.mod and (Cryptid.mod_gameset_whitelist[v.mod.id] or v.mod.id == "Cryptid") then
+				if v.mod and (Spectrallib.mod_gameset_whitelist[v.mod.id] or v.mod.id == "Spectrallib") then
 					table.insert(m, v)
 				end
 			end
 		elseif m[1] and m[1].set and m[1].set == "Sticker" then
 			m = {}
 			for k, v in pairs(SMODS.Sticker.obj_table) do
-				if v.mod and (Cryptid.mod_gameset_whitelist[v.mod.id] or v.mod.id == "Cryptid") then
+				if v.mod and (Spectrallib.mod_gameset_whitelist[v.mod.id] or v.mod.id == "Spectrallib") then
 					table.insert(m, v)
 				end
 			end
@@ -968,14 +968,14 @@ SMODS.collection_pool = function(m)
 			local set = m[1].set
 			m = {}
 			for k, v in pairs(SMODS.Center.obj_table) do
-				if v.set == set and v.mod and (Cryptid.mod_gameset_whitelist[v.mod.id] or v.mod.id == "Cryptid") then
+				if v.set == set and v.mod and (Spectrallib.mod_gameset_whitelist[v.mod.id] or v.mod.id == "Spectrallib") then
 					table.insert(m, v)
 				end
 			end
 		end
 		-- Fix blind issues
 		for k, v in pairs(m) do
-			if v.set == "Blind" and v.mod and (Cryptid.mod_gameset_whitelist[v.mod.id] or v.mod.id == "Cryptid") then
+			if v.set == "Blind" and v.mod and (Spectrallib.mod_gameset_whitelist[v.mod.id] or v.mod.id == "Spectrallib") then
 				v.config = {}
 			end
 		end
@@ -986,19 +986,19 @@ SMODS.collection_pool = function(m)
 	return smcp(m)
 end
 
--- Make Cryptid show all collection boxes (kinda silly)
+-- Make Spectrallib show all collection boxes (kinda silly)
 local mct = modsCollectionTally
 function modsCollectionTally(pool, set)
 	local t = mct(pool, set)
-	if G.ACTIVE_MOD_UI and (Cryptid.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Cryptid") then
+	if G.ACTIVE_MOD_UI and (Spectrallib.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Spectrallib") then
 		local obj_tally = { tally = 0, of = 0 }
 		--infer pool
-		local _set = set or Cryptid.safe_get(pool, 1, "set")
+		local _set = set or Spectrallib.safe_get(pool, 1, "set")
 		--check for general consumables
 		local consumable = false
-		if _set and Cryptid.safe_get(pool, 1, "consumeable") then
+		if _set and Spectrallib.safe_get(pool, 1, "consumeable") then
 			for i = 1, #pool do
-				if Cryptid.safe_get(pool, i, "set") ~= _set then
+				if Spectrallib.safe_get(pool, i, "set") ~= _set then
 					consumable = true
 					break
 				end
@@ -1016,22 +1016,22 @@ function modsCollectionTally(pool, set)
 		for _, v in pairs(pool) do
 			if v.mod and G.ACTIVE_MOD_UI.id == v.mod.id and not v.no_collection then
 				if consumable then
-					if Cryptid.safe_get(v, "consumeable") then
+					if Spectrallib.safe_get(v, "consumeable") then
 						obj_tally.of = obj_tally.of + 1
-						if Cryptid.enabled(v.key) == true then
+						if Spectrallib.enabled(v.key) == true then
 							obj_tally.tally = obj_tally.tally + 1
 						end
 					end
 				elseif set then
 					if v.set and v.set == set then
 						obj_tally.of = obj_tally.of + 1
-						if Cryptid.enabled(v.key) == true then
+						if Spectrallib.enabled(v.key) == true then
 							obj_tally.tally = obj_tally.tally + 1
 						end
 					end
 				else
 					obj_tally.of = obj_tally.of + 1
-					if Cryptid.enabled(v.key) == true then
+					if Spectrallib.enabled(v.key) == true then
 						obj_tally.tally = obj_tally.tally + 1
 					end
 				end
@@ -1045,10 +1045,10 @@ end
 -- Make non-center collections show all cards as centers
 local uibk = create_UIBox_your_collection_decks
 function create_UIBox_your_collection_decks()
-	if G.ACTIVE_MOD_UI and (Cryptid.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Cryptid") then
+	if G.ACTIVE_MOD_UI and (Spectrallib.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Spectrallib") then
 		local generic_collection_pool = {}
 		for k, v in pairs(SMODS.Center.obj_table) do
-			if v.set == "Back" and v.mod and (v.mod.id == "Cryptid" or Cryptid.mod_gameset_whitelist[v.mod.id]) then
+			if v.set == "Back" and v.mod and (v.mod.id == "Spectrallib" or Spectrallib.mod_gameset_whitelist[v.mod.id]) then
 				table.insert(generic_collection_pool, v)
 			end
 		end
@@ -1076,10 +1076,10 @@ end
 
 local uitag = create_UIBox_your_collection_tags
 function create_UIBox_your_collection_tags()
-	if G.ACTIVE_MOD_UI and (Cryptid.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Cryptid") then
+	if G.ACTIVE_MOD_UI and (Spectrallib.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Spectrallib") then
 		local generic_collection_pool = {}
 		for k, v in pairs(SMODS.Tag.obj_table) do
-			if v.set == "Tag" and v.mod and (v.mod.id == "Cryptid" or Cryptid.mod_gameset_whitelist[v.mod.id]) then
+			if v.set == "Tag" and v.mod and (v.mod.id == "Spectrallib" or Spectrallib.mod_gameset_whitelist[v.mod.id]) then
 				table.insert(generic_collection_pool, v)
 			end
 		end
@@ -1099,10 +1099,10 @@ end
 
 local uibl = create_UIBox_your_collection_blinds
 function create_UIBox_your_collection_blinds()
-	if G.ACTIVE_MOD_UI and (Cryptid.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Cryptid") then
+	if G.ACTIVE_MOD_UI and (Spectrallib.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Spectrallib") then
 		local generic_collection_pool = {}
 		for k, v in pairs(SMODS.Blind.obj_table) do
-			if v.set == "Blind" and v.mod and (v.mod.id == "Cryptid" or Cryptid.mod_gameset_whitelist[v.mod.id]) then
+			if v.set == "Blind" and v.mod and (v.mod.id == "Spectrallib" or Spectrallib.mod_gameset_whitelist[v.mod.id]) then
 				table.insert(generic_collection_pool, v)
 			end
 		end
@@ -1122,7 +1122,7 @@ end
 
 local uisl = create_UIBox_your_collection_seals
 function create_UIBox_your_collection_seals()
-	if G.ACTIVE_MOD_UI and (Cryptid.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Cryptid") then
+	if G.ACTIVE_MOD_UI and (Spectrallib.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Spectrallib") then
 		return SMODS.card_collection_UIBox(G.P_CENTER_POOLS.Seal, { 5, 5 }, {
 			snap_back = true,
 			infotip = localize("ml_edition_seal_enhancement_explanation"),
@@ -1133,7 +1133,7 @@ function create_UIBox_your_collection_seals()
 			modify_card = function(card, center)
 				card:set_seal(center.key, true)
 				-- Make disabled UI appear
-				card.config.center = Cryptid.deep_copy(card.config.center)
+				card.config.center = Spectrallib.deep_copy(card.config.center)
 				card.config.center.key = center.key
 			end,
 		})
@@ -1144,7 +1144,7 @@ end
 
 local uist = create_UIBox_your_collection_stickers
 function create_UIBox_your_collection_stickers()
-	if G.ACTIVE_MOD_UI and (Cryptid.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Cryptid") then
+	if G.ACTIVE_MOD_UI and (Spectrallib.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Spectrallib") then
 		return SMODS.card_collection_UIBox(SMODS.Stickers, { 5, 5 }, {
 			snap_back = true,
 			hide_single_page = true,
@@ -1156,7 +1156,7 @@ function create_UIBox_your_collection_stickers()
 				card.ignore_pinned = true
 				center:apply(card, true)
 				-- Make disabled UI appear
-				card.config.center = Cryptid.deep_copy(card.config.center)
+				card.config.center = Spectrallib.deep_copy(card.config.center)
 				card.config.center.key = center.key
 			end,
 		})
@@ -1218,4 +1218,38 @@ function create_UIBox_generic_options(args)
 		}
 	end
 	return ret
+end
+
+G.C.SET["Tag"] = G.C.SET["Spectral"]
+G.C.SET["Blind"] = G.C.SET["Spectral"]
+G.C.SET["Content Set"] = HEX("6db67f")
+
+local ref = G.UIDEF.card_h_popup
+function G.UIDEF.card_h_popup(card)
+    if card.ability_UIBox_table then
+      local AUT = card.ability_UIBox_table
+        if not G.C.SET[AUT.card_type] then
+            G.C.SET[AUT.card_type] = G.C.SET["Spectral"]
+        end
+    end
+    return ref(card)
+end
+
+if (SMODS.Mods["AntePreview"] or {}).can_load and not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
+	local predict_hook = predict_next_ante
+	function predict_next_ante()
+		local predictions = predict_hook()
+		local s = Spectrallib.get_next_tag("Small")
+		local b = Spectrallib.get_next_tag("Big")
+		if s or b then
+			predictions.Small.tag = s or predictions.Small.tag
+			predictions.Big.tag = b or predictions.Big.tag
+		end
+		if G.GAME.modifiers.cry_no_tags then
+			for _, pred in pairs(predictions) do
+				pred.tag = nil
+			end
+		end
+		return predictions
+	end
 end

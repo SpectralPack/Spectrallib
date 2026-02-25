@@ -21,7 +21,7 @@ function Card:remove_random_sticker(seed)
 	end
 end
 
-function Cryptid.table_merge(t1, t2)
+function Spectrallib.table_merge(t1, t2)
 	local tbl = {}
 	for i, v in pairs(t1) do
 		tbl[#tbl + 1] = v
@@ -32,7 +32,7 @@ function Cryptid.table_merge(t1, t2)
 	return tbl
 end
 
-function Cryptid.get_highlighted_cards(areas, ignore, min, max, blacklist, seed)
+function Spectrallib.get_highlighted_cards(areas, ignore, min, max, blacklist, seed)
 	ignore.checked = true
 	blacklist = blacklist or function()
 		return true
@@ -96,12 +96,12 @@ function Card:is_food()
 		j_ramen = true,
 		j_selzer = true,
 	}
-	if food[self.config.center.key] or Cryptid.safe_get(self.config.center, "pools", "Food") then
+	if food[self.config.center.key] or Spectrallib.safe_get(self.config.center, "pools", "Food") then
 		return true
 	end
 end
 
-function Cryptid.cry_rankname_to_id(rankname)
+function Spectrallib.cry_rankname_to_id(rankname)
 	for i, v in pairs(SMODS.Rank.obj_buffer) do
 		if rankname == v then
 			return i
@@ -114,7 +114,7 @@ end
 ---@param t table
 ---@param ... any
 ---@return table|false
-function Cryptid.safe_get(t, ...)
+function Spectrallib.safe_get(t, ...)
 	local current = t
 	for _, k in ipairs({ ... }) do
 		if not current or current[k] == nil then
@@ -125,7 +125,7 @@ function Cryptid.safe_get(t, ...)
 	return current
 end
 
-function Cryptid.is_card_big(joker)
+function Spectrallib.is_card_big(joker)
 	if not Talisman then
 		return false
 	end
@@ -137,16 +137,16 @@ function Cryptid.is_card_big(joker)
 	if center.immutable and center.immutable == true then
 		return false
 	end
-    -- im making bignums not work with Cryptid. since i dont see the point
-    -- could be changed but i dont feel like making 2 blacklists or making this mod use the cryptid table either
-	if center.mod and not (Cryptid or {}).mod_whitelist[center.mod.name] then
+    -- im making bignums not work with Spectrallib. since i dont see the point
+    -- could be changed but i dont feel like making 2 blacklists or making this mod use the Spectrallib table either
+	if center.mod and not (Spectrallib or {}).mod_whitelist[center.mod.name] then
 		return false
 	end
 
-	local in_blacklist = ((Cryptid or {}).big_num_blacklist or {})[center.key or "Nope!"] or false
+	local in_blacklist = ((Spectrallib or {}).big_num_blacklist or {})[center.key or "Nope!"] or false
 
 	return not in_blacklist --[[or
-	       (center.mod and center.mod.id == "Cryptid" and not center.no_break_infinity) or center.break_infinity--]]
+	       (center.mod and center.mod.id == "Spectrallib" and not center.no_break_infinity) or center.break_infinity--]]
 end
 
 -- Check G.GAME as well as joker info for banned keys
@@ -174,14 +174,14 @@ function Card:no(m, no_no)
 	return Card.no(self, "no_" .. m, true)
 end
 
-function Cryptid.no(center, m, key, no_no)
+function Spectrallib.no(center, m, key, no_no)
 	if no_no then
 		return center[m] or (G.GAME and G.GAME[m] and G.GAME[m][key]) or false
 	end
-	return Cryptid.no(center, "no_" .. m, key, true)
+	return Spectrallib.no(center, "no_" .. m, key, true)
 end
 
-function Cryptid.deck_effects(card, func)
+function Spectrallib.deck_effects(card, func)
 	if not card.added_to_deck then
 		return func(card)
 	else
@@ -194,7 +194,7 @@ function Cryptid.deck_effects(card, func)
 	end
 end
 
-function Cryptid.deep_copy(obj, seen)
+function Spectrallib.deep_copy(obj, seen)
 	if type(obj) ~= "table" then
 		return obj
 	end
@@ -205,13 +205,13 @@ function Cryptid.deep_copy(obj, seen)
 	local res = setmetatable({}, getmetatable(obj))
 	s[obj] = res
 	for k, v in pairs(obj) do
-		res[Cryptid.deep_copy(k, s)] = Cryptid.deep_copy(v, s)
+		res[Spectrallib.deep_copy(k, s)] = Spectrallib.deep_copy(v, s)
 	end
 	return res
 end
 
 -- generate a random edition (e.g. Antimatter Deck)
-function Cryptid.poll_random_edition()
+function Spectrallib.poll_random_edition()
 	local random_edition = pseudorandom_element(G.P_CENTER_POOLS.Edition, pseudoseed("cry_ant_edition"))
 	while random_edition.key == "e_base" do
 		random_edition = pseudorandom_element(G.P_CENTER_POOLS.Edition, pseudoseed("cry_ant_edition"))
@@ -221,7 +221,7 @@ function Cryptid.poll_random_edition()
 end
 
 -- gets a random, valid consumeable (used for Hammerspace, CCD Deck, Blessing, etc.)
-function Cryptid.random_consumable(seed, excluded_flags, banned_card, pool, no_undiscovered)
+function Spectrallib.random_consumable(seed, excluded_flags, banned_card, pool, no_undiscovered)
 	-- set up excluded flags - these are the kinds of consumables we DON'T want to have generating
 	excluded_flags = excluded_flags or { "hidden", "no_doe", "no_grc" }
 	local selection = "n/a"
@@ -236,7 +236,7 @@ function Cryptid.random_consumable(seed, excluded_flags, banned_card, pool, no_u
 		-- check if it is valid
 		if selection.discovered or not no_undiscovered then
 			for k, v in pairs(excluded_flags) do
-				if not Cryptid.no(selection, v, key, true) then
+				if not Spectrallib.no(selection, v, key, true) then
 					--Makes the consumable invalid if it's a specific card unless it's set to
 					--I use this so cards don't create copies of themselves (eg potential inf Blessing chain, Hammerspace from Hammerspace...)
 					if not banned_card or (banned_card and banned_card ~= key) then
@@ -257,7 +257,7 @@ function Cryptid.random_consumable(seed, excluded_flags, banned_card, pool, no_u
 end
 
 -- simple plural s function for localisation
-function Cryptid.pluralize(str, vars)
+function Spectrallib.pluralize(str, vars)
 	local inside = str:match("<(.-)>") -- finds args
 	local _table = {}
 	if inside then
@@ -319,7 +319,7 @@ function Cryptid.pluralize(str, vars)
 	end
 end
 
-function Cryptid.advanced_find_joker(name, rarity, edition, ability, non_debuff, area)
+function Spectrallib.advanced_find_joker(name, rarity, edition, ability, non_debuff, area)
 	local jokers = {}
 	if not G.jokers or not G.jokers.cards then
 		return {}
@@ -364,7 +364,7 @@ function Cryptid.advanced_find_joker(name, rarity, edition, ability, non_debuff,
 				end
 				if
 					edition
-					and (v.edition and v.edition.key == edition) --[[ make this use Cryptid.safe_get later? if it's possible anyways]]
+					and (v.edition and v.edition.key == edition) --[[ make this use Spectrallib.safe_get later? if it's possible anyways]]
 				then
 					check = check + 1
 				end
@@ -405,7 +405,7 @@ function Cryptid.advanced_find_joker(name, rarity, edition, ability, non_debuff,
 				end
 				if
 					edition
-					and (v.edition and v.edition.key == edition) --[[ make this use Cryptid.safe_get later? if it's possible anyways]]
+					and (v.edition and v.edition.key == edition) --[[ make this use Spectrallib.safe_get later? if it's possible anyways]]
 				then
 					check = check + 1
 				end
@@ -443,7 +443,7 @@ function cry_prob(owned, den, rigged)
 	end
 end
 
-function Cryptid.with_deck_effects(card, func)
+function Spectrallib.with_deck_effects(card, func)
 	if not card.added_to_deck then
 		return func(card)
 	else
@@ -456,7 +456,7 @@ function Cryptid.with_deck_effects(card, func)
 	end
 end
 
-if not (SMODS.Mods["Cryptid"] or {}).can_load then
+if not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
 	local set_spritesref = Card.set_sprites
 	function Card:set_sprites(_center, _front)
 		set_spritesref(self, _center, _front)
@@ -545,23 +545,19 @@ function SMODS.injectItems(...)
 	SMODS.scoring_parameter_keys = a_keys
 end
 
-function Cryptid.pulse_flame(duration, intensity) -- duration is in seconds, intensity is in idfk honestly, but it increases pretty quickly
+function Spectrallib.pulse_flame(duration, intensity) -- duration is in seconds, intensity is in idfk honestly, but it increases pretty quickly
 	G.cry_flame_override = G.cry_flame_override or {}
 	G.cry_flame_override["duration"] = duration or 0.01
 	G.cry_flame_override["intensity"] = intensity or 2
 end
 
-function Cryptid.get_next_tag()
+function Spectrallib.get_next_tag()
 
 end
 
-function Cryptid.is_number(x)
+function Spectrallib.is_number(x)
 	return type(x) == "number" or (type(x) == "table" and is_number(x)) or (is_big and is_big(x))
 end
-function Cryptid.is_big(x)
+function Spectrallib.is_big(x)
 	return (type(x) == "table" and is_number(x)) or (is_big and is_big(x))
-end
-
-function Cryptid.clamp(x, min, max)
-    return math.max(min, math.min(x, max))
 end

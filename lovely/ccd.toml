@@ -1,0 +1,315 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = -1
+
+# Prevent counting CCD consumables for pack uses
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "if area == G.consumeables then"
+position = "at"
+payload = "if area == G.consumeables or area == G.hand then"
+match_indent = true
+
+# Fix bugs from removing CCD
+# This really shouldn't be in the card drawing code, but it doesn't really matter since that's where it crashes anyway lol
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if not self.config.center.discovered and (self.ability.consumeable or self.config.center.unlocked) and not self.config.center.demo and not self.bypass_discovery_center then"
+position = "before"
+payload = "if self.ability.set == 'Enhanced' then self.ability.consumeable = nil end"
+match_indent = true
+
+# Remove CCD from enhanced cards
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = '''if center.consumeable then 
+	self.ability.consumeable = center.config
+end  
+'''
+position = "before"
+payload = '''
+if not center.consumeable then
+	self.ability.consumeable = nil
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = '''
+if G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED then
+            if self.ability.consumeable.max_highlighted then
+'''
+position = "at"
+payload = '''
+if G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED then
+            if self.ability.consumeable and self.ability.consumeable.max_highlighted then
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''add_tag(_tag.config.ref_table)'''
+position = "at"
+payload = '''
+local tag = Spectrallib.get_next_tag()
+add_tag(tag and Tag(tag) or _tag.config.ref_table, true)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "local _tag = Tag(G.GAME.round_resets.blind_tags[blind_choice], nil, blind_choice)"
+position = "after"
+payload = '''
+local tag = Spectrallib.get_next_tag()
+if tag then
+	_tag = Tag(tag, nil, blind_choice)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = '''
+assembled_string = assembled_string..(type(subpart) == 'string' and subpart or format_ui_value(args.vars[tonumber(subpart[1])]) or 'ERROR')
+'''
+position = "at"
+payload = '''
+assembled_string = assembled_string..(type(subpart) == 'string' and subpart or (Spectrallib.pluralize and Spectrallib.pluralize(subpart[1], args.vars)) or format_ui_value(args.vars[tonumber(subpart[1])]) or 'ERROR')
+'''
+match_indent = true
+
+# Aura use conditions
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] and (not G.hand.highlighted[1].edition) then return true end"
+position = "at"
+payload = '''
+if self.area ~= G.hand then
+    return G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] and (not G.hand.highlighted[1].edition)
+else
+    local idx = 1
+    if G.hand.highlighted[1] == self then
+        local idx = 2
+    end
+    return (#G.hand.highlighted == 2) and (not G.hand.highlighted[idx].edition)
+end
+'''
+match_indent = true
+
+#Fixes for negative CCD cards
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = """
+if self.edition.type == 'negative' and self.ability.consumeable then
+    badges[#badges + 1] = 'negative_consumable'
+elseif self.edition.type == 'negative' and (self.ability.set == 'Enhanced' or self.ability.set == 'Default') then
+    badges[#badges + 1] = 'negative_playing_card'
+"""
+position = "at"
+payload = """
+if self.edition.type == 'negative' and self.playing_card then
+    badges[#badges + 1] = 'negative_playing_card'
+elseif self.edition.type == 'negative' and self.ability.consumeable then
+    badges[#badges + 1] = 'negative_consumable'
+"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = """=[SMODS _ "src/overrides.lua"]"""
+pattern = """if self.ability.consumeable then"""
+position = "at"
+payload = """if self.ability.consumeable and not self.playing_card then"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = """if self.ability.consumeable then"""
+position = "at"
+payload = """if self.ability.consumeable and not self.playing_card then"""
+match_indent = true
+
+# ui, ui, ui
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''name_from_rows(AUT.name, is_playing_card and G.C.WHITE or nil),'''
+position = "at"
+payload = '''
+not (SMODS.Mods["Cryptid"] or {}).can_load and AUT.ccd and name_from_rows(AUT.ccd.name, G.C.WHITE) or nil,
+not (SMODS.Mods["Cryptid"] or {}).can_load and AUT.ccd and desc_from_rows(AUT.ccd.main) or nil,
+name_from_rows(AUT.name, is_playing_card and G.C.WHITE or nil),
+'''
+match_indent = true
+
+# i love patching like five billion things
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = '''return generate_card_ui(self.config.center, nil, loc_vars, card_type, badges, hide_desc, main_start, main_end, self)'''
+position = "before"
+payload = '''
+if card_type ~= 'Default' and card_type ~= 'Enhanced' and self.playing_card and not (SMODS.Mods["Cryptid"] or {}).can_load then
+	loc_vars = loc_vars or {}
+	loc_vars.ccd = {
+		playing_card = not not self.base.colour, value = self.base.value, suit = self.base.suit, colour = self.base.colour,
+		nominal_chips = self.base.nominal > 0 and self.base.nominal or nil,
+		bonus_chips = (self.ability.bonus + (self.ability.perma_bonus or 0)) > 0 and (self.ability.bonus + (self.ability.perma_bonus or 0)) or nil,
+        suit_bonus = G.GAME.SuitBuffs and G.GAME.SuitBuffs[self.base.suit] and G.GAME.SuitBuffs[self.base.suit].chips,
+        suit_level = G.GAME.SuitBuffs and G.GAME.SuitBuffs[self.base.suit] and G.GAME.SuitBuffs[self.base.suit].level,
+	}
+end
+'''
+match_indent = true
+
+# lalala ok this is a mess
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''local loc_vars = {}'''
+position = "before"
+payload = '''
+if specific_vars and specific_vars.ccd and not (SMODS.Mods["Cryptid"] or {}).can_load then
+	full_UI_table.ccd = {name = {}, main = {}}
+	localize{type = 'other', key = 'playing_card', set = 'Other', nodes = full_UI_table.ccd.name, vars = {localize(specific_vars.ccd.value, 'ranks'), localize(specific_vars.ccd.suit, 'suits_plural'), colours = {specific_vars.ccd.colour}}}
+	full_UI_table.ccd.name = full_UI_table.ccd.name[1]
+	if specific_vars.ccd.nominal_chips then
+		localize{type = 'other', key = 'card_chips', nodes = full_UI_table.ccd.main, vars = {specific_vars.ccd.nominal_chips}}
+	end
+	if specific_vars.ccd.bonus_chips then
+		localize{type = 'other', key = 'card_extra_chips', nodes = full_UI_table.ccd.main, vars = {specific_vars.ccd.bonus_chips}}
+	end
+    if specific_vars.ccd.suit_bonus then
+		localize{type = 'other', key = 'entr_card_suit_level', nodes = full_UI_table.ccd.main, vars = {localize(specific_vars.ccd.suit, 'suits_plural'), specific_vars.ccd.suit_bonus, specific_vars.ccd.suit_level, colours = {
+            G.C.SUITS[specific_vars.ccd.suit],
+            to_big(specific_vars.ccd.suit_level) < to_big(2) and G.C.BLACK or G.C.HAND_LEVELS[to_number(math.min(7, specific_vars.ccd.suit_level))]
+        }}}
+	end
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = '''end        if self.ability.name == 'The Hermit' or self.ability.consumeable.hand_type or self.ability.name == 'Temperance' or self.ability.name == 'Black Hole' then'''
+position = "at"
+payload = '''
+end        if self.ability.name == 'The Hermit' or (self.ability.consumeable and self.ability.consumeable.hand_type) or self.ability.name == 'Temperance' or self.ability.name == 'Black Hole' then
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "perma_h_dollars = self.ability and self.ability.perma_h_dollars or 0,"
+position = "after"
+payload = """
+entr_perma_plus_asc = self.ability and self.ability.entr_perma_plus_asc or 0,
+entr_perma_h_plus_asc = self.ability and self.ability.entr_perma_h_plus_asc or 0,
+entr_perma_asc = self.ability and self.ability.entr_perma_asc or 0,
+entr_perma_h_asc = self.ability and self.ability.entr_perma_h_asc or 0,
+entr_perma_exp_asc = self.ability and self.ability.entr_perma_exp_asc or 0,
+entr_perma_h_exp_asc = self.ability and self.ability.entr_perma_h_exp_asc or 0,
+"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "bonus_x_chips = self.ability.perma_x_chips ~= 0 and (self.ability.perma_x_chips + 1) or nil,"
+position = "after"
+payload = """
+entr_perma_plus_asc = self.ability.entr_perma_plus_asc ~= 0 and self.ability.entr_perma_plus_asc or nil,
+entr_perma_h_plus_asc = self.ability.entr_perma_h_plus_asc ~= 0 and self.ability.entr_perma_h_plus_asc or nil,
+entr_perma_asc = self.ability.entr_perma_asc ~= 0 and (self.ability.entr_perma_asc + 1) or nil,
+entr_perma_h_asc = self.ability.entr_perma_h_asc ~= 0 and (self.ability.entr_perma_h_asc + 1) or nil,
+entr_perma_exp_asc = self.ability.entr_perma_exp_asc ~= 0 and (self.ability.entr_perma_exp_asc + 1) or nil,
+entr_perma_h_exp_asc = self.ability.entr_perma_h_exp_asc ~= 0 and (self.ability.entr_perma_h_exp_asc + 1) or nil,
+suit_bonus = self.ability.suit_bonus or nil,
+suit_level = G.GAME.SuitBuffs and G.GAME.SuitBuffs[self.base.suit] and G.GAME.SuitBuffs[self.base.suit].level or nil,
+"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "perma_h_dollars = self.ability and self.ability.perma_h_dollars or 0,"
+position = "after"
+payload = """
+entr_perma_plus_asc = self.ability and self.ability.entr_perma_plus_asc or 0,
+entr_perma_h_plus_asc = self.ability and self.ability.entr_perma_h_plus_asc or 0,
+entr_perma_asc = self.ability and self.ability.entr_perma_asc or 0,
+entr_perma_h_asc = self.ability and self.ability.entr_perma_h_asc or 0,
+entr_perma_exp_asc = self.ability and self.ability.entr_perma_exp_asc or 0,
+entr_perma_h_exp_asc = self.ability and self.ability.entr_perma_h_exp_asc or 0,
+"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "bonus_x_chips = self.ability.perma_x_chips ~= 0 and (self.ability.perma_x_chips + 1) or nil,"
+position = "after"
+payload = """
+entr_perma_plus_asc = self.ability.entr_perma_plus_asc ~= 0 and self.ability.entr_perma_plus_asc or nil,
+entr_perma_h_plus_asc = self.ability.entr_perma_h_plus_asc ~= 0 and self.ability.entr_perma_h_plus_asc or nil,
+entr_perma_asc = self.ability.entr_perma_asc ~= 0 and (self.ability.entr_perma_asc + 1) or nil,
+entr_perma_h_asc = self.ability.entr_perma_h_asc ~= 0 and (self.ability.entr_perma_h_asc + 1) or nil,
+entr_perma_exp_asc = self.ability.entr_perma_exp_asc ~= 0 and (self.ability.entr_perma_exp_asc + 1) or nil,
+entr_perma_h_exp_asc = self.ability.entr_perma_h_exp_asc ~= 0 and (self.ability.entr_perma_h_exp_asc + 1) or nil,
+suit_bonus = self.ability.suit_bonus or nil,
+suit_level = G.GAME.SuitBuffs and G.GAME.SuitBuffs[self.base.suit] and G.GAME.SuitBuffs[self.base.suit].level or nil,
+"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+pattern = '''
+if specific_vars and specific_vars.bonus_repetitions then
+        localize{type = 'other', key = 'card_extra_repetitions', nodes = desc_nodes, vars = {specific_vars.bonus_repetitions, localize(specific_vars.bonus_repetitions > 1 and 'b_retrigger_plural' or 'b_retrigger_single')}}
+    end
+'''
+position = "after"
+payload = '''
+if specific_vars and specific_vars.entr_perma_plus_asc then
+    localize{ type = "other", key = "entr_perma_plus_asc", nodes = desc_nodes, vars = {SMODS.signed(specific_vars.entr_perma_plus_asc)}}
+end
+if specific_vars and specific_vars.entr_perma_h_plus_asc then
+    localize{ type = "other", key = "entr_perma_h_plus_asc", nodes = desc_nodes, vars = {SMODS.signed(specific_vars.entr_perma_h_plus_asc)}}
+end
+if specific_vars and specific_vars.entr_perma_asc then
+    localize{ type = "other", key = "entr_perma_asc", nodes = desc_nodes, vars = {specific_vars.entr_perma_asc}}
+end
+if specific_vars and specific_vars.entr_perma_h_asc then
+    localize{ type = "other", key = "entr_perma_h_asc", nodes = desc_nodes, vars = {specific_vars.entr_perma_h_asc}}
+end
+if specific_vars and specific_vars.entr_perma_exp_asc then
+    localize{ type = "other", key = "entr_perma_exp_asc", nodes = desc_nodes, vars = {specific_vars.entr_perma_exp_asc}}
+end
+if specific_vars and specific_vars.entr_perma_h_exp_asc then
+    localize{ type = "other", key = "entr_perma_h_exp_asc", nodes = desc_nodes, vars = {specific_vars.entr_perma_h_exp_asc}}
+end
+if specific_vars and specific_vars.suit_bonus then
+    localize{type = 'other', key = 'entr_divider', nodes = desc_nodes, vars = {}}
+    localize{type = 'other', key = 'entr_card_suit_level', nodes = desc_nodes, vars = {localize(specific_vars.suit, 'suits_plural'), specific_vars.suit_bonus, specific_vars.suit_level, colours = {
+        G.C.SUITS[specific_vars.suit],
+        to_big(specific_vars.suit_level) < to_big(2) and G.C.BLACK or G.C.HAND_LEVELS[to_number(math.min(7, specific_vars.suit_level))]
+    }}}
+end
+'''
+match_indent = true

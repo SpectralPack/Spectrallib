@@ -96,7 +96,7 @@ function Card:unredeem()
 	end
 	G.E_MANAGER:add_event(Event({
 		func = function()
-			Cryptid.update_used_vouchers()
+			Spectrallib.update_used_vouchers()
 			return true
 		end,
 	}))

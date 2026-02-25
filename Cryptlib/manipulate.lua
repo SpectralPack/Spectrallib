@@ -1,6 +1,6 @@
-Cryptid.base_values = {}
+Spectrallib.base_values = {}
 
-Cryptid.misprintize_value_blacklist = {
+Spectrallib.misprintize_value_blacklist = {
 	perish_tally = false,
 	id = false,
 	suit_nominal = false,
@@ -19,19 +19,19 @@ Cryptid.misprintize_value_blacklist = {
 	card_limit = false,
 	-- TARGET: Misprintize Value Blacklist (format: key = false, )
 }
-Cryptid.misprintize_bignum_blacklist = {
+Spectrallib.misprintize_bignum_blacklist = {
 	odds = false,
 	cry_prob = false,
 	perma_repetitions = false,
 	repetitions = false,
 	nominal = false, --no clue why this was commented, it causes a crash if not
 }
-Cryptid.misprintize_value_cap = { --yeahh.. this is mostly just for retriggers, but i might as well make it fully functional
+Spectrallib.misprintize_value_cap = { --yeahh.. this is mostly just for retriggers, but i might as well make it fully functional
 	perma_repetitions = 40,
 	repetitions = 40,
 }
 
-function Cryptid.log_random(seed, min, max)
+function Spectrallib.log_random(seed, min, max)
 	math.randomseed(seed)
 	local lmin = math.log(min, 2.718281828459045)
 	local lmax = math.log(max, 2.718281828459045)
@@ -65,11 +65,11 @@ function Card:get_nominal(mod)
 		+ 0.000001 * self.unique_val
 end
 
-function Cryptid.manipulate(card, args)
+function Spectrallib.manipulate(card, args)
 	if not card or not card.config or not card.config.center then return end
 	if not Card.no(card, "immutable", true) or (args and args.bypass_checks) then
 		if not args then
-			return Cryptid.manipulate(card, {
+			return Spectrallib.manipulate(card, {
 				min = (G.GAME.modifiers.cry_misprint_min or 1),
 				max = (G.GAME.modifiers.cry_misprint_max or 1),
 				type = "X",
@@ -89,18 +89,18 @@ function Cryptid.manipulate(card, args)
 				if card.infinifusion then
 					if card.config.center == card.infinifusion_center or card.config.center.key == "j_infus_fused" then
 						calculate_infinifusion(card, nil, function(i)
-							Cryptid.manipulate(card, args)
+							Spectrallib.manipulate(card, args)
 						end)
 					end
 				end
-				Cryptid.manipulate_table(card, card, "ability", args)
+				Spectrallib.manipulate_table(card, card, "ability", args)
 				if card.base then
-					Cryptid.manipulate_table(card, card, "base", args)
+					Spectrallib.manipulate_table(card, card, "base", args)
 				end
 				if G.GAME.modifiers.cry_misprint_min then
-					--card.cost = cry_format(card.cost / Cryptid.log_random(pseudoseed('cry_misprint'..G.GAME.round_resets.ante),override and override.min or G.GAME.modifiers.cry_misprint_min,override and override.max or G.GAME.modifiers.cry_misprint_max),"%.2f")
+					--card.cost = cry_format(card.cost / Spectrallib.log_random(pseudoseed('cry_misprint'..G.GAME.round_resets.ante),override and override.min or G.GAME.modifiers.cry_misprint_min,override and override.max or G.GAME.modifiers.cry_misprint_max),"%.2f")
 					card.misprint_cost_fac = 1
-						/ Cryptid.log_random(
+						/ Spectrallib.log_random(
 							pseudoseed("cry_misprint" .. G.GAME.round_resets.ante),
 							override and override.min or G.GAME.modifiers.cry_misprint_min,
 							override and override.max or G.GAME.modifiers.cry_misprint_max
@@ -109,41 +109,41 @@ function Cryptid.manipulate(card, args)
 				end
 				if caps then
 					for i, v in pairs(caps) do
-						if Cryptid.is_big(v) then
+						if Spectrallib.is_big(v) then
 							for i2, v2 in pairs(v) do
 								if to_big(card.ability[i][i2]) > to_big(v2) then
-									card.ability[i][i2] = Cryptid.sanity_check(v2, Cryptid.is_card_big(card))
+									card.ability[i][i2] = Spectrallib.sanity_check(v2, Spectrallib.is_card_big(card))
 								end
 							end
-						elseif Cryptid.is_number(v) then
+						elseif Spectrallib.is_number(v) then
 							if to_big(card.ability[i]) > to_big(v) then
-								card.ability[i] = Cryptid.sanity_check(v, Cryptid.is_card_big(card))
+								card.ability[i] = Spectrallib.sanity_check(v, Spectrallib.is_card_big(card))
 							end
 						end
 					end
 				end
 			end
 			local config = copy_table(card.config.center.config)
-			if not Cryptid.base_values[card.config.center.key] then
-				Cryptid.base_values[card.config.center.key] = {}
+			if not Spectrallib.base_values[card.config.center.key] then
+				Spectrallib.base_values[card.config.center.key] = {}
 				for i, v in pairs(config) do
-					if Cryptid.is_number(v) and to_big(v) ~= to_big(0) then
-						Cryptid.base_values[card.config.center.key][i .. "ability"] = v
+					if Spectrallib.is_number(v) and to_big(v) ~= to_big(0) then
+						Spectrallib.base_values[card.config.center.key][i .. "ability"] = v
 					elseif type(v) == "table" then
 						for i2, v2 in pairs(v) do
-							Cryptid.base_values[card.config.center.key][i2 .. i] = v2
+							Spectrallib.base_values[card.config.center.key][i2 .. i] = v2
 						end
 					end
 				end
 			end
 			if not args.bypass_checks and not args.no_deck_effects then
-				Cryptid.with_deck_effects(card, func)
+				Spectrallib.with_deck_effects(card, func)
 			else
 				func(card)
 			end
 			if card.ability.consumeable then
 				for k, v in pairs(card.ability.consumeable) do
-					card.ability.consumeable[k] = Cryptid.deep_copy(card.ability[k])
+					card.ability.consumeable[k] = Spectrallib.deep_copy(card.ability[k])
 				end
 			end
 			--ew ew ew ew
@@ -153,41 +153,41 @@ function Cryptid.manipulate(card, args)
 	end
 end
 
-function Cryptid.manipulate_table(card, ref_table, ref_value, args, tblkey)
+function Spectrallib.manipulate_table(card, ref_table, ref_value, args, tblkey)
 	if ref_value == "consumeable" then
 		return
 	end
 	for i, v in pairs(ref_table[ref_value]) do
 		if
-			Cryptid.is_number(v)
-			and Cryptid.misprintize_value_blacklist[i] ~= false
+			Spectrallib.is_number(v)
+			and Spectrallib.misprintize_value_blacklist[i] ~= false
 		then
 			local num = v
 			if args.dont_stack then
 				if
-					Cryptid.base_values[card.config.center.key]
+					Spectrallib.base_values[card.config.center.key]
 					and (
-						Cryptid.base_values[card.config.center.key][i .. ref_value]
-						or (ref_value == "ability" and Cryptid.base_values[card.config.center.key][i .. "consumeable"])
+						Spectrallib.base_values[card.config.center.key][i .. ref_value]
+						or (ref_value == "ability" and Spectrallib.base_values[card.config.center.key][i .. "consumeable"])
 					)
 				then
-					num = Cryptid.base_values[card.config.center.key][i .. ref_value]
-						or Cryptid.base_values[card.config.center.key][i .. "consumeable"]
+					num = Spectrallib.base_values[card.config.center.key][i .. ref_value]
+						or Spectrallib.base_values[card.config.center.key][i .. "consumeable"]
 				end
 			end
 			if args.big ~= nil then
-				ref_table[ref_value][i] = Cryptid.manipulate_value(num, args, args.big, i)
+				ref_table[ref_value][i] = Spectrallib.manipulate_value(num, args, args.big, i)
 			else
-				ref_table[ref_value][i] = Cryptid.manipulate_value(num, args, Cryptid.is_card_big(card), i)
+				ref_table[ref_value][i] = Spectrallib.manipulate_value(num, args, Spectrallib.is_card_big(card), i)
 			end
-		elseif i ~= "immutable" and type(v) == "table" and Cryptid.misprintize_value_blacklist[i] ~= false then
-			Cryptid.manipulate_table(card, ref_table[ref_value], i, args)
+		elseif i ~= "immutable" and type(v) == "table" and Spectrallib.misprintize_value_blacklist[i] ~= false then
+			Spectrallib.manipulate_table(card, ref_table[ref_value], i, args)
 		end
 	end
 end
 
-function Cryptid.manipulate_value(num, args, is_big, name)
-	if not Cryptid.is_number(num) then return end
+function Spectrallib.manipulate_value(num, args, is_big, name)
+	if not Spectrallib.is_number(num) then return end
 	if args.func then
 		num = args.func(num, args, is_big, name)
 	else
@@ -195,7 +195,7 @@ function Cryptid.manipulate_value(num, args, is_big, name)
 			local new_args = args
 			local big_min = to_big(args.min)
 			local big_max = to_big(args.max)
-			local new_value = Cryptid.log_random(
+			local new_value = Spectrallib.log_random(
 				pseudoseed(args.seed or ("cry_misprint" .. G.GAME.round_resets.ante)),
 				big_min,
 				big_max
@@ -235,14 +235,14 @@ function Cryptid.manipulate_value(num, args, is_big, name)
 			end
 		end
 	end
-	if Cryptid.misprintize_value_cap[name] then
-		num = math.min(num, Cryptid.misprintize_value_cap[name])
+	if Spectrallib.misprintize_value_cap[name] then
+		num = math.min(num, Spectrallib.misprintize_value_cap[name])
 	end
-	if Cryptid.misprintize_bignum_blacklist[name] == false then
+	if Spectrallib.misprintize_bignum_blacklist[name] == false then
 		num = to_number(num)
-		return to_number(Cryptid.sanity_check(num, false))
+		return to_number(Spectrallib.sanity_check(num, false))
 	end
-	local val = Cryptid.sanity_check(num, is_big)
+	local val = Spectrallib.sanity_check(num, is_big)
 	if to_big(val) > to_big(-1e100) and to_big(val) < to_big(1e100) then
 		return to_number(val)
 	end
@@ -257,16 +257,16 @@ end
 local gsr = Game.start_run
 function Game:start_run(args)
 	gsr(self, args)
-	Cryptid.base_values = {}
+	Spectrallib.base_values = {}
 end
 
-function Cryptid.sanity_check(val, is_big)
+function Spectrallib.sanity_check(val, is_big)
 	if not Talisman then return val end
 	if is_big then
 		if not val or type(val) == "number" and (val ~= val or val > 1e300 or val < -1e300) then
 			val = 1e300
 		end
-		if Cryptid.is_big(val) then
+		if Spectrallib.is_big(val) then
 			return val
 		end
 		if val > 1e100 or val < -1e100 then
@@ -276,7 +276,7 @@ function Cryptid.sanity_check(val, is_big)
 	if not val or type(val) == "number" and (val ~= val or val > 1e300 or val < -1e300) then
 		return 1e300
 	end
-	if Cryptid.is_big(val) then
+	if Spectrallib.is_big(val) then
 		if val > to_big(1e300) then
 			return 1e300
 		end

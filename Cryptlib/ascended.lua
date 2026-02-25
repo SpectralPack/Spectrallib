@@ -118,7 +118,7 @@ function G.FUNCS.get_poker_hand_info(_cards)
 		end
 	end
 	-- Ascension power
-	local a_power = Cryptid.calculate_ascension_power(
+	local a_power = Spectrallib.calculate_ascension_power(
 		text,
 		_cards,
 		scoring_hand,
@@ -161,12 +161,12 @@ function G.FUNCS.get_poker_hand_info(_cards)
 	end
 	return text, loc_disp_text, poker_hands, scoring_hand, disp_text
 end
-function Cryptid.ascend(num) -- edit this function at your leisure
+function Spectrallib.ascend(num) -- edit this function at your leisure
 	G.GAME.sunnumber = G.GAME.sunnumber or {not_modest = 0, modest = 0}
-	if (Cryptid.safe_get(G, "GAME", "current_round", "current_hand", "cry_asc_num") or 0) <= 0 then
+	if (Spectrallib.safe_get(G, "GAME", "current_round", "current_hand", "cry_asc_num") or 0) <= 0 then
 		return num
 	end
-	if Cryptid.gameset(G.P_CENTERS.c_cry_sunplanet) == "modest" then
+	if Spectrallib.gameset(G.P_CENTERS.c_cry_sunplanet) == "modest" then
 		-- Default: Chips and Mult multiplier + 0.25 for every 1 Ascension power
 		return num * to_big(1 + ((0.25 + G.GAME.sunnumber.modest) * G.GAME.current_round.current_hand.cry_asc_num))
 	else
@@ -175,29 +175,30 @@ function Cryptid.ascend(num) -- edit this function at your leisure
 	end
 end
 
-function Cryptid.pulse_flame(duration, intensity) -- duration is in seconds, intensity is in idfk honestly, but it increases pretty quickly
+function Spectrallib.pulse_flame(duration, intensity) -- duration is in seconds, intensity is in idfk honestly, but it increases pretty quickly
 	G.cry_flame_override = G.cry_flame_override or {}
 	G.cry_flame_override["duration"] = duration or 0.01
 	G.cry_flame_override["intensity"] = intensity or 2
 end
 
-function Cryptid.ascension_power_enabled()
-	if Cryptid.enable_ascension_power then return true end
-	if (SMODS.Mods["Cryptid"] or {}).can_load then
-		return Cryptid.enabled("set_cry_poker_hand_stuff")
+--this function is retained so that you can hook it to enable only sometimes
+function Spectrallib.ascension_power_enabled()
+	if Spectrallib.optional_feature("ascension_power") then return true end
+	if Spectrallib.can_mods_load({"Cryptid"}) then
+		return Spectrallib.enabled("set_cry_poker_hand_stuff")
 	end
 end
 
-function Cryptid.calculate_ascension_power(hand_name, hand_cards, hand_scoring_cards, tether, bonus)
+function Spectrallib.calculate_ascension_power(hand_name, hand_cards, hand_scoring_cards, tether, bonus)
 	bonus = bonus or 0
 	local starting = 0
-	if not Cryptid.ascension_power_enabled() then
+	if not Spectrallib.ascension_power_enabled() then
 		return 0
 	end
 	if hand_name then
 		-- Get Starting Ascension power from Poker Hands
 		if hand_cards then
-			local check = Cryptid.hand_ascension_numbers(hand_name, tether)
+			local check = Spectrallib.hand_ascension_numbers(hand_name, tether)
 			if check then
 				starting = (tether and #hand_cards or #hand_scoring_cards) - check
 			end
@@ -253,8 +254,8 @@ function Cryptid.calculate_ascension_power(hand_name, hand_cards, hand_scoring_c
 			bonus = bonus + 1
 		else
 			bonus = bonus
-				+ Cryptid.nuke_decimals(
-					Cryptid.funny_log(2, super_entropic_local_variable_that_stores_the_amount_of_suns + 1),
+				+ Spectrallib.nuke_decimals(
+					Spectrallib.funny_log(2, super_entropic_local_variable_that_stores_the_amount_of_suns + 1),
 					2
 				)
 		end
@@ -266,9 +267,9 @@ function Cryptid.calculate_ascension_power(hand_name, hand_cards, hand_scoring_c
 	end
 	return final
 end
-function Cryptid.hand_ascension_numbers(hand_name, tether)
-	if Cryptid.ascension_numbers[hand_name] and type(Cryptid.ascension_numbers[hand_name]) == "function" then
-		return Cryptid.ascension_numbers[hand_name](hand_name, tether)
+function Spectrallib.hand_ascension_numbers(hand_name, tether)
+	if Spectrallib.ascension_numbers[hand_name] and type(Spectrallib.ascension_numbers[hand_name]) == "function" then
+		return Spectrallib.ascension_numbers[hand_name](hand_name, tether)
 	end
 	if hand_name == "High Card" then
 		return tether and 1 or nil
@@ -279,7 +280,7 @@ function Cryptid.hand_ascension_numbers(hand_name, tether)
 	elseif hand_name == "Three of a Kind" then
 		return tether and 3 or nil
 	elseif hand_name == "Straight" or hand_name == "Flush" or hand_name == "Straight Flush" then
-		return next(SMODS.find_card("j_four_fingers")) and Cryptid.gameset() ~= "modest" and 4 or 5
+		return next(SMODS.find_card("j_four_fingers")) and Spectrallib.gameset() ~= "modest" and 4 or 5
 	elseif
 		hand_name == "Full House"
 		or hand_name == "Five of a Kind"
@@ -323,7 +324,7 @@ function Cryptid.hand_ascension_numbers(hand_name, tether)
 		return SpectrumAPI
 				and SpectrumAPI.configuration.misc.four_fingers_spectrums
 				and next(SMODS.find_card("j_four_fingers"))
-				and Cryptid.gameset() ~= "modest"
+				and Spectrallib.gameset() ~= "modest"
 				and 4
 			or 5
 	end

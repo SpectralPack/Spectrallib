@@ -1,4 +1,4 @@
-Cryptid_config = {
+Spectrallib_config = {
     gameset_toggle = true
 }
 
@@ -9,50 +9,38 @@ SMODS.Atlas {
     py = 34,
 }:register()
 
+Spectrallib = {}
+
 local files = {
-    "talisman",
-    "manipulate",
-    "forcetrigger",
-    "utilities",
-    "content_sets",
-    "ascended",
-    "unredeem"
+
+    {path = "other_utils"},
+
+    {path = "Cryptlib/main", redirect = "Cryptid"},
+    {path = "Cryptlib/talisman", redirect = "Cryptid"}, -- this is probably not needed with amulet existing but back compat so shrug
+    {path = "Cryptlib/manipulate", redirect = "Cryptid"},
+    {path = "Cryptlib/forcetrigger", redirect = "Cryptid"},
+    {path = "Cryptlib/utilities", redirect = "Cryptid"},
+    {path = "Cryptlib/content_sets", redirect = "Cryptid"},
+    {path = "Cryptlib/ascended", redirect = "Cryptid"},
+    {path = "Cryptlib/unredeem", redirect = "Cryptid"},
+
+    {path = "Entropy/utils", redirect = "Entropy"},
+    {path = "Entropy/hand_stuff", redirect = "Entropy"},
+    {path = "Entropy/suit_levels", redirect = "Entropy"},
+    {path = "Entropy/return_values", redirect = "Entropy"},
+    {path = "Entropy/deck_redeeming", redirect = "Entropy"},
 }
 for i, v in pairs(files) do
-    local file, err = SMODS.load_file(v..".lua")
+    if v.redirect then
+        _G[v.redirect] = _G[v.redirect] or {}
+        setmetatable(Spectrallib, {
+            __newindex = function(table, key, value)
+            rawset(table, key, value)
+            _G[v.redirect][key] = value
+            end
+        })
+    end
+    local file, err = SMODS.load_file(v.path..".lua")
     if file then file() 
     else error("Error in file: "..v.." "..err) end
-end
-G.C.SET["Tag"] = G.C.SET["Spectral"]
-G.C.SET["Blind"] = G.C.SET["Spectral"]
-G.C.SET["Content Set"] = HEX("6db67f")
-
-local ref = G.UIDEF.card_h_popup
-function G.UIDEF.card_h_popup(card)
-    if card.ability_UIBox_table then
-      local AUT = card.ability_UIBox_table
-        if not G.C.SET[AUT.card_type] then 
-            G.C.SET[AUT.card_type] = G.C.SET["Spectral"]
-        end
-    end
-    return ref(card)
-end
-
-if (SMODS.Mods["AntePreview"] or {}).can_load and not (SMODS.Mods["Cryptid"] or {}).can_load then
-	local predict_hook = predict_next_ante
-	function predict_next_ante()
-		local predictions = predict_hook()
-		local s = Cryptid.get_next_tag("Small")
-		local b = Cryptid.get_next_tag("Big")
-		if s or b then
-			predictions.Small.tag = s or predictions.Small.tag
-			predictions.Big.tag = b or predictions.Big.tag
-		end
-		if G.GAME.modifiers.cry_no_tags then
-			for _, pred in pairs(predictions) do
-				pred.tag = nil
-			end
-		end
-		return predictions
-	end
 end

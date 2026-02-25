@@ -13,7 +13,7 @@ pattern = '''
 '''
 position = "after"
 payload = '''
-not (SMODS.Mods["Cryptid"] or {}).can_load and {n=G.UIT.O, config={id = 'cry_asc', func = 'cry_asc_UI_set',object = DynaText({string = {{ref_table = G.GAME.current_round.current_hand, ref_value = "cry_asc_num_text"}}, colours = {G.C.GOLD}, shadow = true, float = true, scale = scale*1})}} or nil,
+not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) and {n=G.UIT.O, config={id = 'cry_asc', func = 'cry_asc_UI_set',object = DynaText({string = {{ref_table = G.GAME.current_round.current_hand, ref_value = "cry_asc_num_text"}}, colours = {G.C.GOLD}, shadow = true, float = true, scale = scale*1})}} or nil,
 '''
 match_indent = true
 
@@ -26,7 +26,7 @@ pattern = '''
 '''
 position = "at"
 payload = '''
-                delay = G.GAME.current_round.current_hand.handname ~= disp_text and 0.4 or 0}, {handname=disp_text, level=G.GAME.hands[text].level, mult = Cryptid.ascend(G.GAME.hands[text].mult), chips = Cryptid.ascend(G.GAME.hands[text].chips)})
+                delay = G.GAME.current_round.current_hand.handname ~= disp_text and 0.4 or 0}, {handname=disp_text, level=G.GAME.hands[text].level, mult = Spectrallib.ascend(G.GAME.hands[text].mult), chips = Spectrallib.ascend(G.GAME.hands[text].chips)})
 '''
 match_indent = true
 
@@ -39,7 +39,7 @@ G.GAME.hands[text].played_this_round = G.GAME.hands[text].played_this_round + 1
 '''
 position = "before"
 payload = '''
-if G.GAME.current_round.current_hand.cry_asc_num and (((Cryptid.is_big(G.GAME.current_round.current_hand.cry_asc_num) and G.GAME.current_round.current_hand.cry_asc_num:gt(to_big(G.GAME.cry_exploit_override and 1 or 0)) or G.GAME.current_round.current_hand.cry_asc_num > (G.GAME.cry_exploit_override and 1 or 0)))) then
+if G.GAME.current_round.current_hand.cry_asc_num and (((Spectrallib.is_big(G.GAME.current_round.current_hand.cry_asc_num) and G.GAME.current_round.current_hand.cry_asc_num:gt(to_big(G.GAME.cry_exploit_override and 1 or 0)) or G.GAME.current_round.current_hand.cry_asc_num > (G.GAME.cry_exploit_override and 1 or 0)))) then
 	G.GAME.cry_asc_played = G.GAME.cry_asc_played and G.GAME.cry_asc_played+1 or 1
 end
 '''
@@ -54,7 +54,7 @@ pattern = '''
 '''
 position = "at"
 payload = '''
-        mult = mod_mult(Cryptid.ascend(G.GAME.hands[text].mult))
+        mult = mod_mult(Spectrallib.ascend(G.GAME.hands[text].mult))
 '''
 match_indent = true
 
@@ -67,7 +67,7 @@ pattern = '''
 '''
 position = "at"
 payload = '''
-        hand_chips = mod_chips(Cryptid.ascend(G.GAME.hands[text].chips))
+        hand_chips = mod_chips(Spectrallib.ascend(G.GAME.hands[text].chips))
 '''
 match_indent = true
 
@@ -80,7 +80,7 @@ pattern = '''
 '''
 position = "at"
 payload = '''
-update_hand_text({delay = 0}, {chips = Cryptid.ascend(G.GAME.hands[hand].chips), StatusText = true})
+update_hand_text({delay = 0}, {chips = Spectrallib.ascend(G.GAME.hands[hand].chips), StatusText = true})
 '''
 match_indent = true
 
@@ -93,7 +93,7 @@ pattern = '''
 '''
 position = "at"
 payload = '''
-update_hand_text({delay = 0}, {mult = Cryptid.ascend(G.GAME.hands[hand].mult), StatusText = true})
+update_hand_text({delay = 0}, {mult = Spectrallib.ascend(G.GAME.hands[hand].mult), StatusText = true})
 '''
 match_indent = true
 
@@ -122,7 +122,7 @@ update_hand_text({immediate = true, nopulse = nil, delay = 0}, {handname=disp_te
 '''
 position = "at"
 payload = '''
-update_hand_text({immediate = true, nopulse = nil, delay = 0}, {handname=disp_text, level=G.GAME.hands[text].level, mult = Cryptid.ascend(G.GAME.hands[text].mult), chips = Cryptid.ascend(G.GAME.hands[text].chips)})
+update_hand_text({immediate = true, nopulse = nil, delay = 0}, {handname=disp_text, level=G.GAME.hands[text].level, mult = Spectrallib.ascend(G.GAME.hands[text].mult), chips = Spectrallib.ascend(G.GAME.hands[text].chips)})
 '''
 match_indent = true
 
@@ -192,5 +192,25 @@ _F.change = (_F.change or 0)*(1 - 4.*G.real_dt) + ( 4.*G.real_dt)*(_F.real_inten
 position = "after"
 payload = '''
 _F.change = (G.cry_flame_override and G.cry_flame_override['duration'] > 0) and ((_F.change + G.cry_flame_override['intensity'])/2) or _F.change
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''
+-- context.final_scoring_step calculations
+SMODS.calculate_context({full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, final_scoring_step = true})
+'''
+position = 'before'
+payload = '''
+G.E_MANAGER:add_event(Event{
+        trigger = "after",
+        blocking = false,
+        func = function()
+                G.GAME.asc_power_hand = nil
+                return true
+        end
+})
 '''
 match_indent = true

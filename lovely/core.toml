@@ -14,7 +14,7 @@ assembled_string = assembled_string..(type(subpart) == 'string' and subpart or f
 '''
 position = "at"
 payload = '''
-assembled_string = assembled_string..(type(subpart) == 'string' and subpart or (Cryptid.pluralize and Cryptid.pluralize(subpart[1], args.vars)) or format_ui_value(args.vars[tonumber(subpart[1])]) or 'ERROR')
+assembled_string = assembled_string..(type(subpart) == 'string' and subpart or (Spectrallib.pluralize and Spectrallib.pluralize(subpart[1], args.vars)) or format_ui_value(args.vars[tonumber(subpart[1])]) or 'ERROR')
 '''
 match_indent = true
 
@@ -26,7 +26,7 @@ assembled_string = assembled_string..(type(subpart) == 'string' and subpart or f
 '''
 position = "at"
 payload = '''
-assembled_string = assembled_string..(type(subpart) == 'string' and subpart or (Cryptid.pluralize and Cryptid.pluralize(subpart[1], args.vars)) or format_ui_value(args.vars[tonumber(subpart[1])]) or 'ERROR')
+assembled_string = assembled_string..(type(subpart) == 'string' and subpart or (Spectrallib.pluralize and Spectrallib.pluralize(subpart[1], args.vars)) or format_ui_value(args.vars[tonumber(subpart[1])]) or 'ERROR')
 '''
 match_indent = true
 
@@ -38,21 +38,21 @@ pattern = "elseif eval_type == 'dollars' then"
 position = "before"
 payload = '''
 elseif eval_type == 'x_chips' and not (SMODS.Mods["Talisman"] or {}).can_load then
-    sound = 'cryl_xchip'
+    sound = 'Spectrallib_xchip'
     amt = amt
     text = 'X' .. number_format(amt)
     colour = G.C.CHIPS
     config.type = 'fade'
     config.scale = 0.7
 elseif eval_type == 'e_chips' and not (SMODS.Mods["Talisman"] or {}).can_load then
-    sound = 'cryl_echips'
+    sound = 'Spectrallib_echips'
     amt = amt
     text = '^' .. number_format(amt) .. ' ' .. localize('k_chips')
     colour = G.C.DARK_EDITION
     config.type = 'fade'
     config.scale = 0.7
 elseif eval_type == 'e_mult' and not (SMODS.Mods["Talisman"] or {}).can_load then
-    sound = 'cryl_emult'
+    sound = 'Spectrallib_emult'
     amt = amt
     text = '^' .. number_format(amt) .. ' ' .. localize('k_mult')
     colour = G.C.DARK_EDITION
@@ -67,14 +67,14 @@ target = "functions/common_events.lua"
 pattern = "local info_queue = {}"
 position = "after"
 payload = '''
-if not (SMODS.Mods["Cryptid"] or {}).can_load then
+if not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
     if _c.cry_disabled or (_c.force_gameset and _c.force_gameset == 'disabled') then
         if _c.cry_disabled then
             if _c.cry_disabled.type == "card_dependency" then
-                local name = Cryptid.get_center(_c.cry_disabled.key) and localize{type = 'name_text', set = Cryptid.get_center(_c.cry_disabled.key).set, key = _c.cry_disabled.key} or _c.cry_disabled.key
+                local name = Spectrallib.get_center(_c.cry_disabled.key) and localize{type = 'name_text', set = Spectrallib.get_center(_c.cry_disabled.key).set, key = _c.cry_disabled.key} or _c.cry_disabled.key
                 info_queue[#info_queue+1] = {key = 'disabled_card_dependency', set = 'Other', specific_vars = {name}}
             elseif _c.cry_disabled.type == "mod_dependency" then
-                local name = Cryptid.cross_mod_names[_c.cry_disabled.key] or _c.cry_disabled.key
+                local name = Spectrallib.cross_mod_names[_c.cry_disabled.key] or _c.cry_disabled.key
                 info_queue[#info_queue+1] = {key = 'disabled_mod_dependency', set = 'Other', specific_vars = {name}}
             elseif _c.cry_disabled.type == "mod_conflict" then
                 local name = SMODS.Mods[_c.cry_disabled.key].name
@@ -132,35 +132,6 @@ position = "before"
 payload = "elseif _c.set == 'Back' or _c.set == 'Blind' then localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = specific_vars or {}}"
 match_indent = true
 
-[[patches]]
-[patches.pattern]
-target = "main.lua"
-pattern = '''function love.load()'''
-position = "before"
-payload = '''
-if not Cryptid then 
-    Cryptid = {}
-    CryptLib = true
-    Cryptid.aliases = {}
-    Cryptid.pointerblist = {}
-    Cryptid.pointerblistrarity = {}
-    Cryptid.mod_gameset_whitelist = {}
-    Cryptid.mod_whitelist = {}
-    Cryptid.ascension_numbers = {}
-
-    Cryptid.rarity_table = {
-    }
-
-    function cry_format(...)
-        return ...
-    end
-else
-    CryptLib = true
-    CryptLibNoCryptid = true
-end
-'''
-match_indent = true
-
 # Draw midground layer
 [[patches]]
 [patches.pattern]
@@ -179,36 +150,45 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = '''add_tag(_tag.config.ref_table)'''
-position = "at"
+target = "functions/UI_definitions.lua"
+pattern = "return create_UIBox_generic_options({contents ={create_tabs("
+position = "before"
 payload = '''
-local tag = Cryptid.get_next_tag()
-add_tag(tag and Tag(tag) or _tag.config.ref_table, true)
+  local tabs = {
+
+  }
+
+  local def = G.GAME.DefineKeys and {
+          label = localize('b_definitions'),
+          tab_definition_function = G.UIDEF.define_keys,
+        } or nil
+  local decks = G.GAME.entr_bought_decks and #G.GAME.entr_bought_decks > 0 and {
+          label = localize('b_decks'), 
+          tab_definition_function = G.UIDEF.bought_decks,
+        } or nil
+  local stake = G.GAME.stake > 1 and {
+          label = localize('b_stake'),
+          tab_definition_function = G.UIDEF.current_stake,
+        } or nil
+  if def then tabs[#tabs+1] = def end
+  if decks then tabs[#tabs+1] = decks end
+  if stake then tabs[#tabs+1] = stake end
 '''
 match_indent = true
+
 
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"
-pattern = "local _tag = Tag(G.GAME.round_resets.blind_tags[blind_choice], nil, blind_choice)"
-position = "after"
-payload = '''
-local tag = Cryptid.get_next_tag()
-if tag then
-	_tag = Tag(tag, nil, blind_choice)
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/misc_functions.lua"
 pattern = '''
-assembled_string = assembled_string..(type(subpart) == 'string' and subpart or format_ui_value(args.vars[tonumber(subpart[1])]) or 'ERROR')
+        G.GAME.stake > 1 and {
+          label = localize('b_stake'),
+          tab_definition_function = G.UIDEF.current_stake,
+        } or nil,
 '''
 position = "at"
 payload = '''
-assembled_string = assembled_string..(type(subpart) == 'string' and subpart or (Cryptid.pluralize and Cryptid.pluralize(subpart[1], args.vars)) or format_ui_value(args.vars[tonumber(subpart[1])]) or 'ERROR')
-'''
+        tabs[1],
+        tabs[2],
+        tabs[3],'''
 match_indent = true
