@@ -14,4 +14,7 @@ This includes:
 # Entropy:
 * Deck Redeeming
 * Useable Jokers
-* Vouchers and Boosters anywhere
+* Custom scoring return values
+* level chips and mult modifications
+* Ascension Power on poker hands
+* Vouchers and boosters anywhere
