@@ -1,6 +1,6 @@
-function Entropy.l_chipsmult(hand, card, l_chips, l_mult, instant)
+function Spectrallib.l_chipsmult(hand, card, l_chips, l_mult, instant)
 	if not instant then
-		update_hand_text({delay = 0}, {handname = localize(hand, "poker_hands"), level = G.GAME.hands[hand].level, mult = Entropy.ascend_hand(G.GAME.hands[hand].mult, hand), chips = Entropy.ascend_hand(G.GAME.hands[hand].chips, hand)})
+		update_hand_text({delay = 0}, {handname = localize(hand, "poker_hands"), level = G.GAME.hands[hand].level, mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand), chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand)})
 		delay(1)
 		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
 			play_sound('tarot1')
@@ -37,9 +37,9 @@ function Entropy.l_chipsmult(hand, card, l_chips, l_mult, instant)
 	Cryptid.reset_to_none()
 end
 
-function Entropy.xl_chips(hand, card, l_chips, instant)
+function Spectrallib.xl_chips(hand, card, l_chips, instant)
 	if not instant then
-		update_hand_text({delay = 0}, {handname = localize(hand, "poker_hands"), level = G.GAME.hands[hand].level, mult = Entropy.ascend_hand(G.GAME.hands[hand].mult, hand), chips = Entropy.ascend_hand(G.GAME.hands[hand].chips, hand)})
+		update_hand_text({delay = 0}, {handname = localize(hand, "poker_hands"), level = G.GAME.hands[hand].level, mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand), chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand)})
 		delay(1)
 		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
 			play_sound('tarot1')
@@ -66,9 +66,9 @@ function Entropy.xl_chips(hand, card, l_chips, instant)
 	Cryptid.reset_to_none()
 end
 
-function Entropy.xl_mult(hand, card, l_mult, instant)
+function Spectrallib.xl_mult(hand, card, l_mult, instant)
 	if not instant then
-		update_hand_text({delay = 0}, {handname = localize(hand, "poker_hands"), level = G.GAME.hands[hand].level, mult = Entropy.ascend_hand(G.GAME.hands[hand].mult, hand), chips = Entropy.ascend_hand(G.GAME.hands[hand].chips, hand)})
+		update_hand_text({delay = 0}, {handname = localize(hand, "poker_hands"), level = G.GAME.hands[hand].level, mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand), chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand)})
 		delay(1)
 		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
 			play_sound('tarot1')
@@ -116,8 +116,8 @@ function SMODS.upgrade_poker_hands(args)
             local used_consumable = card
             local c
             local m
-            local chips = Entropy.ascend_hand(G.GAME.hands[handname].chips, handname)
-            local mult = Entropy.ascend_hand(G.GAME.hands[handname].mult, handname)
+            local chips = Spectrallib.ascend_hand(G.GAME.hands[handname].chips, handname)
+            local mult = Spectrallib.ascend_hand(G.GAME.hands[handname].mult, handname)
             if not args.instant then
                 c = copy_table(G.C.UI_CHIPS)
                 m = copy_table(G.C.UI_MULT)
@@ -128,8 +128,8 @@ function SMODS.upgrade_poker_hands(args)
                 )
             end
             G.GAME.hands[handname].AscensionPower = to_big((G.GAME.hands[handname].AscensionPower or 0)) + to_big(amt) 
-            chips = Entropy.ascend_hand(G.GAME.hands[handname].chips, handname) - chips
-            mult = Entropy.ascend_hand(G.GAME.hands[handname].mult, handname) - mult
+            chips = Spectrallib.ascend_hand(G.GAME.hands[handname].chips, handname) - chips
+            mult = Spectrallib.ascend_hand(G.GAME.hands[handname].mult, handname) - mult
             if G.entr_add_to_stats then
                 SMODS.Scoring_Parameters.chips.current = SMODS.Scoring_Parameters.chips.current + chips
                 SMODS.Scoring_Parameters.mult.current = SMODS.Scoring_Parameters.mult.current + mult
@@ -187,7 +187,7 @@ function SMODS.upgrade_poker_hands(args)
         local chips = args.per_level.chips
         if mult or chips then
             for i, v in pairs(args.hands) do
-                Entropy.l_chipsmult(v, args.from, chips, mult, args.instant)
+                Spectrallib.l_chipsmult(v, args.from, chips, mult, args.instant)
             end
         end
         return
@@ -197,12 +197,12 @@ function SMODS.upgrade_poker_hands(args)
         local chips = args.x_per_level.chips
         if mult then
             for i, v in pairs(args.hands) do
-                Entropy.xl_mult(v, args.from, mult, args.instant)
+                Spectrallib.xl_mult(v, args.from, mult, args.instant)
             end
         end
         if chips then
             for i, v in pairs(args.hands) do
-                Entropy.xl_chips(v, args.from, chips, args.instant)
+                Spectrallib.xl_chips(v, args.from, chips, args.instant)
             end
         end
         return
@@ -230,7 +230,7 @@ function create_UIBox_current_hand_row(handname, simple)
               {n=G.UIT.T, config={text = G.GAME.badarg[handname] and "BAD" or number_format(G.GAME.hands[handname].chips, 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}},
               {n=G.UIT.B, config={w = 0.08, h = 0.01}}
             }},
-            {n=G.UIT.T, config={text = G.GAME.hands[handname].operator and Entropy.format_arrow_mulkt(G.GAME.hands[handname].operator, "") or "X", scale = 0.45, colour = Entropy.get_arrow_color(G.GAME.hands[handname].operator or 0)}},
+            {n=G.UIT.T, config={text = G.GAME.hands[handname].operator and Spectrallib.format_arrow_mulkt(G.GAME.hands[handname].operator, "") or "X", scale = 0.45, colour = Spectrallib.get_arrow_color(G.GAME.hands[handname].operator or 0)}},
             {n=G.UIT.C, config={align = "cl", padding = 0.01, r = 0.1, colour = G.GAME.badarg[handname] and HEX("FF0000") or G.C.MULT, minw = 1.1}, nodes={
               {n=G.UIT.B, config={w = 0.08,h = 0.01}},
               {n=G.UIT.T, config={text = G.GAME.badarg[handname] and "ARG" or number_format(G.GAME.hands[handname].mult, 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}}
@@ -254,7 +254,7 @@ function create_UIBox_current_hand_row(handname, simple)
     else
         if not (G.GAME.hands[handname]) then return {} end
         if not G.GAME.badarg then G.GAME.badarg = {} end
-        local color = (G.GAME.badarg and G.GAME.badarg[handname] and HEX("FF0000")) or Entropy.get_asc_colour(G.GAME.hands[handname].AscensionPower)
+        local color = (G.GAME.badarg and G.GAME.badarg[handname] and HEX("FF0000")) or Spectrallib.get_asc_colour(G.GAME.hands[handname].AscensionPower)
         return (G.GAME.hands[handname].visible) and
         (not simple and
           {n=G.UIT.R, config={align = "cm", padding = 0.05, r = 0.1, colour = darken(G.C.JOKER_GREY, 0.1), emboss = 0.05, hover = true, force_focus = true, on_demand_tooltip = {text = localize(handname, 'poker_hand_descriptions'), filler = {func = create_UIBox_hand_tip, args = handname}}}, nodes={
@@ -274,13 +274,13 @@ function create_UIBox_current_hand_row(handname, simple)
             }},
             {n=G.UIT.C, config={align = "cm", padding = 0.05, colour = G.C.BLACK,r = 0.1}, nodes={
               {n=G.UIT.C, config={align = "cr", padding = 0.01, r = 0.1, colour = color, minw = 1.1}, nodes={
-                {n=G.UIT.T, config={text = G.GAME.badarg[handname] and "BAD" or number_format(Entropy.ascend_hand(G.GAME.hands[handname].chips,handname), 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}},
+                {n=G.UIT.T, config={text = G.GAME.badarg[handname] and "BAD" or number_format(Spectrallib.ascend_hand(G.GAME.hands[handname].chips,handname), 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}},
                 {n=G.UIT.B, config={w = 0.08, h = 0.01}}
               }},
-              {n=G.UIT.T, config={text = G.GAME.hands[handname].operator and Entropy.format_arrow_mulkt(G.GAME.hands[handname].operator, "") or "X", scale = 0.45, colour = color}},
+              {n=G.UIT.T, config={text = G.GAME.hands[handname].operator and Spectrallib.format_arrow_mulkt(G.GAME.hands[handname].operator, "") or "X", scale = 0.45, colour = color}},
               {n=G.UIT.C, config={align = "cl", padding = 0.01, r = 0.1, colour = color, minw = 1.1}, nodes={
                 {n=G.UIT.B, config={w = 0.08,h = 0.01}},
-                {n=G.UIT.T, config={text = G.GAME.badarg[handname] and "ARG" or number_format(Entropy.ascend_hand(G.GAME.hands[handname].mult,handname), 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}}
+                {n=G.UIT.T, config={text = G.GAME.badarg[handname] and "ARG" or number_format(Spectrallib.ascend_hand(G.GAME.hands[handname].mult,handname), 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}}
               }}
             }},
             {n=G.UIT.C, config={align = "cm"}, nodes={
@@ -300,7 +300,7 @@ function create_UIBox_current_hand_row(handname, simple)
 end
 
 
-function Entropy.ascend_hand(num, hand) -- edit this function at your leisure
+function Spectrallib.ascend_hand(num, hand) -- edit this function at your leisure
     local ret = Cryptid.ascend(num, (G.GAME.hands[hand].AscensionPower or 0))
     return ret
 end
@@ -317,7 +317,7 @@ function G.FUNCS.get_poker_hand_info(_cards)
     end
     for _, card in pairs(G.I.CARD) do
         if card.ability and card.ability.entr_marked then
-            if not card.highlighted and not Entropy.in_table(_cards, card) then
+            if not card.highlighted and not Spectrallib.in_table(_cards, card) then
                 cards[#cards+1] = card
             end
         end
@@ -343,8 +343,8 @@ function G.FUNCS.get_poker_hand_info(_cards)
         -- Change mult and chips colors if hand is ascended
         if not hidden then
             ease_colour(G.C.GOLD, copy_table(HEX("EABA44")), 0.3)
-            ease_colour(G.C.UI_CHIPS, copy_table(Entropy.get_asc_colour(G.GAME.current_round.current_hand.cry_asc_num, text)), 0.3)
-            ease_colour(G.C.UI_MULT, copy_table(Entropy.get_asc_colour(G.GAME.current_round.current_hand.cry_asc_num, text)), 0.3)
+            ease_colour(G.C.UI_CHIPS, copy_table(Spectrallib.get_asc_colour(G.GAME.current_round.current_hand.cry_asc_num, text)), 0.3)
+            ease_colour(G.C.UI_MULT, copy_table(Spectrallib.get_asc_colour(G.GAME.current_round.current_hand.cry_asc_num, text)), 0.3)
 
             G.GAME.current_round.current_hand.cry_asc_num_text = (
                 a_power

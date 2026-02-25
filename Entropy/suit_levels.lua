@@ -1,4 +1,4 @@
-function Entropy.level_suit(suit, card, amt, chips_override)
+function Spectrallib.level_suit(suit, card, amt, chips_override)
     amt = amt or 1
     local used_consumable = copier or card
     if not G.GAME.SuitBuffs then G.GAME.SuitBuffs = {} end

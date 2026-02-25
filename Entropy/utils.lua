@@ -1,4 +1,4 @@
-function Entropy.get_highlighted_cards(cardareas, ignorecard, min, max, blacklist)
+function Spectrallib.get_highlighted_cards(cardareas, ignorecard, min, max, blacklist)
     return Spectrallib.get_highlighted_cards(cardareas, ignorecard or {}, min or 1, max or 1, type(blacklist) == "table" and function(card)
         return not blacklist[card.config.center.key]
     end or blacklist)
@@ -55,7 +55,7 @@ function Spectrallib.get_highlighted_cards(areas, ignore, min, max, blacklist, s
 end
 Cryptid.get_highlighted_cards = Spectrallib.get_highlighted_cards
 
-function Entropy.filter_table(table, func)
+function Spectrallib.filter_table(table, func)
     local temp = {}
     for i, v in ipairs(table) do
         if func(v, i) then
@@ -65,7 +65,7 @@ function Entropy.filter_table(table, func)
     return temp
 end
 
-function Entropy.flip_then(cardlist, func, before, after)
+function Spectrallib.flip_then(cardlist, func, before, after)
     if not Spectrallib.should_skip_animations() then
         for i, v in ipairs(cardlist) do
             local card = cardlist[i]
@@ -146,7 +146,7 @@ function Entropy.flip_then(cardlist, func, before, after)
     end
 end
 
-function Entropy.modify_hand_card(modifications, cards, dont_flip)
+function Spectrallib.modify_hand_card(modifications, cards, dont_flip)
     local func = function(mcard)
     if modifications.suit or modifications.rank then
             SMODS.change_base(mcard, modifications.suit, modifications.rank)
@@ -165,7 +165,7 @@ function Entropy.modify_hand_card(modifications, cards, dont_flip)
             mcard:set_seal(modifications.seal)
         end
         if modifications.sticker then
-            Entropy.apply_sticker(mcard, modifications.sticker)
+            Spectrallib.apply_sticker(mcard, modifications.sticker)
         end
         if modifications.extra then
             for i, v in pairs(modifications.extra) do mcard.ability[i] = v end
@@ -173,11 +173,11 @@ function Entropy.modify_hand_card(modifications, cards, dont_flip)
     end
     return function()
         if dont_flip then
-            Entropy.flip_then(cards or Entropy.get_highlighted_cards({G.hand}, {}, 1, card.ability.highlighted or 1), function(mcard)
+            Spectrallib.flip_then(cards or Spectrallib.get_highlighted_cards({G.hand}, {}, 1, card.ability.highlighted or 1), function(mcard)
                 func(mcard)
             end)
         else
-            for i, mcard in pairs(cards or Entropy.get_highlighted_cards({G.hand}, {}, 1, card.ability.highlighted or 1)) do
+            for i, mcard in pairs(cards or Spectrallib.get_highlighted_cards({G.hand}, {}, 1, card.ability.highlighted or 1)) do
                 G.E_MANAGER:add_event(Event({
                     delay = 0,
                     func = function()
@@ -190,11 +190,11 @@ function Entropy.modify_hand_card(modifications, cards, dont_flip)
     end
 end
 
-function Entropy.modify_hand_card_NF(modifications, cards)
-    return Entropy.modify_hand_card(modifications, cards, true)
+function Spectrallib.modify_hand_card_NF(modifications, cards)
+    return Spectrallib.modify_hand_card(modifications, cards, true)
 end
 
-function Entropy.find_previous_in_pool(item, pool, ignore)
+function Spectrallib.find_previous_in_pool(item, pool, ignore)
     for i, v in pairs(G.P_CENTER_POOLS[pool]) do
         if G.P_CENTER_POOLS[pool][i].key == item then
             local ind = i - 1
@@ -207,17 +207,17 @@ function Entropy.find_previous_in_pool(item, pool, ignore)
     return nil
 end
 
-Entropy.charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890~#$^~#$^~#$^~#$^~#$^"
-function Entropy.string_random(length, charset) 
+Spectrallib.charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890~#$^~#$^~#$^~#$^~#$^"
+function Spectrallib.string_random(length, charset) 
     local total = ""
     for i = 0, length do
-        local val = math.random(1,charset and #charset or #Entropy.charset)
-        total = total..((charset or Entropy.charset):sub(val, val))
+        local val = math.random(1,charset and #charset or #Spectrallib.charset)
+        total = total..((charset or Spectrallib.charset):sub(val, val))
     end
     return total
 end
 
-function Entropy.format_dollar_value(val)
+function Spectrallib.format_dollar_value(val)
     if to_big(val) >= to_big(0) then
         return localize("$")..val
     else
@@ -225,27 +225,27 @@ function Entropy.format_dollar_value(val)
     end
 end
 
-function Entropy.in_table(table, val)
+function Spectrallib.in_table(table, val)
     for i, v in ipairs(table) do if type(val) == "function" and val(v) or v == val then return i end end
 end
 
-function Entropy.get_next_rarity(rarity)
+function Spectrallib.get_next_rarity(rarity)
     if rarity == "entr_reverse_legendary" then return "cry_exotic" end
-    for i, v in pairs(Entropy.RarityChecks) do
-        if v == rarity then return Entropy.RarityChecks[i+1] or v end
+    for i, v in pairs(Spectrallib.RarityChecks) do
+        if v == rarity then return Spectrallib.RarityChecks[i+1] or v end
     end
     return rarity
 end
 
-function Entropy.get_higher_voucher_tier(voucher_key)
+function Spectrallib.get_higher_voucher_tier(voucher_key)
     for i, v in pairs(G.P_CENTER_POOLS.Voucher) do
-        if Entropy.in_table(v.requires or {}, voucher_key) then return v.key end
+        if Spectrallib.in_table(v.requires or {}, voucher_key) then return v.key end
     end
 end
 
-function Entropy.random_forcetrigger(card, num,context)
+function Spectrallib.random_forcetrigger(card, num,context)
     local res = { }
-    local cards = Entropy.get_random_cards({G.jokers, G.hand, G.consumeables, G.play}, num, "fractured", function(card) return not card.edition or card.edition.key ~= "e_entr_fractured" end)
+    local cards = Spectrallib.get_random_cards({G.jokers, G.hand, G.consumeables, G.play}, num, "fractured", function(card) return not card.edition or card.edition.key ~= "e_entr_fractured" end)
     for i, v in pairs(cards) do
         if Cryptid.demicolonGetTriggerable(v)[1] and (not v.edition or v.edition.key ~= "e_entr_fractured") then
             local results = Cryptid.forcetrigger(v, context)
@@ -293,23 +293,23 @@ function Entropy.random_forcetrigger(card, num,context)
     end
 end
 
-function Entropy.get_random_set(has_parakmi)
+function Spectrallib.get_random_set(has_parakmi)
     local pool = pseudorandom_element(G.P_CENTER_POOLS, pseudoseed(has_parakmi and "parakmi" or "chaos"))
     local set = pool and pool[1] and G.P_CENTERS[pool[1].key] and pool[1].set
-    while not set or Entropy.ParakmiBlacklist[set] or (not has_parakmi and Entropy.ChaosBlacklist[set]) do
+    while not set or Spectrallib.ParakmiBlacklist[set] or (not has_parakmi and Spectrallib.ChaosBlacklist[set]) do
         pool = pseudorandom_element(G.P_CENTER_POOLS, pseudoseed(has_parakmi and "parakmi" or "chaos"))
         set = pool and pool[1] and G.P_CENTERS[pool[1].key] and pool[1].set
     end
     return set
 end
 
-function Entropy.blind_is(blind)
+function Spectrallib.blind_is(blind)
     if G.GAME.blind and G.GAME.blind.config and G.GAME.blind.config.blind.key == blind then return true end
-    if Entropy.is_EE() and G.GAME.blind.config.blind.key == "bl_entr_endless_entropy_phase_four" and Entropy.EEWhitelist[blind] then return true end --TODO: change how this works
+    if Spectrallib.is_EE() and G.GAME.blind.config.blind.key == "bl_entr_endless_entropy_phase_four" and Spectrallib.EEWhitelist[blind] then return true end --TODO: change how this works
 end
 
 --not really needed any more
-function Entropy.format_arrow_mult(arrows, mult)
+function Spectrallib.format_arrow_mult(arrows, mult)
     if arrows == "addition" then arrows = -1 end
     if arrows == "multiply" then arrows = 0 end
     if arrows == "exponent" then arrows = 1 end
@@ -336,7 +336,7 @@ function Entropy.format_arrow_mult(arrows, mult)
     end
 end
 
-function Entropy.get_random_cards(areas, cardns, rpseudoseed, cond)
+function Spectrallib.get_random_cards(areas, cardns, rpseudoseed, cond)
     local cards = {}
     for i, v in pairs(areas) do
         for i2, v2 in pairs(v.cards) do
@@ -351,13 +351,13 @@ function Entropy.get_random_cards(areas, cardns, rpseudoseed, cond)
     return temp
 end
 
-function Entropy.stack_eval_returns(orig, new, etype)
+function Spectrallib.stack_eval_returns(orig, new, etype)
     if etype == "Xmult" or etype == "x_mult" or etype == "Xmult_mod" or etype == "Xchips" or etype == "Xchip_mod" or etype == "asc" or etype == "Emult_mod" or etype == "Echip_mod" then return (orig or 1) * new else
         return (orig or 0) + new
     end
 end
 
-function Entropy.deck_or_sleeve(key)
+function Spectrallib.deck_or_sleeve(key)
     local num = 0
     if key == "doc" and G.GAME.modifiers.doc_antimatter then num = num + 1 end
     if key == "butterfly" and G.GAME.modifiers.butterfly_antimatter then num = num + 1 end
@@ -371,7 +371,7 @@ function Entropy.deck_or_sleeve(key)
     return num > 0 and num or nil
 end
 
-function Entropy.change_enhancements(areas, enh, required, uhl)
+function Spectrallib.change_enhancements(areas, enh, required, uhl)
     for i, v in pairs(areas) do
         if not v.cards then 
             areas[i] = {
@@ -395,7 +395,7 @@ function Entropy.change_enhancements(areas, enh, required, uhl)
     end
 end
 
-function Entropy.apply_sticker(card, key)
+function Spectrallib.apply_sticker(card, key)
     if not card.ability then card.ability = {} end
     if card.ability then
         if not SMODS.Stickers[key] then return end
@@ -404,13 +404,13 @@ function Entropy.apply_sticker(card, key)
     end
 end
 
-function Entropy.rarity_above(check, threshold, gte)
-    if not Entropy.ReverseRarityChecks[check] then Entropy.ReverseRarityChecks[check] = 1 end
-    if not Entropy.ReverseRarityChecks[threshold] then Entropy.ReverseRarityChecks[threshold] = 1 end
-    if gte then return Entropy.ReverseRarityChecks[check] < Entropy.ReverseRarityChecks[threshold] end
-    return Entropy.ReverseRarityChecks[check] <= Entropy.ReverseRarityChecks[threshold]
+function Spectrallib.rarity_above(check, threshold, gte)
+    if not Spectrallib.ReverseRarityChecks[check] then Spectrallib.ReverseRarityChecks[check] = 1 end
+    if not Spectrallib.ReverseRarityChecks[threshold] then Spectrallib.ReverseRarityChecks[threshold] = 1 end
+    if gte then return Spectrallib.ReverseRarityChecks[check] < Spectrallib.ReverseRarityChecks[threshold] end
+    return Spectrallib.ReverseRarityChecks[check] <= Spectrallib.ReverseRarityChecks[threshold]
 end
-function Entropy.get_random_rarity_card(rare)
+function Spectrallib.get_random_rarity_card(rare)
     if rare == 1 then rare = "Common" end
     if rare == 2 then rare = "Uncommon" end
     if rare == 3 then rare = "Rare" end
@@ -424,7 +424,7 @@ function Entropy.get_random_rarity_card(rare)
     return center
 end
 
-function Entropy.randomchar(arr)
+function Spectrallib.randomchar(arr)
     return {
         n = G.UIT.O,
         config = {
@@ -442,7 +442,7 @@ function Entropy.randomchar(arr)
     }
 end
 
-function Entropy.stringsplit(s) 
+function Spectrallib.stringsplit(s) 
     local tbl = {}
     for i = 1, #s do
         tbl[#tbl+1]=s:sub(i,i)
@@ -450,7 +450,7 @@ function Entropy.stringsplit(s)
     return tbl
 end
 
-function Entropy.upgrade_enhancement(card, bypass, blacklist)
+function Spectrallib.upgrade_enhancement(card, bypass, blacklist)
     local enh = card.config.center.key
     if enh == "c_base" then return "m_bonus" end
     local cards = {}
@@ -466,13 +466,13 @@ function Entropy.upgrade_enhancement(card, bypass, blacklist)
     return nil
 end
 
-function Entropy.get_area_name(area) 
+function Spectrallib.get_area_name(area) 
     if not area then return nil end
     for i, v in pairs(G) do
         if v == area then return i end
     end
 end
-function Entropy.get_idx_in_area(card)
+function Spectrallib.get_idx_in_area(card)
     if card and card.area then
         for i, v in pairs(card.area.cards) do
             if v == card then return i end
@@ -481,7 +481,7 @@ function Entropy.get_idx_in_area(card)
 end
 
 --Is this useful? idk but its entropy agnostic so :shrug:
-function Entropy.random_context(seed)
+function Spectrallib.random_context(seed)
     return pseudorandom_element({
         "before",
         "pre_joker",
@@ -498,7 +498,7 @@ function Entropy.random_context(seed)
     }, pseudoseed(seed or "desync"))
 end
 
-function Entropy.context_checks(self, card, context, currc, edition)
+function Spectrallib.context_checks(self, card, context, currc, edition)
     if not context.retrigger_joker and not context.blueprint and not context.forcetrigger and not context.post_trigger then
         if currc == "before" and context.before then return true end
         if currc == "pre_joker" and ((context.pre_joker) or (edition and context.main_scoring and context.cardarea == G.play)) then return true end
@@ -515,7 +515,7 @@ function Entropy.context_checks(self, card, context, currc, edition)
     end
 end
 
-function Entropy.get_repetitions(card)
+function Spectrallib.get_repetitions(card)
     local res2 = {}
     for i, v in ipairs(G.jokers.cards) do
         local res = eval_card(v, {repetition=true, other_card=card,cardarea=card.area,card_effects={{},{}}}) or {}
@@ -526,7 +526,7 @@ function Entropy.get_repetitions(card)
     return res2
 end
 
-function Entropy.approximate_log_recursion(orig, base, iter)
+function Spectrallib.approximate_log_recursion(orig, base, iter)
     if to_big(iter) < to_big(1000) then
         if to_big(orig) < to_big(base) then return orig end
         local result = orig
@@ -544,7 +544,7 @@ function Entropy.approximate_log_recursion(orig, base, iter)
     end
 end
 
-function Entropy.change_play_limit_no_bs(mod,stroverride)
+function Spectrallib.change_play_limit_no_bs(mod,stroverride)
     if SMODS.hand_limit_strings then
         G.GAME.starting_params.play_limit = (G.GAME.starting_params.play_limit or 5) + mod
         G.hand.config.highlighted_limit = math.max(G.GAME.starting_params.discard_limit or 5, G.GAME.starting_params.play_limit or 5)
@@ -555,22 +555,22 @@ function Entropy.change_play_limit_no_bs(mod,stroverride)
     end
 end
 
-function Entropy.change_discard_limit_no_bs(mod,stroverride)
+function Spectrallib.change_discard_limit_no_bs(mod,stroverride)
     G.GAME.starting_params.discard_limit = (G.GAME.starting_params.discard_limit or 5) + mod
     G.hand.config.highlighted_limit = math.max(G.GAME.starting_params.discard_limit or 5, G.GAME.starting_params.play_limit or 5)
     local str = stroverride or G.GAME.starting_params.discard_limit or ""
     SMODS.hand_limit_strings.discard = G.GAME.starting_params.discard_limit ~= 5 and localize('b_limit') .. str or ''
 end
 
-function Entropy.change_selection_limit(mod,stroverride)
+function Spectrallib.change_selection_limit(mod,stroverride)
     if not SMODS.hand_limit_strings then SMODS.hand_limit_strings = {} end
-    Entropy.change_play_limit_no_bs(mod,stroverride)
+    Spectrallib.change_play_limit_no_bs(mod,stroverride)
     if SMODS.hand_limit_strings then
-        Entropy.change_discard_limit_no_bs(mod,stroverride)
+        Spectrallib.change_discard_limit_no_bs(mod,stroverride)
     end
 end
 
-function Entropy.pseudorandom_element(table, seed, blacklist)
+function Spectrallib.pseudorandom_element(table, seed, blacklist)
     local elem = pseudorandom_element(table, seed)
     local tries = 0
     while blacklist(elem) and tries < 100 do
@@ -580,7 +580,7 @@ function Entropy.pseudorandom_element(table, seed, blacklist)
     return elem
 end
 
-function Entropy.no_recurse_scoring(poker_hands)
+function Spectrallib.no_recurse_scoring(poker_hands)
     local text 
     local scoring_hand
 	for _, v in ipairs(G.handlist) do
@@ -593,7 +593,7 @@ function Entropy.no_recurse_scoring(poker_hands)
     return text
 end
 
-function Entropy.get_pooled_center(_type, twisted, _rarity, _noparakmi)
+function Spectrallib.get_pooled_center(_type, twisted, _rarity, _noparakmi)
     local area = area or G.jokers
     local center = G.P_CENTERS.b_red
         
@@ -643,7 +643,7 @@ function Entropy.get_pooled_center(_type, twisted, _rarity, _noparakmi)
     return center
 end
 
-function Entropy.count_stickers(card)
+function Spectrallib.count_stickers(card)
     local total = 0
     local cards = {}
     local add_self = true
@@ -664,13 +664,13 @@ function Entropy.count_stickers(card)
     return total
 end
 
-function Entropy.unhighlight(areas) 
+function Spectrallib.unhighlight(areas) 
     for i, v in pairs(areas) do
         v:unhighlight_all()
     end
 end
 
-function Entropy.get_inverse_suit(suit)
+function Spectrallib.get_inverse_suit(suit)
     return ({
         Diamonds = "Hearts",
         Hearts = "Diamonds",
@@ -679,7 +679,7 @@ function Entropy.get_inverse_suit(suit)
     })[suit] or suit
 end
 
-function Entropy.get_inverse_rank(rank)
+function Spectrallib.get_inverse_rank(rank)
     return ({
         ["2"] = "Ace",
         ["3"] = "King",
@@ -697,7 +697,7 @@ function Entropy.get_inverse_rank(rank)
     })[tostring(rank)] or rank
 end
 
-function Entropy.randomise_once(card, types, seed, noflip)
+function Spectrallib.randomise_once(card, types, seed, noflip)
     local mtype = pseudorandom_element(types or {"Enhancement", "Edition", "Seal", "Base"}, pseudoseed(seed or "ihwaz"))    
     if mtype == "Edition" then
         local edition = SMODS.poll_edition({guaranteed = true, key = "entr_ihwaz"})
@@ -723,14 +723,14 @@ function Entropy.randomise_once(card, types, seed, noflip)
         if not noflip then
             card:flip()
         end
-        Entropy.randomize_rank_suit(card, true, true, seed or "ihwaz")
+        Spectrallib.randomize_rank_suit(card, true, true, seed or "ihwaz")
         if not noflip then
             card:flip()
         end
     end
 end
 
-function Entropy.randomize_rank_suit(card, rank, suit, seed)
+function Spectrallib.randomize_rank_suit(card, rank, suit, seed)
     local ranks = {}
     local suits = {}
     if rank then
@@ -746,7 +746,7 @@ function Entropy.randomize_rank_suit(card, rank, suit, seed)
     SMODS.change_base(card, pseudorandom_element(suits, pseudoseed(seed)),pseudorandom_element(ranks, pseudoseed(seed)), nil)
 end
 
-function Entropy.is_in_shop(key, consumable)
+function Spectrallib.is_in_shop(key, consumable)
 	local center = G.P_CENTERS[key]
 	if center.hidden or center.no_doe or center.no_collection then
 		return
@@ -790,14 +790,14 @@ function Entropy.is_in_shop(key, consumable)
 	return SMODS.add_to_pool(center, {})
 end
 
-function Entropy.true_suitless(card)
+function Spectrallib.true_suitless(card)
     if SMODS.has_no_suit(card) or card.config.center.key == "m_stone" 
     or card.config.center.overrides_base_rank 
     or card.base.suit == "entr_nilsuit" 
     or card.base.value == "entr_nilrank" then return true end
 end
 
-function Entropy.played_hands(threshold)
+function Spectrallib.played_hands(threshold)
     local total = 0
     for i, v in pairs(G.GAME.hands or {}) do
         if to_big(v.played) > to_big(threshold) then
@@ -807,7 +807,7 @@ function Entropy.played_hands(threshold)
     return total
 end
 
-function Entropy.calculate_ratios(incl_vanilla, only_vanilla)
+function Spectrallib.calculate_ratios(incl_vanilla, only_vanilla)
     local total = 0
     local rarities = {}
     for i, v in pairs(G.P_CENTER_POOLS.Joker) do
@@ -825,11 +825,11 @@ function Entropy.calculate_ratios(incl_vanilla, only_vanilla)
     print("total: "..total)
 end
 
-function Entropy.return_to_deck()
-    return Entropy.blind_is("bl_entr_cassandra") or Entropy.blind_is("bl_entr_pi")
+function Spectrallib.return_to_deck()
+    return Spectrallib.blind_is("bl_entr_cassandra") or Spectrallib.blind_is("bl_entr_pi")
 end
 
-function Entropy.get_bg_colour()
+function Spectrallib.get_bg_colour()
     if TDECKS then
         local ret = TDECKS.get_bg_colour()
         if ret then return ret end
@@ -837,14 +837,14 @@ function Entropy.get_bg_colour()
     return G.GAME.entr_alt and G.C.ALTBG or G.C.BLIND['Small']
 end
 
-function Entropy.allow_spawning(center)
+function Spectrallib.allow_spawning(center)
     for i, v in pairs(G.I.CARD) do
         if v.config and v.config.center and center and v.config.center.key == center.key then return SMODS.showman(center.key) or nil end
     end
     return true
 end
 
-function Entropy.can_be_pulled(card)
+function Spectrallib.can_be_pulled(card)
     local center = card.ability.glitched_crown and G.P_CENTERS[card.ability.glitched_crown[card.glitched_index]] or card.config.center
     if not card:selectable_from_pack(SMODS.OPENED_BOOSTER) and next(SMODS.find_card("j_entr_oekrep")) and card.ability.consumeable then
         return not center.hidden and not center.no_select
@@ -852,7 +852,7 @@ function Entropy.can_be_pulled(card)
     return not center.no_select and (SMODS.ConsumableTypes[center.set] and SMODS.ConsumableTypes[center.set].can_be_pulled or center.can_be_pulled) and not center.hidden
 end
 
-function Entropy.needs_pull_button(card)
+function Spectrallib.needs_pull_button(card)
     local center = card.config.center
     if not card:selectable_from_pack(SMODS.OPENED_BOOSTER) and next(SMODS.find_card("j_entr_oekrep")) and card.ability.consumeable then
         return not center.hidden and not center.no_select and localize("b_select")
@@ -870,7 +870,7 @@ function Entropy.needs_pull_button(card)
     end
 end
 
-function Entropy.needs_use_button(card)
+function Spectrallib.needs_use_button(card)
     local center = card.config.center
     local center_cant_use = false
     if not (center.no_use_button or (SMODS.ConsumableTypes[center.set] and SMODS.ConsumableTypes[center.set].no_use_button)) then
@@ -885,7 +885,7 @@ function Entropy.needs_use_button(card)
     return center_cant_use
 end
 
-function Entropy.reduction_index(card, pool, strict)
+function Spectrallib.reduction_index(card, pool, strict)
     local i = 0
     for _, v in pairs(G.P_CENTER_POOLS[pool]) do
         if card.config and v.key == card.config.center_key then
@@ -906,10 +906,10 @@ function Entropy.reduction_index(card, pool, strict)
     return i
 end
 
-function Entropy.reduce_cards(cards, card)
+function Spectrallib.reduce_cards(cards, card)
     if cards.ability then cards = {cards} end
-    Entropy.flip_then(cards, function(card)
-        local ind = Entropy.reduction_index(card, card.config.center.set, true)
+    Spectrallib.flip_then(cards, function(card)
+        local ind = Spectrallib.reduction_index(card, card.config.center.set, true)
         if G.P_CENTER_POOLS.Joker[ind] then
             card:set_ability(G.P_CENTER_POOLS.Joker[ind])
         end
@@ -917,7 +917,7 @@ function Entropy.reduce_cards(cards, card)
     end)
 end
 
-function Entropy.handle_card_limit(area, num)
+function Spectrallib.handle_card_limit(area, num)
     local off = 0
     for i, v in pairs(area.cards) do
         if v.ability and v.ability.extra_slots_used then off = off + v.ability.extra_slots_used end
@@ -926,12 +926,12 @@ function Entropy.handle_card_limit(area, num)
     area:handle_card_limit()
 end
 
-function Entropy.should_skip_animations(strict)
+function Spectrallib.should_skip_animations(strict)
     if Talisman and Talisman.config_file.disable_anims then return true end
     if Handy and Handy.animation_skip and Handy.animation_skip.get_value and Handy.animation_skip.get_value() >= (strict and 4 or 3) then return true end
 end
 
-function Entropy.get_random_rare(seed)
+function Spectrallib.get_random_rare(seed)
     seed = seed or "entr_rare"
     local cards = {}
     for i, v in pairs(G.P_CENTERS) do
@@ -942,23 +942,23 @@ function Entropy.get_random_rare(seed)
     return pseudorandom_element(cards, pseudoseed(seed))
 end
 
-function Entropy.get_card_pixel_pos(card)
+function Spectrallib.get_card_pixel_pos(card)
     return {
         (G.ROOM.T.x + card.T.x + card.T.w * 0.5) * (G.TILESIZE * G.TILESCALE),
         (G.ROOM.T.y + card.T.y + card.T.h * 0.5) * (G.TILESIZE * G.TILESCALE),
     }
 end
 
-function Entropy.pythag(a, b)
+function Spectrallib.pythag(a, b)
     local ax, ay, bx, by = a[1], a[2], b[1], b[2]
     return math.sqrt(((ax - bx) ^ 2) + ((ay - by) ^ 2))
 end
 
-function Entropy.max_diagonal()
-    return Entropy.pythag({0, 0}, {love.graphics.getWidth(), love.graphics.getHeight()})
+function Spectrallib.max_diagonal()
+    return Spectrallib.pythag({0, 0}, {love.graphics.getWidth(), love.graphics.getHeight()})
 end
 
-function Entropy.get_dummy(center, area, self, silent)
+function Spectrallib.get_dummy(center, area, self, silent)
     local abil = copy_table(center.config) or {}
     abil.consumeable = copy_table(abil)
     abil.name = center.name or center.key
@@ -1056,19 +1056,19 @@ function Entropy.get_dummy(center, area, self, silent)
     return tbl
 end
 
-function Entropy.concat_strings(tbl)
+function Spectrallib.concat_strings(tbl)
     local result = ""
     for i, v in pairs(tbl) do result = result..v end
     return result
 end
 
-function Entropy.get_by_sortid(id)
+function Spectrallib.get_by_sortid(id)
     for i, v in pairs(G.jokers.cards) do
         if v.sort_id == id then return v end
     end
 end
 
-function Entropy.trigger_enhancement(enh, card)
+function Spectrallib.trigger_enhancement(enh, card)
     if G.P_CENTERS[enh].demicoloncompat then
         return G.P_CENTERS[enh]:calculate(card, {forcetrigger = true})
     end
@@ -1093,19 +1093,19 @@ function Entropy.trigger_enhancement(enh, card)
     end
 end
 
-function Entropy.gather_values(card)
+function Spectrallib.gather_values(card)
     local total = 0
     for i, v in pairs(card.ability) do
-        if Entropy.is_number(v) and to_big(v) > to_big(1) and i ~= "order" then
+        if Spectrallib.is_number(v) and to_big(v) > to_big(1) and i ~= "order" then
             total = total + v
         elseif type(v) == "table" then
-            total = total + Entropy.gather_values({ability = v})
+            total = total + Spectrallib.gather_values({ability = v})
         end
     end
     return total
 end
 
-function Entropy.kind_to_set(kind, c)
+function Spectrallib.kind_to_set(kind, c)
     local check = {
         Arcana = "Tarot",
         Celestial = "Planet",
@@ -1120,7 +1120,7 @@ function Entropy.kind_to_set(kind, c)
     return kind2
 end
 
-function Entropy.missing_ranks()
+function Spectrallib.missing_ranks()
     local ranks = {}
     for i, v in pairs(SMODS.Ranks) do
         if not v.original_mod and not v.mod then ranks[v.id] = 0 end
@@ -1137,14 +1137,14 @@ function Entropy.missing_ranks()
     return total
 end
 
-function Entropy.shares_aspect(card1, card2)
+function Spectrallib.shares_aspect(card1, card2)
     if card1:get_id() == card2:get_id() then return true end
     if card1.config.center.set ~= "Default" and card1.config.center.key == card2.config.center.key then return true end
     if card1.edition and card2.edition and card1.edition.key == card2.edition.key then return true end
     if card1.seal and card1.seal == card2.seal then return true end
 end
 
-Entropy.RarityChecks = (Cryptid and Cryptid.memepack) and { --using legacy stuff to check for cryptid and not cryptlib
+Spectrallib.RarityChecks = (Cryptid and Cryptid.memepack) and { --using legacy stuff to check for cryptid and not cryptlib
     [0]="cry_candy",
     1,
     2,
@@ -1157,13 +1157,13 @@ Entropy.RarityChecks = (Cryptid and Cryptid.memepack) and { --using legacy stuff
   1, 2, 3, 4
 }
 
-Entropy.ReverseRarityChecks = {
+Spectrallib.ReverseRarityChecks = {
 
 }
-for i, v in ipairs(Entropy.RarityChecks) do
-    Entropy.ReverseRarityChecks[v]=i
+for i, v in ipairs(Spectrallib.RarityChecks) do
+    Spectrallib.ReverseRarityChecks[v]=i
 end
 
-Entropy.ChaosBlacklist = {}
-Entropy.ParakmiBlacklist = {}
-Entropy.ChaosConversions = {}
+Spectrallib.ChaosBlacklist = {}
+Spectrallib.ParakmiBlacklist = {}
+Spectrallib.ChaosConversions = {}

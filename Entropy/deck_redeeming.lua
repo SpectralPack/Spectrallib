@@ -18,7 +18,7 @@ G.FUNCS.buy_deckorsleeve = function(e)
         end
         local diff = G.GAME.starting_params.joker_slots - orig
         if to_big(diff) > to_big(0) then
-            Entropy.handle_card_limit(G.jokers, diff)
+            Spectrallib.handle_card_limit(G.jokers, diff)
         end
     end
     for i, v in pairs(c1.config and c1.config.center and c1.config.center.config or {}) do
@@ -30,8 +30,8 @@ G.FUNCS.buy_deckorsleeve = function(e)
             G.GAME.round_resets.discards = G.GAME.round_resets.discards + v 
             ease_discard(v)
         end
-        if i == "joker_slot" then Entropy.handle_card_limit(G.jokers, v) end
-        if i == "hand_size" then Entropy.handle_card_limit(G.hand, v) end
+        if i == "joker_slot" then Spectrallib.handle_card_limit(G.jokers, v) end
+        if i == "hand_size" then Spectrallib.handle_card_limit(G.hand, v) end
         if i == "dollars" then ease_dollars(v) end
         if i == "spectral_rate" then G.GAME.spectral_rate = v end
         if i == "plincoins" then ease_plincoins(v) end
@@ -111,7 +111,7 @@ G.FUNCS.buy_deckorsleeve = function(e)
         end
         if i == "randomize_rank_suit" then
             for i, v in pairs(G.playing_cards) do
-                Entropy.randomize_rank_suit(v, true, true, "erratic_midgame")
+                Spectrallib.randomize_rank_suit(v, true, true, "erratic_midgame")
             end
         end
     end
