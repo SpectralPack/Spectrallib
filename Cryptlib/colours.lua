@@ -26,8 +26,8 @@ Spectrallib.echips = SMODS.Gradient {
 Spectrallib.emult = SMODS.Gradient {
     key = "emult",
     colours = {
-        HEX("ff895e"),
-        HEX("ff73ad")
+        HEX("ff73ad"),
+        HEX("db005f")
     },
     cycle = 4,
     update = update_exp_colour,
