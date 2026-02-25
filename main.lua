@@ -1,7 +1,3 @@
-Spectrallib_config = {
-    gameset_toggle = true
-}
-
 SMODS.Atlas {
     key = "modicon",
     path = "crylib_icon.png",
@@ -15,6 +11,7 @@ local files = {
 
     {path = "other_utils"},
     {path = "blind_functions"},
+    {path = "modpage_ui"},
 
     {path = "Cryptlib/main", redirect = "Cryptid"},
     {path = "Cryptlib/talisman", redirect = "Cryptid"}, -- this is probably not needed with amulet existing but back compat so shrug
@@ -24,6 +21,7 @@ local files = {
     {path = "Cryptlib/content_sets", redirect = "Cryptid"},
     {path = "Cryptlib/ascended", redirect = "Cryptid"},
     {path = "Cryptlib/unredeem", redirect = "Cryptid"},
+    {path = "Cryptlib/colours"}, -- this doesn't have an equivalent in cryptid currently
 
     {path = "Entropy/utils", redirect = "Entropy"},
     {path = "Entropy/hand_stuff", redirect = "Entropy"},
