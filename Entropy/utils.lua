@@ -247,24 +247,7 @@ function Spectrallib.random_forcetrigger(card, num,context)
     local res = { }
     local cards = Spectrallib.get_random_cards({G.jokers, G.hand, G.consumeables, G.play}, num, "fractured", function(card) return not card.edition or card.edition.key ~= "e_entr_fractured" end)
     for i, v in pairs(cards) do
-        if Cryptid.demicolonGetTriggerable(v)[1] and (not v.edition or v.edition.key ~= "e_entr_fractured") then
-            local results = Cryptid.forcetrigger(v, context)
-            if results then
-                for i, v2 in pairs(results) do
-                    for i2, result in pairs(type(v2) == "table" and v2 or {}) do
-                        SMODS.calculate_individual_effect({[i2] = result}, card, i2, result, false)
-                    end
-                end
-            end
-            card_eval_status_text(
-                v,
-                "extra",
-                nil,
-                nil,
-                nil,
-                { message = localize("cry_demicolon"), colour = G.C.GREEN }
-            )
-        elseif v.base.id and (not v.edition or v.edition.key ~= "e_entr_fractured") then
+        if v.base.id and (not v.edition or v.edition.key ~= "e_entr_fractured") then
             local results = eval_card(v, {cardarea=G.play,main_scoring=true, forcetrigger=true, individual=true}) or {}
             if results then
                 for i, v2 in pairs(results) do
@@ -289,6 +272,12 @@ function Spectrallib.random_forcetrigger(card, num,context)
                 nil,
                 { message = localize("cry_demicolon"), colour = G.C.GREEN }
             )
+        else
+            if (not v.edition or v.edition.key ~= "e_entr_fractured") then
+                Spectrallib.forcetrigger({
+                    card = card, context = context
+                })
+            end
         end
     end
 end

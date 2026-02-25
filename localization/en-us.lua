@@ -40,6 +40,7 @@ return {
 			k_chips = "Chips",			
 
 			cry_balanced_q = "Balanced...?",
+			slib_forcetrigger_ex = "Forcetrigger!"
         },
         v_dictionary = {
         	a_xchips = "X#1# Chips",

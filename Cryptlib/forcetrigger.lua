@@ -20,21 +20,12 @@ function Spectrallib.demicolonGetTriggerable(card)
 	return n
 end
 
-function Spectrallib.forcetrigger(card, context)
+function Spectrallib.get_forcetrigger_results(card, context)
 	if not card then
 		return {}
 	end
 	local results = {}
 	local check = Spectrallib.forcetriggerVanillaCheck(card)
-	if Talisman and not Talisman.config_file.disable_anims then
-		G.E_MANAGER:add_event(Event({
-			trigger = "before",
-			func = function()
-				play_sound("slib_forcetrigger", 1, 0.6)
-				return true
-			end,
-		}))
-	end
 	if not check and card.ability.set == "Joker" then
 		local demicontext = Spectrallib.deep_copy(context)
 		demicontext.forcetrigger = true
@@ -1028,6 +1019,28 @@ function Spectrallib.forcetrigger(card, context)
 		G.cry_force_use = nil
 	end
 	return results
+end
+
+function Spectrallib.forcetrigger(args)
+	if Cryptid.demicolonGetTriggerable(args.card)[1] then
+		if not Spectrallib.disable_animations() and not args.silent then
+			G.E_MANAGER:add_event(Event({
+				trigger = "before",
+				func = function()
+				play_sound("slib_forcetrigger", 1, 0.6)
+				return true
+				end,
+			}))
+		end
+		if not args.silent then
+			SMODS.calculate_effect{card = context.blueprint_card or card, colour = context.blueprint_card and G.C.BLUE or args.colour or G.C.PURPLE, message = args.message or localize("slib_forcetrigger_ex")}
+		end
+		local results = Spectrallib.get_forcetrigger_results(args.card, args.context)
+		if results and results.jokers then
+			results.jokers.card = args.card
+			SMODS.calculate_effect(results.jokers)
+		end
+	end
 end
 
 function Spectrallib.forcetriggerVanillaCheck(card)
