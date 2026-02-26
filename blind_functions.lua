@@ -10,7 +10,7 @@ function Spectrallib.blind_is(blind)
     if G.GAME.blind and G.GAME.blind.config and G.GAME.blind.config.blind.key == blind then return true end
     if Spectrallib.in_table(Spectrallib.get_copied_blinds(G.GAME.blind), blind) then return true end
 end
-Entropy.blind_is = Spectrallib.blind_is --circumventing the redirect system because only this function needs it
+if Entropy then Entropy.blind_is = Spectrallib.blind_is end --circumventing the redirect system because only this function needs it
 
 function Spectrallib.get_copied_blinds(self, cent)
     local cent = cent or self and self.config and self.config.blind
