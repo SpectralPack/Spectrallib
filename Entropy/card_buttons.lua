@@ -167,19 +167,21 @@ function G.UIDEF.use_and_sell_buttons(card)
               }}
             }},
         }}
+        local config = Spectrallib.gather_button_config(card.config.center, card)
+        card._spectrallib_use_key = localize(config.key)
         transition = {n=G.UIT.C, config={align = "cr"}, nodes={
-            {n=G.UIT.C, config={ref_table = card, align = "cm",padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, button = 'use_joker', func = 'can_use_joker', handy_insta_action = 'use'}, nodes={
-              {n=G.UIT.B, config = {w=0.1,h=0.3}},
-              {n=G.UIT.C, config={align = "tm"}, nodes={
+            {n=G.UIT.C, config={ref_table = card, align = "cm",padding = 0.1, r=0.08, minw = 1.25, minh = 0.8, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, button = 'use_joker', func = config.func, handy_insta_action = 'use'}, nodes={
+              {n=G.UIT.B, config = {w=0.1,h=config.h}},
+              {n=G.UIT.C, config={align = "cm"}, nodes={
                 {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
-                  {n=G.UIT.T, config={text = localize(card.config.center.use_key or "b_use"),colour = G.C.UI.TEXT_LIGHT, scale = 0.4, shadow = true}}
+                  {n=G.UIT.T, config={ref_table = card, ref_value = "_spectrallib_use_key", colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
                 }},
-              }}
+              }},
             }},
         }}
         return {
             n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
-              {n=G.UIT.C, config={padding = 0, align = 'cl'}, nodes={
+              {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
                 {n=G.UIT.R, config={align = 'cl'}, nodes={
                   sell
                 }},
@@ -557,13 +559,17 @@ end
 
 G.FUNCS.can_use_joker = function(e)
     local center = e.config.ref_table.config.center
+    local card = e.config.ref_table
+    local config = Spectrallib.gather_button_config(card.config.center, card)
+    card._spectrallib_use_key = localize(config.key)
     if
         center.can_use and center:can_use(e.config.ref_table) and not e.config.ref_table.debuff
         and G.STATE ~= G.STATES.HAND_PLAYED and G.STATE ~= G.STATES.DRAW_TO_HAND and G.STATE ~= G.STATES.PLAY_TAROT
         and not (((G.play and #G.play.cards > 0) or (G.CONTROLLER.locked) or (G.GAME.STOP_USE and G.GAME.STOP_USE > 0)))
     then
-        e.config.colour = G.C.RED
+        e.config.colour = config.colour
         e.config.button = "use_joker"
+        Spectrallib.test_node = e[1]
     else
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = nil
@@ -573,9 +579,30 @@ G.FUNCS.use_joker = function(e)
     local int = G.TAROT_INTERRUPT
     G.TAROT_INTERRUPT = true
     local center = e.config.ref_table.config.center
+    local card = e.config.ref_table
+    local config = Spectrallib.gather_button_config(center, card)
     if center.use then
         center:use(e.config.ref_table)
     end
     e.config.ref_table:juice_up()
     G.TAROT_INTERRUPT = int
+    if config.unhighlight then
+        card.area:remove_from_highlighted(card)
+        card:highlight()
+    end
+end
+
+
+function Spectrallib.gather_button_config(center, card)
+    local config = center.use_button_config and copy_table(center.use_button_config) or {
+        key = center.use_key
+    }
+    for i, v in pairs(config) do
+        if type(v) == "function" then config[i] = v(center, card, config) end
+    end
+    config.key = config.key or "b_use"
+    config.colour = config.colour or G.C.RED
+    config.h = config.h or 0.6
+    config.func = config.func or "can_use_joker"
+    return config
 end
