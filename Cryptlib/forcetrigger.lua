@@ -33,7 +33,7 @@ function Spectrallib.get_forcetrigger_results(card, context)
 	local results = {}
 	local check = Spectrallib.forcetriggerVanillaCheck(card)
 	if not check and card.ability.set == "Joker" then
-		local demicontext = Spectrallib.deep_copy(context)
+		local demicontext = SMODS.shallow_copy(context)
 		demicontext.forcetrigger = true
 		if card.config.center.forcetrigger then
 			results = {jokers = {
