@@ -17,10 +17,19 @@ function Spectrallib.demicolonGetTriggerable(card)
 	return n
 end
 
+local calc_ref = Card.calculate_joker
+function Card:calculate_joker(...)
+	local ret =  calc_ref(self, ...)
+	G.slib_copied_stack = nil
+	return ret
+end
+
 function Spectrallib.get_forcetrigger_results(card, context)
-	if not card then
+	G.slib_copied_stack = G.slib_copied_stack or {}
+	if not card or Spectrallib.in_table(G.slib_copied_stack, card) then
 		return {}
 	end
+	G.slib_copied_stack[#G.slib_copied_stack+1] = card
 	local results = {}
 	local check = Spectrallib.forcetriggerVanillaCheck(card)
 	if not check and card.ability.set == "Joker" then
@@ -30,7 +39,7 @@ function Spectrallib.get_forcetrigger_results(card, context)
 			results = {jokers = {
 
 			}}
-			results.jokers = card.config.center:forcetrigger(card)
+			results.jokers = card.config.center:forcetrigger(card, demicontext)
 			results.jokers.card = card
 		else
 			results = eval_card(card, demicontext)
@@ -193,7 +202,7 @@ function Spectrallib.get_forcetrigger_results(card, context)
 			results = { jokers = { mult = card.ability.extra, card = card } }
 		end
 		if card.ability.name == "Delayed Gratification" then
-			ease_dollars(card.ability.extra)
+			results = { jokers = { dollars = card.ability.extra, card = card } }
 		end
 		-- if card.ability.name == "Hack" then results = { jokers = { }, } end
 		-- if card.ability.name == "Pareidolia" then results = { jokers = {  }, } end
@@ -750,7 +759,17 @@ function Spectrallib.get_forcetrigger_results(card, context)
 		if card.ability.name == "Flower Pot" then
 			results = { jokers = { xmult = card.ability.extra, card = card } }
 		end
-		-- if card.ability.name == "Blueprint" then results = { jokers = { } } end
+		if card.ability.name == "Blueprint" then
+			for i, other_joker in ipairs(G.jokers.cards) do
+				if other_joker == card and G.jokers.cards[i+1] then
+                   local  results = Spectrallib.get_forcetrigger_results(G.jokers.cards[i+1], context)
+					if results and results.jokers then
+						results.jokers.card = card
+						SMODS.calculate_effect(results.jokers)
+					end
+				end
+			end
+		end
 		if card.ability.name == "Wee Joker" then
 			card.ability.extra.chips = card.ability.extra.chips + card.ability.extra.chip_mod
 			results = { jokers = { chips = card.ability.extra.chips, card = card } }
@@ -822,7 +841,16 @@ function Spectrallib.get_forcetrigger_results(card, context)
 				}))
 			end
 		end
-		-- if card.ability.name == "Brainstorm" then results = { jokers = { } } end
+		if card.ability.name == "Brainstorm" then
+			local other_joker = G.jokers.cards[1]
+			if other_joker then
+				local results = Spectrallib.get_forcetrigger_results(G.jokers.cards[1], context)
+				if results and results.jokers then
+					results.jokers.card = card
+					SMODS.calculate_effect(results.jokers)
+				end
+			end
+		end
 		if card.ability.name == "Satellite" then
 			local planets_used = 0
 			for k, v in pairs(G.GAME.consumeable_usage) do
@@ -1168,7 +1196,7 @@ function Spectrallib.forcetriggerVanillaCheck(card)
 		"Glass Joker",
 		-- "Showman",
 		"Flower Pot",
-		-- "Blueprint",
+		"Blueprint",
 		"Wee Joker",
 		"Merry Andy",
 		-- "Oops! All 6s",
@@ -1183,7 +1211,7 @@ function Spectrallib.forcetriggerVanillaCheck(card)
 		"The Tribe",
 		"Stuntman",
 		"Invisible Joker",
-		-- "Brainstorm",
+		"Brainstorm",
 		"Satellite",
 		"Shoot the Moon",
 		"Driver's License",

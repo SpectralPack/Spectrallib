@@ -569,7 +569,6 @@ G.FUNCS.can_use_joker = function(e)
     then
         e.config.colour = config.colour
         e.config.button = "use_joker"
-        Spectrallib.test_node = e[1]
     else
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = nil

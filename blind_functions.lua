@@ -12,13 +12,21 @@ function Spectrallib.blind_is(blind)
 end
 Entropy.blind_is = Spectrallib.blind_is --circumventing the redirect system because only this function needs it
 
-function Spectrallib.get_copied_blinds(self)
-    if self and self.config and self.config.blind and self.config.blind.get_copied_blinds then
-        local ret = self.config.blind:get_copied_blinds(self)
+function Spectrallib.get_copied_blinds(self, cent)
+    local cent = cent or self and self.config and self.config.blind
+    if cent and cent.get_copied_blinds then
+        local ret = cent:get_copied_blinds(self)
         if type(ret) ~= "table" then ret = {ret} end
         local tret = {}
         for i, v in pairs(ret) do
             if G.P_BLINDS[v] then tret[#tret+1] = v end
+        end
+        for i, v in pairs(tret) do
+            local ret = Spectrallib.get_copied_blinds(self, G.P_BLINDS[v])
+            if type(ret) ~= "table" then ret = {ret} end
+            for i, v in pairs(ret) do
+                if G.P_BLINDS[v] then tret[#tret+1] = v end
+            end
         end
         return tret
     end
@@ -249,6 +257,63 @@ function Blind:modify_hand(...)
     return mult, chips, trigger
 end
 
+function Spectrallib.get_blind_text(key)
+    local self = {
+        name = ''
+    }
+    local loc_vars = nil
+    if key == 'bl_ox' then
+        loc_vars = {localize(G.GAME.current_round.most_played_poker_hand, 'poker_hands')}
+    end
+    local target = {type = 'raw_descriptions', key = key, set = 'Blind', vars = loc_vars or G.P_BLINDS[key].vars}
+    local obj = G.P_BLINDS[key]
+    if obj.loc_vars and type(obj.loc_vars) == 'function' then
+        local res = obj:loc_vars() or {}
+        target.vars = res.vars or target.vars
+        target.key = res.key or target.key
+        target.set = res.set or target.set
+        target.scale = res.scale
+        target.text_colour = res.text_colour
+    end
+    local loc_target = localize(target)
+    if loc_target then 
+        self.loc_name = localize{type ='name_text', key = G.P_BLINDS[key].key, set = 'Blind'}
+        self.loc_debuff_text = ''
+        self.loc_debuff_lines = {}
+        if G.localization.descriptions[target.set][target.key] then
+            for k, v in ipairs(G.localization.descriptions[target.set][target.key].text_parsed) do
+                self.loc_debuff_lines[k] = v
+            end
+            self.loc_debuff_lines.vars = target.vars
+            self.loc_debuff_lines.scale = target.scale
+            self.loc_debuff_lines.text_colour = target.text_colour
+        else
+            for k, v in ipairs(loc_target) do
+                self.loc_debuff_lines[k] = v
+            end
+        end
+        for k, v in ipairs(loc_target) do
+            self.loc_debuff_text = self.loc_debuff_text..v..(k <= #loc_target and ' ' or '')
+        end
+    else
+        self.loc_name = ''; self.loc_debuff_text = ''
+        self.loc_debuff_lines = {}
+    end
+    return self
+end
+
+--SMODS.debuff_text
+function Spectrallib.get_debuff_text(key)
+    local obj = G.P_BLINDS[key]
+    if obj.get_loc_debuff_text and type(obj.get_loc_debuff_text) == 'function' then
+        return obj:get_loc_debuff_text()
+    end
+    local bl = Spectrallib.get_blind_text(key)
+    local disp_text = (obj.name == 'The Wheel' and G.GAME.probabilities.normal or '')..bl.loc_debuff_text
+    if (obj.name == 'The Mouth') and self.only_hand then disp_text = disp_text..' ['..localize(self.only_hand, 'poker_hands')..']' end
+    return disp_text
+end
+
 function Spectrallib.debuff_hand_copied_blinds(blinds, self, cards, hand, handname, check)
     G.GAME.blind.debuff_boss = nil
 	for _, k in pairs(blinds) do
@@ -262,16 +327,19 @@ function Spectrallib.debuff_hand_copied_blinds(blinds, self, cards, hand, handna
             if s.debuff.hand and next(hand[s.debuff.hand]) then
                 G.GAME.blind.triggered = true
                 G.GAME.blind.debuff_boss = s
+                SMODS.debuff_text = Spectrallib.get_debuff_text(k)
                 return true
             end
             if s.debuff.h_size_ge and #cards < s.debuff.h_size_ge then
                 G.GAME.blind.triggered = true
                 G.GAME.blind.debuff_boss = s
+                SMODS.debuff_text = Spectrallib.get_debuff_text(k)
                 return true
             end
             if s.debuff.h_size_le and #cards > s.debuff.h_size_le then
                 G.GAME.blind.triggered = true
                 G.GAME.blind.debuff_boss = s
+                SMODS.debuff_text = Spectrallib.get_debuff_text(k)
                 return true
             end
             if s.name == "The Eye" then
@@ -279,6 +347,7 @@ function Spectrallib.debuff_hand_copied_blinds(blinds, self, cards, hand, handna
                 if G.GAME.blind.hands[handname] then
                     G.GAME.blind.triggered = true
                     G.GAME.blind.debuff_boss = s
+                    SMODS.debuff_text = Spectrallib.get_debuff_text(k)
                     return true
                 end
                 if not check then
@@ -289,6 +358,7 @@ function Spectrallib.debuff_hand_copied_blinds(blinds, self, cards, hand, handna
                 if s.only_hand and s.only_hand ~= handname then
                     G.GAME.blind.triggered = true
                     G.GAME.blind.debuff_boss = s
+                    SMODS.debuff_text = Spectrallib.get_debuff_text(k)
                     return true
                 end
                 if not check then
@@ -628,4 +698,79 @@ function SMODS.calculate_round_score(...)
         score = G.GAME.blind:cap_final_score(score)
     end
     return score
+end
+
+function _G.info_queue_copied(key)
+    local width = 6
+    local desc_nodes = {}
+    localize{type = 'descriptions', key = key, set = "Blind", nodes = desc_nodes, vars = {}}
+    local desc = {}
+    for _, v in ipairs(desc_nodes) do
+        desc[#desc+1] = {n=G.UIT.R, config={align = "cm"}, nodes=v}
+    end
+    return 
+    {n=G.UIT.R, config={align = "cm", colour = G.P_BLINDS[key].boss_colour or lighten(G.C.GREY, 0.4), r = 0.1, padding = 0.05}, nodes={
+        {n=G.UIT.R, config={align = "cm", padding = 0.05, r = 0.1}, nodes = localize{type = 'name', key = key, set = "Blind", name_nodes = {}, vars = {}}},
+        {n=G.UIT.R, config={align = "cm", maxw = 3.75, minh = 0.4, r = 0.1, padding = 0.05, colour = desc_nodes.background_colour or G.C.WHITE}, nodes={{n=G.UIT.R, config={align = "cm", padding = 0.03}, nodes=desc}}}
+    }}
+end
+
+Spectrallib.max_blind_infoqueues = 5
+
+function _G.create_UIBox_blind_info_queue(blind)
+    local q_lines = {}
+    local nodes = {}
+    for _, v in ipairs(Spectrallib.get_copied_blinds(blind)) do
+        q_lines[#q_lines+1] = info_queue_copied(v)
+        if #q_lines >= Spectrallib.max_blind_infoqueues then
+            nodes[#nodes+1] = {n=G.UIT.C, config = {align = "lm", padding = 0.1}, nodes = q_lines}
+            q_lines = {}
+        end
+    end
+    if  #q_lines >= 0 then
+        nodes[#nodes+1] = {n=G.UIT.C, config = {align = "lm", padding = 0.1}, nodes = q_lines}
+    end
+    return
+    {n=G.UIT.ROOT, config = {align = 'cm', colour = lighten(G.C.JOKER_GREY, 0.5), r = 0.1, emboss = 0.05, padding = 0.05}, nodes={
+        {n=G.UIT.R, config={align = "cm", emboss = 0.05, r = 0.1, padding = 0.05, colour = G.C.GREY}, nodes=nodes}
+    }}
+end
+
+local blind_hoverref = Blind.hover
+function Blind.hover(self)
+    if not G.CONTROLLER.dragging.target or G.CONTROLLER.using_touch then 
+        if not self.hovering and self.states.visible and self.children.animatedSprite.states.visible then
+            if next(Spectrallib.get_copied_blinds(self)) then
+                G.blind_info_queue = UIBox{
+                    definition = create_UIBox_blind_info_queue(self),
+                    config = {
+                        major = self,
+                        parent = nil,
+                        offset = {
+                            x = 0.15,
+                            y = 0.2 + 0.38*math.min(#Spectrallib.get_copied_blinds(self),Spectrallib.max_blind_infoqueues),
+                        },  
+                        type = "cr",
+                    }
+                }
+                G.blind_info_queue.attention_text = true
+                G.blind_info_queue.states.collide.can = false
+                G.blind_info_queue.states.drag.can = false
+                if self.children.alert then
+                    self.children.alert:remove()
+                    self.children.alert = nil
+                end
+            end
+        end
+    end
+    blind_hoverref(self)
+end
+
+local blind_stop_hoverref = Blind.stop_hover
+function Blind.stop_hover(self)
+    if G.blind_info_queue then
+        G.blind_info_queue:remove()
+        G.blind_info_queue = nil
+    end
+    blind_stop_hoverref(self)
 end
