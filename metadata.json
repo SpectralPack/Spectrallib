@@ -2,14 +2,14 @@
 	"id": "Spectrallib",
 	"name": "Spectrallib",
 	"display_name": "Spectrallib",
-	"author": ["lord.ruby"],
+	"author": ["lord.ruby", "InvalidOS"],
 	"description": "A library mod designed to conglomerate widely used functions from various mods",
 	"prefix": "slib",
 	"main_file": "main.lua",
 	"priority": -10000,
 	"badge_colour": "FF0000",
 	"badge_text_colour": "FFFFFF",
-	"version": "1.0",
+	"version": "1.0.3",
 	"dependencies": [
 	],
 	"conflicts": [
