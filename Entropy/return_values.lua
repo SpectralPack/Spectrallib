@@ -11,6 +11,88 @@ function Spectrallib.get_asc_colour(amount, text)
 end
 
 
+function Spectrallib.card_eval_status_text_eq(card, eval_type, amt, percent, dir, extra, pref, col, sound, vol, ta)
+    percent = percent or (0.9 + 0.2*math.random())
+    if dir == 'down' then
+        percent = 1-percent
+    end
+
+    if extra and extra.focus then card = extra.focus end
+
+    local text = ''
+    local volume = vol or 1
+    local card_aligned = 'bm'
+    local y_off = 0.15*G.CARD_H
+    if card.area == G.jokers or card.area == G.consumeables then
+        y_off = 0.05*card.T.h
+    elseif card.area == G.hand or ta then
+        y_off = -0.05*G.CARD_H
+        card_aligned = 'tm'
+    elseif card.area == G.play then
+        y_off = -0.05*G.CARD_H
+        card_aligned = 'tm'
+    elseif card.jimbo then
+        y_off = -0.05*G.CARD_H
+        card_aligned = 'tm'
+    end
+    local config = {}
+    local delay = 0.65
+    local colour = config.colour or (extra and extra.colour) or ( G.C.FILTER )
+    local extrafunc = nil
+    sound = sound or 'multhit1'--'other1'
+    amt = amt
+    text = (pref) or ("Mult = "..amt)
+    colour = col or G.C.MULT
+    config.type = 'fade'
+    config.scale = 0.7
+    delay = delay*1.25
+    if to_big(amt) > to_big(0) or to_big(amt) < to_big(0) then
+        if extra and extra.instant then
+            if extrafunc then extrafunc() end
+            attention_text({
+                text = text,
+                scale = config.scale or 1,
+                hold = delay - 0.2,
+                backdrop_colour = colour,
+                align = card_aligned,
+                major = card,
+                offset = {x = 0, y = y_off}
+            })
+            play_sound(sound, 0.8+percent*0.2, volume)
+            if not extra or not extra.no_juice then
+                card:juice_up(0.6, 0.1)
+                G.ROOM.jiggle = G.ROOM.jiggle + 0.7
+            end
+        else
+            G.E_MANAGER:add_event(Event({ --Add bonus chips from this card
+                    trigger = 'before',
+                    delay = delay,
+                    func = function()
+                    if extrafunc then extrafunc() end
+                    attention_text({
+                        text = text,
+                        scale = config.scale or 1,
+                        hold = delay - 0.2,
+                        backdrop_colour = colour,
+                        align = card_aligned,
+                        major = card,
+                        offset = {x = 0, y = y_off}
+                    })
+                    play_sound(sound, 0.8+percent*0.2, volume)
+                    if not extra or not extra.no_juice then
+                        card:juice_up(0.6, 0.1)
+                        G.ROOM.jiggle = G.ROOM.jiggle + 0.7
+                    end
+                    return true
+                    end
+            }))
+        end
+    end
+    if extra and extra.playing_cards_created then
+        playing_card_joker_effects(extra.playing_cards_created)
+    end
+end
+
 local scie = SMODS.calculate_individual_effect
 function SMODS.calculate_individual_effect(effect, scored_card, key, amount, from_edition)
     ret = scie(effect, scored_card, key, amount, from_edition)
