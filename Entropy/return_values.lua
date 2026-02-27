@@ -6,6 +6,11 @@ for _, v in ipairs({'asc', 'asc_mod', 'plus_asc', 'plusasc_mod', 'exp_asc', 'exp
     table.insert(SMODS.other_calculation_keys or SMODS.calculation_keys or {}, v)
 end
 
+function Spectrallib.get_asc_colour(amount, text)
+    return G.C.GOLD
+end
+
+
 local scie = SMODS.calculate_individual_effect
 function SMODS.calculate_individual_effect(effect, scored_card, key, amount, from_edition)
     ret = scie(effect, scored_card, key, amount, from_edition)
