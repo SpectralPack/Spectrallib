@@ -38,7 +38,7 @@ pattern = "elseif eval_type == 'dollars' then"
 position = "before"
 payload = '''
 elseif eval_type == 'e_chips' and not (SMODS.Mods.Talisman or SMODS.Mods.cdataman or {}).can_load then
-    sound = 'Spectrallib_echips'
+    sound = 'slib_echips'
     amt = amt
     text = '^' .. number_format(amt) .. ' ' .. localize('k_chips')
     colour = Spectrallib.echips
@@ -48,7 +48,7 @@ elseif eval_type == 'e_mult' and not (SMODS.Mods.Talisman or SMODS.Mods.cdataman
     sound = 'Spectrallib_emult'
     amt = amt
     text = '^' .. number_format(amt) .. ' ' .. localize('k_mult')
-    colour = Spectrallib_emult
+    colour = slib_emult
     config.type = 'fade'
     config.scale = 0.7
 '''
