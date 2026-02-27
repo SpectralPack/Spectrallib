@@ -1028,6 +1028,11 @@ function Spectrallib.get_dummy(center, area, self, silent)
     return tbl
 end
 
+local card_eval_status_text_ref = card_eval_status_text
+function card_eval_status_text(card, ...)
+    return card_eval_status_text_ref(card.original_card or card, ...)
+end
+
 function Spectrallib.concat_strings(tbl)
     local result = ""
     for i, v in pairs(tbl) do result = result..v end
