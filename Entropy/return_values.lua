@@ -2,7 +2,7 @@ for _, v in ipairs({'eq_mult', 'Eqmult_mod', 'eq_chips', 'Eqchips_mod', 'xlog_ch
     table.insert(SMODS.scoring_parameter_keys or SMODS.calculation_keys or {}, v)
 end
 for _, v in ipairs({'asc', 'asc_mod', 'plus_asc', 'plusasc_mod', 'exp_asc', 'exp_asc_mod', 'x_asc',
-                    'hyper_asc', 'hyper_asc_mod', 'hyperasc', 'hyperasc_mod'}) do
+    'hyper_asc', 'hyper_asc_mod', 'hyperasc', 'hyperasc_mod'}) do
     table.insert(SMODS.other_calculation_keys or SMODS.calculation_keys or {}, v)
 end
 
@@ -137,8 +137,8 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
             G.GAME.current_round.current_hand.cry_asc_num_text = (to_big(G.GAME.asc_power_hand) < to_big(0) and " (" or " (+") .. (text) .. ")" 
         end
         card_eval_status_text = function() end
-        scie(effect, scored_card, "Xmult_mod", Cryptid.ascend(1, G.GAME.asc_power_hand - orig), false)
-        scie(effect, scored_card, "Xchip_mod", Cryptid.ascend(1, G.GAME.asc_power_hand - orig), false)
+        SMODS.Scoring_Parameters.mult:modify(mult * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
+        SMODS.Scoring_Parameters.chips:modify(hand_chips * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
         card_eval_status_text = e
         if not Spectrallib.should_skip_animations() then
             Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, "X"..amount.." Asc", Spectrallib.get_asc_colour(amount), "entr_e_solar", 0.6)
@@ -167,8 +167,8 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
             G.GAME.current_round.current_hand.cry_asc_num_text = (to_big(G.GAME.asc_power_hand) < to_big(0) and " (" or " (+") .. (text) .. ")" 
         end
         card_eval_status_text = function() end
-        scie(effect, scored_card, "Xmult_mod", Cryptid.ascend(1, G.GAME.asc_power_hand - orig), false)
-        scie(effect, scored_card, "Xchip_mod", Cryptid.ascend(1, G.GAME.asc_power_hand - orig), false)
+        SMODS.Scoring_Parameters.mult:modify(mult * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
+        SMODS.Scoring_Parameters.chips:modify(hand_chips * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
         card_eval_status_text = e
         if not Spectrallib.should_skip_animations() then
             Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, (to_big(amount) < to_big(0) and "" or "+")..amount.." Asc", Spectrallib.get_asc_colour(amount), "entr_e_solar", 0.6)
@@ -197,8 +197,8 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
             G.GAME.current_round.current_hand.cry_asc_num_text = (to_big(G.GAME.asc_power_hand) < to_big(0) and " (" or " (+") .. (text) .. ")" 
         end
         card_eval_status_text = function() end
-        scie(effect, scored_card, "Xmult_mod", Cryptid.ascend(1, G.GAME.asc_power_hand - orig), false)
-        scie(effect, scored_card, "Xchip_mod", Cryptid.ascend(1, G.GAME.asc_power_hand - orig), false)
+        SMODS.Scoring_Parameters.mult:modify(mult * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
+        SMODS.Scoring_Parameters.chips:modify(hand_chips * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
         card_eval_status_text = e
         if not Spectrallib.should_skip_animations() then
             Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, "^"..amount.." Asc", Spectrallib.get_asc_colour(amount), "entr_e_solar", 0.6)
@@ -227,8 +227,8 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
             G.GAME.current_round.current_hand.cry_asc_num_text = (to_big(G.GAME.asc_power_hand) < to_big(0) and " (" or " (+") .. (text) .. ")" 
         end
         card_eval_status_text = function() end
-        scie(effect, scored_card, "Xmult_mod", Cryptid.ascend(1, G.GAME.asc_power_hand - orig), false)
-        scie(effect, scored_card, "Xchip_mod", Cryptid.ascend(1, G.GAME.asc_power_hand - orig), false)
+        SMODS.Scoring_Parameters.mult:modify(mult * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
+        SMODS.Scoring_Parameters.chips:modify(hand_chips * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
         card_eval_status_text = e
         if not Spectrallib.should_skip_animations() then
             Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, Spectrallib.format_arrow_mulkt(amount[1], amount[2]).." Asc", Spectrallib.get_asc_colour(amount), "entr_e_solar", 0.6)
@@ -261,4 +261,38 @@ local play_ref = G.FUNCS.play_cards_from_highlighted
 G.FUNCS.play_cards_from_highlighted = function(e)
     G.GAME.asc_power_hand = 0
     return play_ref(e)
+end
+
+
+function Card:get_entr_xlog_chips()
+return self.ability.entr_perma_xlog_chips
+end
+
+function Card:get_entr_h_xlog_chips()
+return self.ability.entr_perma_h_xlog_chips
+end
+
+--these currently only return a single value, but exist in case other effects get added that would need to be returned here
+function Card:get_entr_plus_asc()
+return self.ability.entr_perma_plus_asc
+end
+
+function Card:get_entr_h_plus_asc()
+return self.ability.entr_perma_h_plus_asc
+end
+
+function Card:get_entr_asc()
+return self.ability.entr_perma_asc + 1
+end
+
+function Card:get_entr_h_asc()
+return self.ability.entr_perma_h_asc + 1
+end
+
+function Card:get_entr_exp_asc()
+return self.ability.entr_perma_exp_asc + 1
+end
+
+function Card:get_entr_h_exp_asc()
+return self.ability.entr_perma_h_exp_asc + 1
 end
