@@ -220,6 +220,8 @@ position = "after"
 payload = """
 entr_perma_xlog_chips = self.ability and self.ability.entr_perma_xlog_chips or 0,
 entr_perma_h_xlog_chips = self.ability and self.ability.entr_perma_h_xlog_chips or 0,
+entr_perma_xlog_mult = self.ability and self.ability.entr_perma_xlog_mult or 0,
+entr_perma_h_xlog_mult = self.ability and self.ability.entr_perma_h_xlog_mult or 0,
 entr_perma_plus_asc = self.ability and self.ability.entr_perma_plus_asc or 0,
 entr_perma_h_plus_asc = self.ability and self.ability.entr_perma_h_plus_asc or 0,
 entr_perma_asc = self.ability and self.ability.entr_perma_asc or 0,
@@ -237,6 +239,8 @@ position = "after"
 payload = """
 entr_perma_xlog_chips = self.ability.entr_perma_xlog_chips ~= 0 and self.ability.entr_perma_xlog_chips or nil,
 entr_perma_h_xlog_chips = self.ability.entr_perma_h_xlog_chips ~= 0 and self.ability.entr_perma_h_xlog_chips or nil,
+entr_perma_xlog_mult = self.ability.entr_perma_xlog_mult ~= 0 and self.ability.entr_perma_xlog_mult or nil,
+entr_perma_h_xlog_mult = self.ability.entr_perma_h_xlog_mult ~= 0 and self.ability.entr_perma_h_xlog_mult or nil,
 entr_perma_plus_asc = self.ability.entr_perma_plus_asc ~= 0 and self.ability.entr_perma_plus_asc or nil,
 entr_perma_h_plus_asc = self.ability.entr_perma_h_plus_asc ~= 0 and self.ability.entr_perma_h_plus_asc or nil,
 entr_perma_asc = self.ability.entr_perma_asc ~= 0 and (self.ability.entr_perma_asc + 1) or nil,
@@ -263,6 +267,12 @@ if specific_vars and specific_vars.entr_perma_xlog_chips then
 end
 if specific_vars and specific_vars.entr_perma_h_xlog_chips then
     localize{ type = "other", key = "entr_perma_h_xlog_chips", nodes = desc_nodes, vars = {(specific_vars.entr_perma_h_xlog_chips)}}
+end
+if specific_vars and specific_vars.entr_perma_xlog_mult then
+    localize{ type = "other", key = "entr_perma_xlog_mult", nodes = desc_nodes, vars = {(specific_vars.entr_perma_xlog_mult)}}
+end
+if specific_vars and specific_vars.entr_perma_h_xlog_mult then
+    localize{ type = "other", key = "entr_perma_h_xlog_mult", nodes = desc_nodes, vars = {(specific_vars.entr_perma_h_xlog_mult)}}
 end
 if specific_vars and specific_vars.entr_perma_plus_asc then
     localize{ type = "other", key = "entr_perma_plus_asc", nodes = desc_nodes, vars = {SMODS.signed(specific_vars.entr_perma_plus_asc)}}
@@ -302,6 +312,10 @@ local xlog_chips = card:get_entr_xlog_chips()
 if xlog_chips ~= 0 then
     ret.playing_card.xlog_chips = xlog_chips
 end
+local xlog_mult = card:get_entr_xlog_mult()
+if xlog_mult ~= 0 then
+    ret.playing_card.xlog_mult = xlog_mult
+end
 local entr_plus_asc = card:get_entr_plus_asc()
 if entr_plus_asc ~= 0 then
     ret.playing_card.plus_asc = entr_plus_asc
@@ -326,6 +340,10 @@ payload = '''
 local xlog_chips = card:get_entr_h_xlog_chips()
 if xlog_chips ~= 0 then
     ret.playing_card.xlog_chips = xlog_chips
+end
+local xlog_mult = card:get_entr_h_xlog_mult()
+if xlog_mult ~= 0 then
+    ret.playing_card.xlog_mult = xlog_mult
 end
 local entr_plus_asc = card:get_entr_h_plus_asc()
 if entr_plus_asc ~= 0 then
