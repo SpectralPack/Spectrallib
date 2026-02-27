@@ -12,6 +12,7 @@ end
 
 
 function Spectrallib.card_eval_status_text_eq(card, eval_type, amt, percent, dir, extra, pref, col, sound, vol, ta)
+    card = card.original_card or card
     percent = percent or (0.9 + 0.2*math.random())
     if dir == 'down' then
         percent = 1-percent
