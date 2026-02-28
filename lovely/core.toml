@@ -45,7 +45,7 @@ elseif eval_type == 'e_chips' and not (SMODS.Mods.Talisman or SMODS.Mods.cdatama
     config.type = 'fade'
     config.scale = 0.7
 elseif eval_type == 'e_mult' and not (SMODS.Mods.Talisman or SMODS.Mods.cdataman or {}).can_load then
-    sound = 'Spectrallib_emult'
+    sound = 'slib_emult'
     amt = amt
     text = '^' .. number_format(amt) .. ' ' .. localize('k_mult')
     colour = slib_emult

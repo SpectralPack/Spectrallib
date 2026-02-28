@@ -1,4 +1,4 @@
-for _, v in ipairs({'eq_mult', 'Eqmult_mod', 'eq_chips', 'Eqchips_mod', 'xlog_chips'}) do
+for _, v in ipairs({'eq_mult', 'Eqmult_mod', 'xlog_mult', 'eq_chips', 'Eqchips_mod', 'xlog_chips',}) do
     table.insert(SMODS.scoring_parameter_keys or SMODS.calculation_keys or {}, v)
 end
 for _, v in ipairs({'asc', 'asc_mod', 'plus_asc', 'plusasc_mod', 'exp_asc', 'exp_asc_mod', 'x_asc',
@@ -10,6 +10,15 @@ function Spectrallib.get_asc_colour(amount, text)
     return G.C.GOLD
 end
 
+SMODS.Sound{
+    key = "solar",
+    path = "solar.ogg"
+}
+
+SMODS.Sound{
+    key = "xlog_chips",
+    path = "rizz.ogg"
+}
 
 function Spectrallib.card_eval_status_text_eq(card, eval_type, amt, percent, dir, extra, pref, col, sound, vol, ta)
     card = card.original_card or card
@@ -95,7 +104,7 @@ function Spectrallib.card_eval_status_text_eq(card, eval_type, amt, percent, dir
 end
 
 local scie = SMODS.calculate_individual_effect
-function SMODS.calculate_individual_effect(effect, scored_card, key, amount, from_edition)
+function SMODS.calculate_individual_effect(effect, scored_card, key, amount, from_edition) --a lot of sounds missing here!
     ret = scie(effect, scored_card, key, amount, from_edition)
     if ret then
         return ret
@@ -141,7 +150,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
         SMODS.Scoring_Parameters.chips:modify(hand_chips * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
         card_eval_status_text = e
         if not Spectrallib.should_skip_animations() then
-            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, "X"..amount.." Asc", Spectrallib.get_asc_colour(amount), "slib_e_solar", 0.6)
+            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, "X"..amount.." Asc", Spectrallib.get_asc_colour(amount), "slib_solar", 0.6)
         end
         return true
     end
@@ -171,7 +180,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
         SMODS.Scoring_Parameters.chips:modify(hand_chips * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
         card_eval_status_text = e
         if not Spectrallib.should_skip_animations() then
-            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, (to_big(amount) < to_big(0) and "" or "+")..amount.." Asc", Spectrallib.get_asc_colour(amount), "slib_e_solar", 0.6)
+            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, (to_big(amount) < to_big(0) and "" or "+")..amount.." Asc", Spectrallib.get_asc_colour(amount), "slib_solar", 0.6)
         end
         return true
     end
@@ -201,7 +210,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
         SMODS.Scoring_Parameters.chips:modify(hand_chips * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
         card_eval_status_text = e
         if not Spectrallib.should_skip_animations() then
-            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, "^"..amount.." Asc", Spectrallib.get_asc_colour(amount), "slib_e_solar", 0.6)
+            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, "^"..amount.." Asc", Spectrallib.get_asc_colour(amount), "slib_solar", 0.6)
         end
         return true
     end
@@ -231,7 +240,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
         SMODS.Scoring_Parameters.chips:modify(hand_chips * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
         card_eval_status_text = e
         if not Spectrallib.should_skip_animations() then
-            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, Spectrallib.format_arrow_mulkt(amount[1], amount[2]).." Asc", Spectrallib.get_asc_colour(amount), "slib_e_solar", 0.6)
+            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, Spectrallib.format_arrow_mulkt(amount[1], amount[2]).." Asc", Spectrallib.get_asc_colour(amount), "slib_solar", 0.6)
         end 
         return true
     end
@@ -242,9 +251,19 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
         local log = Talisman and Big and gt.log and gt:log(to_big(amount)) or math.log(gt, amount)
         hand_chips = mod_chips(to_big(chips) * math.max(log, 1))
         if not Spectrallib.should_skip_animations() then
-            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'chips', 1, percent, nil, nil, "Chips Xlog(Chips)", G.C.BLUE, "slib_e_rizz", 0.6)
+            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'chips', 1, percent, nil, nil, "Chips Xlog(Chips)", G.C.BLUE, "slib_xlog_chips", 0.6) --janky compat hack
         end
         return true
+    end
+    if key == 'xlog_mult' then
+        local m = mult
+        local gt = to_big(m) < to_big(0) and 1 or m
+        gt = to_big(gt)
+        local log = Talisman and Big and gt.log and gt:log(to_big(amount)) or math.log(gt, amount)
+        mult = mod_mult(to_big(mult) * math.max(log, 1))
+        if not Spectrallib.should_skip_animations() then
+            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'chips', 1, percent, nil, nil, "Mult Xlog(Mult)", G.C.RED, "multhit2", 0.6)
+        end
     end
 end
 
@@ -272,6 +291,14 @@ function Card:get_entr_h_xlog_chips()
 return self.ability.entr_perma_h_xlog_chips
 end
 
+function Card:get_entr_xlog_mult()
+    return self.ability.entr_perma_xlog_mult
+end
+
+function Card:get_entr_h_xlog_mult()
+    return self.ability.entr_perma_h_xlog_mult
+end
+
 --these currently only return a single value, but exist in case other effects get added that would need to be returned here
 function Card:get_entr_plus_asc()
 return self.ability.entr_perma_plus_asc
@@ -296,15 +323,3 @@ end
 function Card:get_entr_h_exp_asc()
 return self.ability.entr_perma_h_exp_asc + 1
 end
-
-
-SMODS.Sound({
-    key = "e_solar",
-    path = "e_solar.ogg",
-})
-
-SMODS.Sound({
-    key = "e_rizz",
-    path = "e_rizz.ogg",
-    volume = 0.7
-})
