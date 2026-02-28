@@ -1,9 +1,11 @@
 -- we can figure out where to put this later
 Spectrallib_config = SMODS.current_mod.config
 
-SMODS.current_mod.config_tab = function()
-    local nodes = {}
-    nodes[#nodes+1] = create_option_cycle({
+-- done so amulet can access them
+Spectrallib.config_opts = {}
+
+Spectrallib.config_opts.exponential_colours = function()
+    return create_option_cycle({
         label = localize("slib_exp_colours"),
         scale = 0.8,
         w = 6,
@@ -11,7 +13,11 @@ SMODS.current_mod.config_tab = function()
         opt_callback = "slib_update_exp_colours",
         current_option = Spectrallib_config.exp_colours,
     })
+end
 
+SMODS.current_mod.config_tab = function()
+    local nodes = {}
+    nodes[#nodes+1] = Spectrallib.config_opts.exponential_colours()
     return {
 		n = G.UIT.ROOT,
 		config = {
