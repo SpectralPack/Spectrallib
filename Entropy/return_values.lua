@@ -112,7 +112,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
     if (key == 'eq_mult' or key == 'Eqmult_mod') then 
         mult = mod_mult(amount)
         if not Spectrallib.should_skip_animations() then
-            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent)
+            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, localize{ type = "variable", key = "a_eq_mult", vars = {amount}}, G.C.RED )
         end
         return true
     end
@@ -120,7 +120,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
         local chips = hand_chips
         hand_chips = mod_chips(amount)
         if not Spectrallib.should_skip_animations() then
-            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'chips', amount, percent, nil, nil, "="..amount.. " Chips", G.C.BLUE)
+            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'chips', amount, percent, nil, nil, localize{ type = "variable", key = "a_eq_chips", vars = {amount}}, G.C.BLUE)
         end
         return true
     end
@@ -150,7 +150,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
         SMODS.Scoring_Parameters.chips:modify(hand_chips * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
         card_eval_status_text = e
         if not Spectrallib.should_skip_animations() then
-            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, "X"..amount.." Asc", Spectrallib.get_asc_colour(amount), "slib_solar", 0.6)
+            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, localize{type = "variable", key = "a_xasc", vars = {amount}}, Spectrallib.get_asc_colour(amount), "slib_solar", 0.6)
         end
         return true
     end
@@ -180,7 +180,8 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
         SMODS.Scoring_Parameters.chips:modify(hand_chips * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
         card_eval_status_text = e
         if not Spectrallib.should_skip_animations() then
-            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, (to_big(amount) < to_big(0) and "" or "+")..amount.." Asc", Spectrallib.get_asc_colour(amount), "slib_solar", 0.6)
+            local message_amt = math.abs(amount) --absolute value so that it looks normal with the minus asc message
+            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, localize{type = "variable", key = (to_big(amount) < to_big(0) and "a_asc_minus" or "a_asc"), vars = {message_amt}}, Spectrallib.get_asc_colour(amount), "slib_solar", 0.6)
         end
         return true
     end
@@ -210,7 +211,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
         SMODS.Scoring_Parameters.chips:modify(hand_chips * (Cryptid.ascend(1, G.GAME.asc_power_hand - orig) - 1))
         card_eval_status_text = e
         if not Spectrallib.should_skip_animations() then
-            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, "^"..amount.." Asc", Spectrallib.get_asc_colour(amount), "slib_solar", 0.6)
+            Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'mult', amount, percent, nil, nil, localize{type = "variable", key = "a_exp_asc", vars = {amount}}, Spectrallib.get_asc_colour(amount), "slib_solar", 0.6)
         end
         return true
     end

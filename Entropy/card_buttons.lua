@@ -309,7 +309,7 @@ G.FUNCS.can_reserve_joker = function(e)
     local c1 = e.config.ref_table
     if
         #G.jokers.cards
-        < G.jokers.config.card_limit + (Cryptid.safe_get(c1, "edition", "negative") and 1 or 0)
+        < G.jokers.config.card_limit + (Spectrallib.safe_get(c1, "edition", "negative") and 1 or 0)
     then
         e.config.colour = G.C.GREEN
         e.config.button = "reserve_joker"
@@ -481,7 +481,7 @@ G.FUNCS.can_buy_deckorsleeve = function(e)
 end
 G.FUNCS.can_buy_deckorsleeve_from_shop = function(e)
     local c1 = e.config.ref_table
-    if to_big(G.GAME.dollars+G.GAME.bankrupt_at) >= to_big(c1.cost) or Entropy.has_rune("rune_entr_naudiz") then
+    if to_big(G.GAME.dollars+G.GAME.bankrupt_at) >= to_big(c1.cost) or Entropy and Entropy.has_rune("rune_entr_naudiz") then --should probably have a hookable function similar to SMODS.showman instead of a hardcoded rune check
         e.config.colour = G.C.GREEN
         e.config.button = "buy_deckorsleeve_from_shop"
     else

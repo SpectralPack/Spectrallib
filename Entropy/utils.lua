@@ -818,7 +818,7 @@ end
 
 function Spectrallib.can_be_pulled(card)
     local center = card.ability.glitched_crown and G.P_CENTERS[card.ability.glitched_crown[card.glitched_index]] or card.config.center
-    if not card:selectable_from_pack(SMODS.OPENED_BOOSTER) and next(SMODS.find_card("j_entr_oekrep")) and card.ability.consumeable then
+    if not card:selectable_from_pack(SMODS.OPENED_BOOSTER) and next(SMODS.find_card("j_entr_oekrep")) and card.ability.consumeable then --should probably have a hookable function like SMODS.showman instead of a hardcoded Oekrep check
         return not center.hidden and not center.no_select
     end
     return not center.no_select and (SMODS.ConsumableTypes[center.set] and SMODS.ConsumableTypes[center.set].can_be_pulled or center.can_be_pulled) and not center.hidden
@@ -1144,3 +1144,10 @@ end
 Spectrallib.ChaosBlacklist = {}
 Spectrallib.ParakmiBlacklist = {}
 Spectrallib.ChaosConversions = {}
+Spectrallib.ConsumablePackBlacklist = { --identical to entropy, for some reason entropy table was still used in use and sell buttons hook
+    p_mupack_multipack1=true,
+    p_mupack_multipack2=true,
+    p_mupack_multipack3=true,
+    p_mupack_multipack4=true,
+    p_mupack_multipack5=true,
+}
