@@ -704,7 +704,8 @@ end
 function _G.info_queue_copied(key)
     local width = 6
     local desc_nodes = {}
-    localize{type = 'descriptions', key = key, set = "Blind", nodes = desc_nodes, vars = {}}
+    local vars = G.P_BLINDS[key]:loc_vars(G.GAME.blind) or {vars = {}}
+    localize{type = 'descriptions', key = key, set = "Blind", nodes = desc_nodes, vars = vars.vars}
     local desc = {}
     for _, v in ipairs(desc_nodes) do
         desc[#desc+1] = {n=G.UIT.R, config={align = "cm"}, nodes=v}
