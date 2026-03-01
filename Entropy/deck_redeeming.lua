@@ -1,3 +1,4 @@
+
 G.FUNCS.buy_deckorsleeve = function(e)
     local c1 = e.config.ref_table
     --G.GAME.DefineBoosterState = G.STATE

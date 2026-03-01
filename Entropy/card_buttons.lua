@@ -3,7 +3,7 @@ function G.UIDEF.use_and_sell_buttons(card)
 	local abc = G_UIDEF_use_and_sell_buttons_ref(card)
 	-- Allow code cards to be reserved
     if (card.area == G.consumeables or card.area == G.jokers) and (card.config.center.set == "Voucher" or card.ability.set == "Voucher") then
-        sell = {n=G.UIT.C, config={align = "cr"}, nodes={
+        local sell = {n=G.UIT.C, config={align = "cr"}, nodes={
             {n=G.UIT.C, config={ref_table = card, align = "cr",padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card', handy_insta_action = 'sell'}, nodes={
               {n=G.UIT.B, config = {w=0.1,h=0.6}},
               {n=G.UIT.C, config={align = "tm"}, nodes={
@@ -17,7 +17,7 @@ function G.UIDEF.use_and_sell_buttons(card)
               }}
             }},
           }}
-        use = 
+        local use = 
         {n=G.UIT.C, config={align = "cr"}, nodes={
           
           {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = (card.area and card.area.config.type == 'joker') and 0 or 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'open_voucher', func = 'can_open_voucher', handy_insta_action = 'use'}, nodes={
@@ -47,7 +47,7 @@ function G.UIDEF.use_and_sell_buttons(card)
           }}
         end
         if card.area == G.consumeables or card.area == G.jokers then
-            sell = {n=G.UIT.C, config={align = "cr"}, nodes={
+            local sell = {n=G.UIT.C, config={align = "cr"}, nodes={
                 {n=G.UIT.C, config={ref_table = card, align = "cr",padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card', handy_insta_action = "sell"}, nodes={
                   {n=G.UIT.B, config = {w=0.1,h=0.6}},
                   {n=G.UIT.C, config={align = "tm"}, nodes={
@@ -61,7 +61,7 @@ function G.UIDEF.use_and_sell_buttons(card)
                   }}
                 }},
               }}
-            use = 
+            local use = 
             {n=G.UIT.C, config={align = "cr"}, nodes={
               
               {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = (card.area and card.area.config.type == 'joker') and 0 or 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'buy_deckorsleeve', func = 'can_buy_deckorsleeve', handy_insta_action = 'use'}, nodes={
@@ -83,7 +83,7 @@ function G.UIDEF.use_and_sell_buttons(card)
         end
     end
     if ((card.area == G.consumeables or card.area == G.jokers) and G.consumeables and card.config.center.set == "Booster") then
-        sell = {n=G.UIT.C, config={align = "cr"}, nodes={
+        local sell = {n=G.UIT.C, config={align = "cr"}, nodes={
             {n=G.UIT.C, config={ref_table = card, align = "cr",padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card', handy_insta_action = 'sell'}, nodes={
               {n=G.UIT.B, config = {w=0.1,h=0.6}},
               {n=G.UIT.C, config={align = "tm"}, nodes={
@@ -97,7 +97,7 @@ function G.UIDEF.use_and_sell_buttons(card)
               }}
             }},
           }}
-        use = 
+        local use = 
         {n=G.UIT.C, config={align = "cr"}, nodes={
           
           {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = (card.area and card.area.config.type == 'joker') and 0 or 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'open_booster', func = 'can_open_booster', handy_insta_action = 'use'}, nodes={
@@ -153,7 +153,7 @@ function G.UIDEF.use_and_sell_buttons(card)
           }}
     end
     if (card.area == G.jokers and G.jokers and card.config.center.use) and not card.debuff and card.config.center.set == "Joker" then
-        sell = {n=G.UIT.C, config={align = "cr"}, nodes={
+        local sell = {n=G.UIT.C, config={align = "cr"}, nodes={
             {n=G.UIT.C, config={ref_table = card, align = "cr",padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card', handy_insta_action = 'sell'}, nodes={
               {n=G.UIT.B, config = {w=0.1,h=0.6}},
               {n=G.UIT.C, config={align = "tm"}, nodes={
@@ -169,7 +169,7 @@ function G.UIDEF.use_and_sell_buttons(card)
         }}
         local config = Spectrallib.gather_button_config(card.config.center, card)
         card._spectrallib_use_key = localize(config.key)
-        transition = {n=G.UIT.C, config={align = "cr"}, nodes={
+        local transition = {n=G.UIT.C, config={align = "cr"}, nodes={
             {n=G.UIT.C, config={ref_table = card, align = "cm",padding = 0.1, r=0.08, minw = 1.25, minh = 0.8, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, button = 'use_joker', func = config.func, handy_insta_action = 'use'}, nodes={
               {n=G.UIT.B, config = {w=0.1,h=config.h}},
               {n=G.UIT.C, config={align = "cm"}, nodes={
