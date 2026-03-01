@@ -284,43 +284,43 @@ G.FUNCS.play_cards_from_highlighted = function(e)
 end
 
 
-function Card:get_entr_xlog_chips()
-return self.ability.entr_perma_xlog_chips
+function Card:get_slib_xlog_chips()
+return self.ability.slib_perma_xlog_chips
 end
 
-function Card:get_entr_h_xlog_chips()
-return self.ability.entr_perma_h_xlog_chips
+function Card:get_slib_h_xlog_chips()
+return self.ability.slib_perma_h_xlog_chips
 end
 
-function Card:get_entr_xlog_mult()
-    return self.ability.entr_perma_xlog_mult
+function Card:get_slib_xlog_mult()
+    return self.ability.slib_perma_xlog_mult
 end
 
-function Card:get_entr_h_xlog_mult()
-    return self.ability.entr_perma_h_xlog_mult
+function Card:get_slib_h_xlog_mult()
+    return self.ability.slib_perma_h_xlog_mult
 end
 
 --these currently only return a single value, but exist in case other effects get added that would need to be returned here
-function Card:get_entr_plus_asc()
-return self.ability.entr_perma_plus_asc
+function Card:get_slib_plus_asc()
+return self.ability.slib_perma_plus_asc
 end
 
-function Card:get_entr_h_plus_asc()
-return self.ability.entr_perma_h_plus_asc
+function Card:get_slib_h_plus_asc()
+return self.ability.slib_perma_h_plus_asc
 end
 
-function Card:get_entr_asc()
-return self.ability.entr_perma_asc + 1
+function Card:get_slib_asc()
+return self.ability.slib_perma_asc + 1
 end
 
-function Card:get_entr_h_asc()
-return self.ability.entr_perma_h_asc + 1
+function Card:get_slib_h_asc()
+return self.ability.slib_perma_h_asc + 1
 end
 
-function Card:get_entr_exp_asc()
-return self.ability.entr_perma_exp_asc + 1
+function Card:get_slib_exp_asc()
+return self.ability.slib_perma_exp_asc + 1
 end
 
-function Card:get_entr_h_exp_asc()
-return self.ability.entr_perma_h_exp_asc + 1
+function Card:get_slib_h_exp_asc()
+return self.ability.slib_perma_h_exp_asc + 1
 end

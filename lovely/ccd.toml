@@ -218,16 +218,16 @@ target = "card.lua"
 pattern = "perma_h_dollars = self.ability and self.ability.perma_h_dollars or 0,"
 position = "after"
 payload = """
-entr_perma_xlog_chips = self.ability and self.ability.entr_perma_xlog_chips or 0,
-entr_perma_h_xlog_chips = self.ability and self.ability.entr_perma_h_xlog_chips or 0,
-entr_perma_xlog_mult = self.ability and self.ability.entr_perma_xlog_mult or 0,
-entr_perma_h_xlog_mult = self.ability and self.ability.entr_perma_h_xlog_mult or 0,
-entr_perma_plus_asc = self.ability and self.ability.entr_perma_plus_asc or 0,
-entr_perma_h_plus_asc = self.ability and self.ability.entr_perma_h_plus_asc or 0,
-entr_perma_asc = self.ability and self.ability.entr_perma_asc or 0,
-entr_perma_h_asc = self.ability and self.ability.entr_perma_h_asc or 0,
-entr_perma_exp_asc = self.ability and self.ability.entr_perma_exp_asc or 0,
-entr_perma_h_exp_asc = self.ability and self.ability.entr_perma_h_exp_asc or 0,
+slib_perma_xlog_chips = self.ability and self.ability.slib_perma_xlog_chips or 0,
+slib_perma_h_xlog_chips = self.ability and self.ability.slib_perma_h_xlog_chips or 0,
+slib_perma_xlog_mult = self.ability and self.ability.slib_perma_xlog_mult or 0,
+slib_perma_h_xlog_mult = self.ability and self.ability.slib_perma_h_xlog_mult or 0,
+slib_perma_plus_asc = self.ability and self.ability.slib_perma_plus_asc or 0,
+slib_perma_h_plus_asc = self.ability and self.ability.slib_perma_h_plus_asc or 0,
+slib_perma_asc = self.ability and self.ability.slib_perma_asc or 0,
+slib_perma_h_asc = self.ability and self.ability.slib_perma_h_asc or 0,
+slib_perma_exp_asc = self.ability and self.ability.slib_perma_exp_asc or 0,
+slib_perma_h_exp_asc = self.ability and self.ability.slib_perma_h_exp_asc or 0,
 """
 match_indent = true
 
@@ -237,16 +237,16 @@ target = "card.lua"
 pattern = "bonus_x_chips = self.ability.perma_x_chips ~= 0 and (self.ability.perma_x_chips + 1) or nil,"
 position = "after"
 payload = """
-entr_perma_xlog_chips = self.ability.entr_perma_xlog_chips ~= 0 and self.ability.entr_perma_xlog_chips or nil,
-entr_perma_h_xlog_chips = self.ability.entr_perma_h_xlog_chips ~= 0 and self.ability.entr_perma_h_xlog_chips or nil,
-entr_perma_xlog_mult = self.ability.entr_perma_xlog_mult ~= 0 and self.ability.entr_perma_xlog_mult or nil,
-entr_perma_h_xlog_mult = self.ability.entr_perma_h_xlog_mult ~= 0 and self.ability.entr_perma_h_xlog_mult or nil,
-entr_perma_plus_asc = self.ability.entr_perma_plus_asc ~= 0 and self.ability.entr_perma_plus_asc or nil,
-entr_perma_h_plus_asc = self.ability.entr_perma_h_plus_asc ~= 0 and self.ability.entr_perma_h_plus_asc or nil,
-entr_perma_asc = self.ability.entr_perma_asc ~= 0 and (self.ability.entr_perma_asc + 1) or nil,
-entr_perma_h_asc = self.ability.entr_perma_h_asc ~= 0 and (self.ability.entr_perma_h_asc + 1) or nil,
-entr_perma_exp_asc = self.ability.entr_perma_exp_asc ~= 0 and (self.ability.entr_perma_exp_asc + 1) or nil,
-entr_perma_h_exp_asc = self.ability.entr_perma_h_exp_asc ~= 0 and (self.ability.entr_perma_h_exp_asc + 1) or nil,
+slib_perma_xlog_chips = self.ability.slib_perma_xlog_chips ~= 0 and self.ability.slib_perma_xlog_chips or nil,
+slib_perma_h_xlog_chips = self.ability.slib_perma_h_xlog_chips ~= 0 and self.ability.slib_perma_h_xlog_chips or nil,
+slib_perma_xlog_mult = self.ability.slib_perma_xlog_mult ~= 0 and self.ability.slib_perma_xlog_mult or nil,
+slib_perma_h_xlog_mult = self.ability.slib_perma_h_xlog_mult ~= 0 and self.ability.slib_perma_h_xlog_mult or nil,
+slib_perma_plus_asc = self.ability.slib_perma_plus_asc ~= 0 and self.ability.slib_perma_plus_asc or nil,
+slib_perma_h_plus_asc = self.ability.slib_perma_h_plus_asc ~= 0 and self.ability.slib_perma_h_plus_asc or nil,
+slib_perma_asc = self.ability.slib_perma_asc ~= 0 and (self.ability.slib_perma_asc + 1) or nil,
+slib_perma_h_asc = self.ability.slib_perma_h_asc ~= 0 and (self.ability.slib_perma_h_asc + 1) or nil,
+slib_perma_exp_asc = self.ability.slib_perma_exp_asc ~= 0 and (self.ability.slib_perma_exp_asc + 1) or nil,
+slib_perma_h_exp_asc = self.ability.slib_perma_h_exp_asc ~= 0 and (self.ability.slib_perma_h_exp_asc + 1) or nil,
 suit_bonus = self.ability.suit_bonus or nil,
 suit_level = G.GAME.SuitBuffs and G.GAME.SuitBuffs[self.base.suit] and G.GAME.SuitBuffs[self.base.suit].level or nil,
 """
@@ -262,35 +262,35 @@ if specific_vars and specific_vars.bonus_repetitions then
 '''
 position = "after"
 payload = '''
-if specific_vars and specific_vars.entr_perma_xlog_chips then
-    localize{ type = "other", key = "entr_perma_xlog_chips", nodes = desc_nodes, vars = {(specific_vars.entr_perma_xlog_chips)}}
+if specific_vars and specific_vars.slib_perma_xlog_chips then
+    localize{ type = "other", key = "slib_perma_xlog_chips", nodes = desc_nodes, vars = {(specific_vars.slib_perma_xlog_chips)}}
 end
-if specific_vars and specific_vars.entr_perma_h_xlog_chips then
-    localize{ type = "other", key = "entr_perma_h_xlog_chips", nodes = desc_nodes, vars = {(specific_vars.entr_perma_h_xlog_chips)}}
+if specific_vars and specific_vars.slib_perma_h_xlog_chips then
+    localize{ type = "other", key = "slib_perma_h_xlog_chips", nodes = desc_nodes, vars = {(specific_vars.slib_perma_h_xlog_chips)}}
 end
-if specific_vars and specific_vars.entr_perma_xlog_mult then
-    localize{ type = "other", key = "entr_perma_xlog_mult", nodes = desc_nodes, vars = {(specific_vars.entr_perma_xlog_mult)}}
+if specific_vars and specific_vars.slib_perma_xlog_mult then
+    localize{ type = "other", key = "slib_perma_xlog_mult", nodes = desc_nodes, vars = {(specific_vars.slib_perma_xlog_mult)}}
 end
-if specific_vars and specific_vars.entr_perma_h_xlog_mult then
-    localize{ type = "other", key = "entr_perma_h_xlog_mult", nodes = desc_nodes, vars = {(specific_vars.entr_perma_h_xlog_mult)}}
+if specific_vars and specific_vars.slib_perma_h_xlog_mult then
+    localize{ type = "other", key = "slib_perma_h_xlog_mult", nodes = desc_nodes, vars = {(specific_vars.slib_perma_h_xlog_mult)}}
 end
-if specific_vars and specific_vars.entr_perma_plus_asc then
-    localize{ type = "other", key = "entr_perma_plus_asc", nodes = desc_nodes, vars = {SMODS.signed(specific_vars.entr_perma_plus_asc)}}
+if specific_vars and specific_vars.slib_perma_plus_asc then
+    localize{ type = "other", key = "slib_perma_plus_asc", nodes = desc_nodes, vars = {SMODS.signed(specific_vars.slib_perma_plus_asc)}}
 end
-if specific_vars and specific_vars.entr_perma_h_plus_asc then
-    localize{ type = "other", key = "entr_perma_h_plus_asc", nodes = desc_nodes, vars = {SMODS.signed(specific_vars.entr_perma_h_plus_asc)}}
+if specific_vars and specific_vars.slib_perma_h_plus_asc then
+    localize{ type = "other", key = "slib_perma_h_plus_asc", nodes = desc_nodes, vars = {SMODS.signed(specific_vars.slib_perma_h_plus_asc)}}
 end
-if specific_vars and specific_vars.entr_perma_asc then
-    localize{ type = "other", key = "entr_perma_asc", nodes = desc_nodes, vars = {specific_vars.entr_perma_asc}}
+if specific_vars and specific_vars.slib_perma_asc then
+    localize{ type = "other", key = "slib_perma_asc", nodes = desc_nodes, vars = {specific_vars.slib_perma_asc}}
 end
-if specific_vars and specific_vars.entr_perma_h_asc then
-    localize{ type = "other", key = "entr_perma_h_asc", nodes = desc_nodes, vars = {specific_vars.entr_perma_h_asc}}
+if specific_vars and specific_vars.slib_perma_h_asc then
+    localize{ type = "other", key = "slib_perma_h_asc", nodes = desc_nodes, vars = {specific_vars.slib_perma_h_asc}}
 end
-if specific_vars and specific_vars.entr_perma_exp_asc then
-    localize{ type = "other", key = "entr_perma_exp_asc", nodes = desc_nodes, vars = {specific_vars.entr_perma_exp_asc}}
+if specific_vars and specific_vars.slib_perma_exp_asc then
+    localize{ type = "other", key = "slib_perma_exp_asc", nodes = desc_nodes, vars = {specific_vars.slib_perma_exp_asc}}
 end
-if specific_vars and specific_vars.entr_perma_h_exp_asc then
-    localize{ type = "other", key = "entr_perma_h_exp_asc", nodes = desc_nodes, vars = {specific_vars.entr_perma_h_exp_asc}}
+if specific_vars and specific_vars.slib_perma_h_exp_asc then
+    localize{ type = "other", key = "slib_perma_h_exp_asc", nodes = desc_nodes, vars = {specific_vars.slib_perma_h_exp_asc}}
 end
 if specific_vars and specific_vars.suit_bonus then
     localize{type = 'other', key = 'entr_divider', nodes = desc_nodes, vars = {}}
@@ -308,23 +308,23 @@ target = "functions/common_events.lua"
 pattern = """        -- TARGET: main scoring on played cards"""
 position = "before"
 payload = '''
-local xlog_chips = card:get_entr_xlog_chips()
+local xlog_chips = card:get_slib_xlog_chips()
 if xlog_chips ~= 0 then
     ret.playing_card.xlog_chips = xlog_chips
 end
-local xlog_mult = card:get_entr_xlog_mult()
+local xlog_mult = card:get_slib_xlog_mult()
 if xlog_mult ~= 0 then
     ret.playing_card.xlog_mult = xlog_mult
 end
-local entr_plus_asc = card:get_entr_plus_asc()
+local entr_plus_asc = card:get_slib_plus_asc()
 if entr_plus_asc ~= 0 then
     ret.playing_card.plus_asc = entr_plus_asc
 end
-local entr_asc = card:get_entr_asc()
+local entr_asc = card:get_slib_asc()
 if entr_asc ~= 1 and entr_asc > 0 then
     ret.playing_card.asc = entr_asc
 end
-local entr_exp_asc = card:get_entr_exp_asc()
+local entr_exp_asc = card:get_slib_exp_asc()
 if entr_exp_asc ~= 1 then
     ret.playing_card.exp_asc = entr_exp_asc
 end
@@ -337,23 +337,23 @@ target = "functions/common_events.lua"
 pattern = """        -- TARGET: main scoring on held cards"""
 position = "before"
 payload = '''
-local xlog_chips = card:get_entr_h_xlog_chips()
+local xlog_chips = card:get_slib_h_xlog_chips()
 if xlog_chips ~= 0 then
     ret.playing_card.xlog_chips = xlog_chips
 end
-local xlog_mult = card:get_entr_h_xlog_mult()
+local xlog_mult = card:get_slib_h_xlog_mult()
 if xlog_mult ~= 0 then
     ret.playing_card.xlog_mult = xlog_mult
 end
-local entr_plus_asc = card:get_entr_h_plus_asc()
+local entr_plus_asc = card:get_slib_h_plus_asc()
 if entr_plus_asc ~= 0 then
     ret.playing_card.plus_asc = entr_plus_asc
 end
-local entr_asc = card:get_entr_h_asc()
+local entr_asc = card:get_slib_h_asc()
 if entr_asc ~= 1 and entr_asc > 0 then
     ret.playing_card.asc = entr_asc
 end
-local entr_exp_asc = card:get_entr_h_exp_asc()
+local entr_exp_asc = card:get_slib_h_exp_asc()
 if entr_exp_asc ~= 1 then
     ret.playing_card.exp_asc = entr_exp_asc
 end
