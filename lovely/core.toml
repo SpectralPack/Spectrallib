@@ -185,3 +185,22 @@ payload = '''
         tabs[2],
         tabs[3],'''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''
+if v.name == 'Black Hole' or v.name == 'The Soul' or v.hidden then
+    add = false
+end
+'''
+position = 'before'
+payload = '''
+local _total_weight = 0
+if v.set == "Back" or v.set == "Sleeve" then
+    if Spectrallib.deck_or_sleeve(v.key) or G.GAME.used_jokers[v.key] then
+        add = false
+    end
+end
+'''
+match_indent = true

@@ -605,3 +605,108 @@ function Spectrallib.gather_button_config(center, card)
     config.func = config.func or "can_use_joker"
     return config
 end
+
+local gfcfbs = G.FUNCS.check_for_buy_space
+G.FUNCS.check_for_buy_space = function(card)
+	if
+		not card or card.ability.infinitesimal or card.ability.set == "Back" or card.ability.set == "Sleeve"
+	then
+		return true
+	end
+	return gfcfbs(card)
+end
+
+local ref = create_shop_card_ui
+function create_shop_card_ui(card, type, area)
+    if card.config.center.set == "Back" or card.config.center.set == "Sleeve" then
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.43,
+            blocking = false,
+            blockable = false,
+            func = (function()
+              if card.opening then return true end
+              local t1 = {
+                  n=G.UIT.ROOT, config = {minw = 0.6, align = 'tm', colour = darken(G.C.BLACK, 0.2), shadow = true, r = 0.05, padding = 0.05, minh = 1}, nodes={
+                      {n=G.UIT.R, config={align = "cm", colour = lighten(G.C.BLACK, 0.1), r = 0.1, minw = 1, minh = 0.55, emboss = 0.05, padding = 0.03}, nodes={
+                        {n=G.UIT.O, config={object = DynaText({string = {{prefix = localize('$'), ref_table = card, ref_value = 'cost'}}, colours = {G.C.MONEY},shadow = true, silent = true, bump = true, pop_in = 0, scale = 0.5})}},
+                      }}
+                  }}
+              local t2 = {
+                n=G.UIT.ROOT, config = {ref_table = card, minw = 1.1, maxw = 1.3, padding = 0.1, align = 'bm', colour = G.C.GOLD, shadow = true, r = 0.08, minh = 0.94, func = 'can_buy_deckorsleeve_from_shop', one_press = true, button = 'buy_deckorsleeve', hover = true}, nodes={
+                    {n=G.UIT.T, config={text = localize('b_redeem'),colour = G.C.WHITE, scale = 0.5}}
+                }}
+
+              card.children.price = UIBox{
+                definition = t1,
+                config = {
+                  align="tm",
+                  offset = {x=0,y=1.5},
+                  major = card,
+                  bond = 'Weak',
+                  parent = card
+                }
+              }
+
+              card.children.buy_button = UIBox{
+                definition = t2,
+                config = {
+                  align="bm",
+                  offset = {x=0,y=-0.3},
+                  major = card,
+                  bond = 'Weak',
+                  parent = card
+                }
+              }
+              card.children.price.alignment.offset.y = card.ability.set == 'Booster' and 0.5 or 0.38
+
+                return true
+            end)
+          }))
+    else
+        ref(card, type, area)
+    end
+end
+
+local generate_uiref = generate_card_ui
+function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
+    if card_type == "Back" then
+        if card.config and card.config.center and card.config.center.collection_loc_vars then
+            specific_vars = (card.config.center:collection_loc_vars({}, card) or {}).vars
+        elseif card.config and card.config.center and card.config.center.loc_vars then
+            specific_vars = (card.config.center:loc_vars({}, card) or {}).vars
+        elseif card.config and card.config.center then
+            local loc_args = {}
+            local effect_config = card.config.center.config
+            local name_to_check = card.config.center.name
+            if name_to_check == 'Blue Deck' then loc_args = {effect_config.hands}
+            elseif name_to_check == 'Red Deck' then loc_args = {effect_config.discards}
+            elseif name_to_check == 'Yellow Deck' then loc_args = {effect_config.dollars}
+            elseif name_to_check == 'Green Deck' then loc_args = {effect_config.extra_hand_bonus, effect_config.extra_discard_bonus}
+            elseif name_to_check == 'Black Deck' then loc_args = {effect_config.joker_slot, -effect_config.hands}
+            elseif name_to_check == 'Magic Deck' then loc_args = {localize{type = 'name_text', key = 'v_crystal_ball', set = 'Voucher'}, localize{type = 'name_text', key = 'c_fool', set = 'Tarot'}}
+            elseif name_to_check == 'Nebula Deck' then loc_args = {localize{type = 'name_text', key = 'v_telescope', set = 'Voucher'}, -1}
+            elseif name_to_check == 'Ghost Deck' then
+            elseif name_to_check == 'Abandoned Deck' then
+            elseif name_to_check == 'Checkered Deck' then
+            elseif name_to_check == 'Zodiac Deck' then loc_args = {localize{type = 'name_text', key = 'v_tarot_merchant', set = 'Voucher'},
+                                localize{type = 'name_text', key = 'v_planet_merchant', set = 'Voucher'},
+                                localize{type = 'name_text', key = 'v_overstock_norm', set = 'Voucher'}}
+            elseif name_to_check == 'Painted Deck' then loc_args = {effect_config.hand_size,effect_config.joker_slot}
+            elseif name_to_check == 'Anaglyph Deck' then loc_args = {localize{type = 'name_text', key = 'tag_double', set = 'Tag'}}
+            elseif name_to_check == 'Plasma Deck' then loc_args = {effect_config.ante_scaling}
+            elseif name_to_check == 'Erratic Deck' then
+            end
+            specific_vars = loc_args
+        end
+    end
+    return generate_uiref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
+end
+local set_cost_ref = Card.set_cost
+function Card:set_cost()
+	if self.config.center.set == "Back" or self.config.center.set == "Sleeve" then
+		self.config.center.cost = 15
+		self.base_cost = 15
+	end
+	set_cost_ref(self)
+end
