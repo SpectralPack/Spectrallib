@@ -107,6 +107,14 @@ return {
 			a_tags_minus = "-#1# Tags",
 			a_tag = "+#1# Tag",
 			a_tags = "+#1# Tags",
+			a_eq_chips = "=#1# Chips",
+			a_eq_mult = "=#1# Mult",
+			a_xasc = "X#1# Asc",
+			a_xasc_minus = "-X#1# Asc",
+			a_asc = "+#1# Asc",
+			a_asc_minus = "#1# Asc",
+			a_exp_asc = "^#1# Asc",
+			a_exp_asc_minus = "-^#1# Asc"
 		}
     }
 }
