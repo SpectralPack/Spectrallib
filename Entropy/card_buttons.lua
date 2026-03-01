@@ -144,7 +144,7 @@ function G.UIDEF.use_and_sell_buttons(card)
 		end
 	end
     --let boosters not be recursive
-    if (card.area == G.pack_cards and G.pack_cards) and card.config.center.set == "Booster" and not Entropy.ConsumablePackBlacklist[SMODS.OPENED_BOOSTER.config.center.key] then
+    if (card.area == G.pack_cards and G.pack_cards) and card.config.center.set == "Booster" and not Spectrallib.ConsumablePackBlacklist[SMODS.OPENED_BOOSTER.config.center.key] then
         return  {
             n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
               {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.3*card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'reserve_booster', func = 'can_reserve_booster', handy_insta_action = 'buy_or_sell'}, nodes={
@@ -191,7 +191,7 @@ function G.UIDEF.use_and_sell_buttons(card)
             }},
         }}
     end
-    if Entropy.needs_use_button(card) and card.area == G.pack_cards and G.pack_cards and (Entropy.needs_pull_button(card) or (not SMODS.OPENED_BOOSTER or not SMODS.OPENED_BOOSTER.draw_hand and card.children.front and (card.ability.consumeable))) then
+    if Spectrallib.needs_use_button(card) and card.area == G.pack_cards and G.pack_cards and (Spectrallib.needs_pull_button(card) or (not SMODS.OPENED_BOOSTER or not SMODS.OPENED_BOOSTER.draw_hand and card.children.front and (card.ability.consumeable))) then
         return {
             n = G.UIT.ROOT,
             config = { padding = -0.1, colour = G.C.CLEAR },
@@ -218,7 +218,7 @@ function G.UIDEF.use_and_sell_buttons(card)
                         {
                             n = G.UIT.T,
                             config = {
-                                text = Entropy.needs_pull_button(card),
+                                text = Spectrallib.needs_pull_button(card),
                                 colour = G.C.UI.TEXT_LIGHT,
                                 scale = 0.55,
                                 shadow = true,
@@ -263,7 +263,7 @@ function G.UIDEF.use_and_sell_buttons(card)
                 -- Betmma can't explain it, neither can I
             },
         }
-    elseif card.area == G.pack_cards and G.pack_cards and (Entropy.needs_pull_button(card) or (not SMODS.OPENED_BOOSTER or not SMODS.OPENED_BOOSTER.draw_hand and card.children.front and (card.ability.consumeable))) then
+    elseif card.area == G.pack_cards and G.pack_cards and (Spectrallib.needs_pull_button(card) or (not SMODS.OPENED_BOOSTER or not SMODS.OPENED_BOOSTER.draw_hand and card.children.front and (card.ability.consumeable))) then
         return {
             n = G.UIT.ROOT,
                 config = { padding = -0.1, colour = G.C.CLEAR },
@@ -290,7 +290,7 @@ function G.UIDEF.use_and_sell_buttons(card)
                         {
                             n = G.UIT.T,
                             config = {
-                                text = Entropy.needs_pull_button(card),
+                                text = Spectrallib.needs_pull_button(card),
                                 colour = G.C.UI.TEXT_LIGHT,
                                 scale = 0.55,
                                 shadow = true,
@@ -309,7 +309,7 @@ G.FUNCS.can_reserve_joker = function(e)
     local c1 = e.config.ref_table
     if
         #G.jokers.cards
-        < G.jokers.config.card_limit + (Cryptid.safe_get(c1, "edition", "negative") and 1 or 0)
+        < G.jokers.config.card_limit + (Spectrallib.safe_get(c1, "edition", "negative") and 1 or 0)
     then
         e.config.colour = G.C.GREEN
         e.config.button = "reserve_joker"
@@ -481,7 +481,7 @@ G.FUNCS.can_buy_deckorsleeve = function(e)
 end
 G.FUNCS.can_buy_deckorsleeve_from_shop = function(e)
     local c1 = e.config.ref_table
-    if to_big(G.GAME.dollars+G.GAME.bankrupt_at) >= to_big(c1.cost) or Entropy.has_rune("rune_entr_naudiz") then
+    if to_big(G.GAME.dollars+G.GAME.bankrupt_at) >= to_big(c1.cost) or Entropy and Entropy.has_rune("rune_entr_naudiz") then --should probably have a hookable function similar to SMODS.showman instead of a hardcoded rune check
         e.config.colour = G.C.GREEN
         e.config.button = "buy_deckorsleeve_from_shop"
     else
