@@ -1,3 +1,25 @@
+SMODS.ObjectType { --idk how the inject function works, probably do that later for mod compat
+    key = "RedeemableBacks",
+    default = "b_red",
+    cards = {
+        "b_red",
+        "b_blue",
+        "b_yellow",
+        "b_green",
+        "b_black",
+        "b_magic",
+        "b_nebula",
+        "b_ghost",
+        "b_zodiac",
+        "b_painted",
+        "b_anaglyph",
+        "b_plasma",
+        "b_erratic",
+        "b_abandoned",
+        "b_checkered"
+    }
+}
+
 G.FUNCS.buy_deckorsleeve = function(e)
     local c1 = e.config.ref_table
     --G.GAME.DefineBoosterState = G.STATE
