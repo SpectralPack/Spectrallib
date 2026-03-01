@@ -32,3 +32,10 @@ Spectrallib.emult = SMODS.Gradient {
     cycle = 4,
     update = update_exp_colour,
 }
+
+local lc = loc_colour
+function loc_colour(_c, _default, ...)
+	if _c == "emult" then _c = "slib_emult" end
+    if _c == "echips" then _c = "slib_echips" end
+	return lc(_c, _default, ...)
+end
