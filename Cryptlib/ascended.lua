@@ -161,18 +161,22 @@ function G.FUNCS.get_poker_hand_info(_cards)
 	end
 	return text, loc_disp_text, poker_hands, scoring_hand, disp_text
 end
-function Spectrallib.ascend(num) -- edit this function at your leisure
+function Spectrallib.ascend(num, curr2) -- edit this function at your leisure
 	G.GAME.sunnumber = G.GAME.sunnumber or {not_modest = 0, modest = 0}
-	if (Spectrallib.safe_get(G, "GAME", "current_round", "current_hand", "cry_asc_num") or 0) <= 0 then
-		return num
-	end
-	if Spectrallib.gameset(G.P_CENTERS.c_cry_sunplanet) == "modest" then
-		-- Default: Chips and Mult multiplier + 0.25 for every 1 Ascension power
-		return num * to_big(1 + ((0.25 + G.GAME.sunnumber.modest) * G.GAME.current_round.current_hand.cry_asc_num))
-	else
-		-- Default: Chips and Mult multiplier X1.25 for every 1 Ascension power
-		return num * to_big((1.25 +G.GAME.sunnumber.not_modest) ^ G.GAME.current_round.current_hand.cry_asc_num)
-	end
+    local snum
+    if type(G.GAME.sunnumber) == "table" then snum = G.GAME.sunnumber.not_modest or 0
+    else snum = G.GAME.sunnumber end
+    curr2 =
+        curr2 or
+        ((G.GAME.current_round.current_hand.cry_asc_num or 0) + (G.GAME.asc_power_hand or 0)) *
+            (1 + (G.GAME.nemesisnumber or 0))
+    local num2 = math.min(curr2 or 0, 50)
+    local diff = curr2 - num2
+    if to_big(curr2 or 0) > to_big(40) then
+        num2 = num2 + diff ^ 0.3
+    end
+    curr2 = num2
+    return num * (to_big((1.25 + snum)) ^ to_big(curr2))
 end
 
 function Spectrallib.pulse_flame(duration, intensity) -- duration is in seconds, intensity is in idfk honestly, but it increases pretty quickly
