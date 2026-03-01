@@ -231,10 +231,9 @@ function Blind:calculate(context, ...)
     return ret or ret2
 end
 
-function Spectrallib.modify_hand_copied_blinds(blinds, self, cards, poker_hands, text, mult, hand_chips)
+function Spectrallib.modify_hand_copied_blinds(blinds, self, cards, poker_hands, text, mult, hand_chips, trigger)
     local new_mult = mult
     local new_chips = hand_chips
-    local trigger = false
     for _, k in pairs(blinds) do
         s = G.P_BLINDS[k]
         if s.modify_hand then
@@ -253,9 +252,9 @@ function Spectrallib.modify_hand_copied_blinds(blinds, self, cards, poker_hands,
 end
 
 local modify_hand_ref = Blind.modify_hand
-function Blind:modify_hand(...)
-    local mult, chips, trigger = modify_hand_ref(self, ...)
-    mult, chips, trigger = Spectrallib.modify_hand_copied_blinds(Spectrallib.get_copied_blinds(self), self, ...)
+function Blind:modify_hand(cards, poker_hands, text, mult, hand_chips, ...)
+    local mult, chips, trigger = modify_hand_ref(self, cards, poker_hands, text, mult, hand_chips, ...)
+    mult, chips, trigger = Spectrallib.modify_hand_copied_blinds(Spectrallib.get_copied_blinds(self), self, cards, poker_hands, text, mult, chips, trigger)
     return mult, chips, trigger
 end
 
