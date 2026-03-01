@@ -216,3 +216,22 @@ payload = '''
 if true then
 '''
 match_indent = true
+
+# booster cards inherit the booster stickers and edition
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "card.T.x = self.T.x"
+position = "before"
+payload = '''
+local edi = self.edition or {}
+if edi.type and not (card.config.center and card.config.center.cry_force_edition) then
+	card:set_edition({[edi.type] = true})
+end
+for k, v in pairs(SMODS.Stickers) do
+	if self.ability[k] then
+		card:add_sticker(k, true)
+	end
+end
+'''
+match_indent = true
