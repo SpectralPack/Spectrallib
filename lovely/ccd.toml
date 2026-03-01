@@ -224,8 +224,8 @@ slib_perma_xlog_mult = self.ability and self.ability.slib_perma_xlog_mult or 0,
 slib_perma_h_xlog_mult = self.ability and self.ability.slib_perma_h_xlog_mult or 0,
 slib_perma_plus_asc = self.ability and self.ability.slib_perma_plus_asc or 0,
 slib_perma_h_plus_asc = self.ability and self.ability.slib_perma_h_plus_asc or 0,
-slib_perma_asc = self.ability and self.ability.slib_perma_asc or 0,
-slib_perma_h_asc = self.ability and self.ability.slib_perma_h_asc or 0,
+slib_perma_x_asc = self.ability and self.ability.slib_perma_x_asc or 0,
+slib_perma_h_x_asc = self.ability and self.ability.slib_perma_h_x_asc or 0,
 slib_perma_exp_asc = self.ability and self.ability.slib_perma_exp_asc or 0,
 slib_perma_h_exp_asc = self.ability and self.ability.slib_perma_h_exp_asc or 0,
 """
@@ -243,8 +243,8 @@ slib_perma_xlog_mult = self.ability.slib_perma_xlog_mult ~= 0 and self.ability.s
 slib_perma_h_xlog_mult = self.ability.slib_perma_h_xlog_mult ~= 0 and self.ability.slib_perma_h_xlog_mult or nil,
 slib_perma_plus_asc = self.ability.slib_perma_plus_asc ~= 0 and self.ability.slib_perma_plus_asc or nil,
 slib_perma_h_plus_asc = self.ability.slib_perma_h_plus_asc ~= 0 and self.ability.slib_perma_h_plus_asc or nil,
-slib_perma_asc = self.ability.slib_perma_asc ~= 0 and (self.ability.slib_perma_asc + 1) or nil,
-slib_perma_h_asc = self.ability.slib_perma_h_asc ~= 0 and (self.ability.slib_perma_h_asc + 1) or nil,
+slib_perma_x_asc = self.ability.slib_perma_x_asc ~= 0 and (self.ability.slib_perma_x_asc + 1) or nil,
+slib_perma_h_x_asc = self.ability.slib_perma_h_x_asc ~= 0 and (self.ability.slib_perma_h_x_asc + 1) or nil,
 slib_perma_exp_asc = self.ability.slib_perma_exp_asc ~= 0 and (self.ability.slib_perma_exp_asc + 1) or nil,
 slib_perma_h_exp_asc = self.ability.slib_perma_h_exp_asc ~= 0 and (self.ability.slib_perma_h_exp_asc + 1) or nil,
 suit_bonus = self.ability.suit_bonus or nil,
@@ -280,11 +280,11 @@ end
 if specific_vars and specific_vars.slib_perma_h_plus_asc then
     localize{ type = "other", key = "slib_perma_h_plus_asc", nodes = desc_nodes, vars = {SMODS.signed(specific_vars.slib_perma_h_plus_asc)}}
 end
-if specific_vars and specific_vars.slib_perma_asc then
-    localize{ type = "other", key = "slib_perma_asc", nodes = desc_nodes, vars = {specific_vars.slib_perma_asc}}
+if specific_vars and specific_vars.slib_perma_x_asc then
+    localize{ type = "other", key = "slib_perma_x_asc", nodes = desc_nodes, vars = {specific_vars.slib_perma_x_asc}}
 end
-if specific_vars and specific_vars.slib_perma_h_asc then
-    localize{ type = "other", key = "slib_perma_h_asc", nodes = desc_nodes, vars = {specific_vars.slib_perma_h_asc}}
+if specific_vars and specific_vars.slib_perma_h_x_asc then
+    localize{ type = "other", key = "slib_perma_h_x_asc", nodes = desc_nodes, vars = {specific_vars.slib_perma_h_x_asc}}
 end
 if specific_vars and specific_vars.slib_perma_exp_asc then
     localize{ type = "other", key = "slib_perma_exp_asc", nodes = desc_nodes, vars = {specific_vars.slib_perma_exp_asc}}
@@ -320,9 +320,9 @@ local entr_plus_asc = card:get_slib_plus_asc()
 if entr_plus_asc ~= 0 then
     ret.playing_card.plus_asc = entr_plus_asc
 end
-local entr_asc = card:get_slib_asc()
+local entr_asc = card:get_slib_x_asc()
 if entr_asc ~= 1 and entr_asc > 0 then
-    ret.playing_card.asc = entr_asc
+    ret.playing_card.x_asc = entr_asc
 end
 local entr_exp_asc = card:get_slib_exp_asc()
 if entr_exp_asc ~= 1 then
@@ -349,9 +349,9 @@ local entr_plus_asc = card:get_slib_h_plus_asc()
 if entr_plus_asc ~= 0 then
     ret.playing_card.plus_asc = entr_plus_asc
 end
-local entr_asc = card:get_slib_h_asc()
+local entr_asc = card:get_slib_h_x_asc()
 if entr_asc ~= 1 and entr_asc > 0 then
-    ret.playing_card.asc = entr_asc
+    ret.playing_card.x_asc = entr_asc
 end
 local entr_exp_asc = card:get_slib_h_exp_asc()
 if entr_exp_asc ~= 1 then
