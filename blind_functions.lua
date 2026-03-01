@@ -57,6 +57,7 @@ function Spectrallib.set_copied_blinds(blinds, self, silent, reset)
         end
         if s.name == "The Mouth" and not reset then
             G.GAME.blind.only_hand = false
+            s.only_hand = false
         end
         if s.name == "The Fish" and not reset then
             G.GAME.blind.prepped = nil
@@ -116,6 +117,7 @@ end
 
 local set_blind_ref = Blind.set_blind
 function Blind:set_blind(blind, reset, silent, ...)
+    self.only_hand = nil
     local ret = set_blind_ref(self, blind, reset, silent, ...)
     Spectrallib.set_copied_blinds(Spectrallib.get_copied_blinds(self), self, silent, reset)
     return ret
@@ -303,14 +305,14 @@ function Spectrallib.get_blind_text(key)
 end
 
 --SMODS.debuff_text
-function Spectrallib.get_debuff_text(key)
+function Spectrallib.get_debuff_text(key, self)
     local obj = G.P_BLINDS[key]
     if obj.get_loc_debuff_text and type(obj.get_loc_debuff_text) == 'function' then
         return obj:get_loc_debuff_text()
     end
     local bl = Spectrallib.get_blind_text(key)
     local disp_text = (obj.name == 'The Wheel' and G.GAME.probabilities.normal or '')..bl.loc_debuff_text
-    if (obj.name == 'The Mouth') and self.only_hand then disp_text = disp_text..' ['..localize(self.only_hand, 'poker_hands')..']' end
+    if (obj.name == 'The Mouth') and obj.only_hand then disp_text = disp_text..' ['..localize(obj.only_hand, 'poker_hands')..']' end
     return disp_text
 end
 
@@ -327,19 +329,19 @@ function Spectrallib.debuff_hand_copied_blinds(blinds, self, cards, hand, handna
             if s.debuff.hand and next(hand[s.debuff.hand]) then
                 G.GAME.blind.triggered = true
                 G.GAME.blind.debuff_boss = s
-                SMODS.debuff_text = Spectrallib.get_debuff_text(k)
+                SMODS.debuff_text = Spectrallib.get_debuff_text(k, self)
                 return true
             end
             if s.debuff.h_size_ge and #cards < s.debuff.h_size_ge then
                 G.GAME.blind.triggered = true
                 G.GAME.blind.debuff_boss = s
-                SMODS.debuff_text = Spectrallib.get_debuff_text(k)
+                SMODS.debuff_text = Spectrallib.get_debuff_text(k, self)
                 return true
             end
             if s.debuff.h_size_le and #cards > s.debuff.h_size_le then
                 G.GAME.blind.triggered = true
                 G.GAME.blind.debuff_boss = s
-                SMODS.debuff_text = Spectrallib.get_debuff_text(k)
+                SMODS.debuff_text = Spectrallib.get_debuff_text(k, self)
                 return true
             end
             if s.name == "The Eye" then
@@ -347,7 +349,7 @@ function Spectrallib.debuff_hand_copied_blinds(blinds, self, cards, hand, handna
                 if G.GAME.blind.hands[handname] then
                     G.GAME.blind.triggered = true
                     G.GAME.blind.debuff_boss = s
-                    SMODS.debuff_text = Spectrallib.get_debuff_text(k)
+                    SMODS.debuff_text = Spectrallib.get_debuff_text(k, self)
                     return true
                 end
                 if not check then
@@ -358,7 +360,7 @@ function Spectrallib.debuff_hand_copied_blinds(blinds, self, cards, hand, handna
                 if s.only_hand and s.only_hand ~= handname then
                     G.GAME.blind.triggered = true
                     G.GAME.blind.debuff_boss = s
-                    SMODS.debuff_text = Spectrallib.get_debuff_text(k)
+                    SMODS.debuff_text = Spectrallib.get_debuff_text(k, self)
                     return true
                 end
                 if not check then

@@ -171,8 +171,8 @@ function Spectrallib.modify_hand_card(modifications, cards, dont_flip)
             for i, v in pairs(modifications.extra) do mcard.ability[i] = v end
             end
     end
-    return function()
-        if dont_flip then
+    return function(self, card)
+        if not dont_flip then
             Spectrallib.flip_then(cards or Spectrallib.get_highlighted_cards({G.hand}, {}, 1, card.ability.highlighted or 1), function(mcard)
                 func(mcard)
             end)
