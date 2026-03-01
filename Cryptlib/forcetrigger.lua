@@ -39,10 +39,14 @@ function Spectrallib.get_forcetrigger_results(card, context)
 			results = {jokers = {
 
 			}}
-			results.jokers = card.config.center:forcetrigger(card, demicontext)
+			results.jokers = card.config.center:forcetrigger(card, demicontext) or {}
 			results.jokers.card = card
-		else
-			results = eval_card(card, demicontext)
+		elseif  card.config.center.calculate then
+			results = {jokers = {
+
+			}}
+			results.jokers = card.config.center:calculate(card, demicontext) or {}
+			results.jokers.card = card
 		end
 		demicontext = nil
 	elseif check and card.ability.set == "Joker" then

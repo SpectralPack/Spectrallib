@@ -711,6 +711,7 @@ function Card:set_cost()
 	set_cost_ref(self)
 end
 
+local update_ref = Game.update
 function Game:update(dt)
     update_ref(self, dt)
     if G.STATE == nil and (G.pack_cards == nil or #G.pack_cards == 0) and G.GAME.slib_booster_state then
