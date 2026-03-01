@@ -347,7 +347,7 @@ G.FUNCS.can_open_booster = function(e)
 end
 G.FUNCS.open_booster = function(e)
     local c1 = e.config.ref_table
-    G.GAME.DefineBoosterState = G.STATE
+    G.GAME.slib_booster_state = G.STATE
     delay(0.1)
     local area = c1.area
     if area == G.shop_vouchers then
@@ -451,7 +451,7 @@ G.FUNCS.can_reserve_booster = function(e)
 end
 G.FUNCS.reserve_booster = function(e)
     local c1 = e.config.ref_table
-    --G.GAME.DefineBoosterState = G.STATE
+    --G.GAME.slib_booster_state = G.STATE
     --c1:open()
     G.pack_cards:remove_card(c1)
     G.consumeables.cards[#G.consumeables.cards + 1] = c1
@@ -491,7 +491,7 @@ G.FUNCS.can_buy_deckorsleeve_from_shop = function(e)
 end
 G.FUNCS.buy_deckorsleeve_from_shop = function(e)
     local c1 = e.config.ref_table
-    --G.GAME.DefineBoosterState = G.STATE
+    --G.GAME.slib_booster_state = G.STATE
     --c1:open()
     ease_dollars(-c1.cost)
     G.FUNCS.redeem_deckorsleeve(e)
@@ -499,7 +499,7 @@ end
 
 G.FUNCS.buy_deckorsleeve_2 = function(e)
     local c1 = e.config.ref_table
-    --G.GAME.DefineBoosterState = G.STATE
+    --G.GAME.slib_booster_state = G.STATE
     --c1:open()
     G.FUNCS.redeem_deckorsleeve(e)
 end
@@ -710,3 +710,17 @@ function Card:set_cost()
 	end
 	set_cost_ref(self)
 end
+
+function Game:update(dt)
+    update_ref(self, dt)
+    if G.STATE == nil and (G.pack_cards == nil or #G.pack_cards == 0) and G.GAME.slib_booster_state then
+        G.STATE = G.GAME.slib_booster_state
+        G.STATE_COMPLETE = false
+        G.GAME.slib_booster_state = nil
+    end
+    if self.STATE == nil and not G.GAME.slib_booster_state then
+        G.STATE = 1
+        G.STATE_COMPLETE = false
+    end
+end
+
