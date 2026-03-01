@@ -9,7 +9,7 @@
 	"priority": -10000,
 	"badge_colour": "FF0000",
 	"badge_text_colour": "FFFFFF",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"dependencies": [
 	],
 	"conflicts": [
