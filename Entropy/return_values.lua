@@ -314,7 +314,7 @@ return self.ability.slib_perma_x_asc + 1
 end
 
 function Card:get_slib_h_x_asc()
-return self.ability.slib_perma_h_asc + 1
+return self.ability.slib_perma_h_x_asc + 1
 end
 
 function Card:get_slib_exp_asc()
