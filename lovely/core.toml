@@ -204,3 +204,15 @@ if v.set == "Back" or v.set == "Sleeve" then
 end
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = '''
+if self.ability.consumeable or self.ability.set == 'Joker' or (self.area and self.area == G.pack_cards) then
+'''
+position = "at"
+payload = '''
+if true then
+'''
+match_indent = true
