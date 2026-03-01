@@ -53,7 +53,7 @@ function Spectrallib.get_highlighted_cards(cardareas, ignorecard, min, max, blac
         return not blacklist[card.config.center.key]
     end or blacklist)
 end
-Entropy.get_highlighted_cards = Spectrallib.get_highlighted_cards --idk why this doesnt get redirected
+if Entropy then Entropy.get_highlighted_cards = Spectrallib.get_highlighted_cards end --idk why this doesnt get redirected
 
 function Spectrallib.filter_table(table, func)
     local temp = {}
