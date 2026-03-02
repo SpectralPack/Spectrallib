@@ -117,7 +117,7 @@ end
 function Spectrallib.safe_get(t, ...)
 	local current = t
 	for _, k in ipairs({ ... }) do
-		if not current or current[k] == nil then
+		if not current or type(current) ~= "table" or current[k] == nil then
 			return false
 		end
 		current = current[k]
