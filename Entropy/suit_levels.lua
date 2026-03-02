@@ -1,6 +1,18 @@
 function Spectrallib.level_suit(suit, card, amt, chips_override, instant)
     amt = amt or 1
     local used_consumable = copier or card
+    local vals_after_level
+    --for properly resetting to previous hand display when leveling in scoring
+    if SMODS.displaying_scoring then
+        vals_after_level = copy_table(G.GAME.current_round.current_hand)
+        local text,disp_text,_,_,_ = G.FUNCS.get_poker_hand_info(G.play.cards)
+        vals_after_level.handname = disp_text or ''
+        vals_after_level.level = (G.GAME.hands[text] or {}).level or ''
+        for name, p in pairs(SMODS.Scoring_Parameters) do
+            vals_after_level[name] = p.current
+        end
+    end
+
     if not G.GAME.SuitBuffs then G.GAME.SuitBuffs = {} end
     if not G.GAME.SuitBuffs[suit] then
         G.GAME.SuitBuffs[suit] = {level = 1, chips = 0}
@@ -47,7 +59,7 @@ function Spectrallib.level_suit(suit, card, amt, chips_override, instant)
         delay(1.3)
         update_hand_text(
         { sound = "button", volume = 0.7, pitch = 1.1, delay = 0 },
-        { mult = 0, chips = 0, handname = "", level = "" }
+        vals_after_level or { mult = 0, chips = 0, handname = "", level = "" }
         )
     end
 end
