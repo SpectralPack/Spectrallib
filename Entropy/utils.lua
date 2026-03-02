@@ -890,11 +890,7 @@ function Spectrallib.reduce_cards(cards, card)
 end
 
 function Spectrallib.handle_card_limit(area, num)
-    local off = 0
-    for i, v in pairs(area.cards) do
-        if v.ability and v.ability.extra_slots_used then off = off + v.ability.extra_slots_used end
-    end
-    area.config.card_limit = area.config.card_limit + num + off
+    area.config.card_limit = area.config.card_limit + num
     area:handle_card_limit()
 end
 

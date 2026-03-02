@@ -643,7 +643,7 @@ function Spectrallib.cap_final_score_copied_blinds(blinds, score)
         if obj.modify_score and type(obj.modify_score) == "function" then
 			score = obj:modify_score(score)
 		end
-        if obj.cry_cap_score and type(obj.cry_cap_score) == "function" then
+        if obj.cap_score and type(obj.cap_score) == "function" then
 			score = obj:cap_score(score)
 		end
     end
@@ -656,7 +656,7 @@ function Blind:cap_final_score(score)
 		if obj.modify_score and type(obj.modify_score) == "function" then
 			score = obj:modify_score(score)
 		end
-		if obj.cry_cap_score and type(obj.cry_cap_score) == "function" then
+		if obj.cap_score and type(obj.cap_score) == "function" then
 			score = obj:cap_score(score)
 		end
 	end
