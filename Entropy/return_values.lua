@@ -124,7 +124,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
         end
         return true
     end
-    if (key == 'asc') or (key == 'asc_mod') or key == "x_asc" then
+    if key == "x_asc" then
         local e = card_eval_status_text
         for i, v in pairs(SMODS.find_card("j_entr_axeh")) do
             amount = amount * v.ability.asc_mod
@@ -154,7 +154,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
         end
         return true
     end
-    if (key == 'plus_asc') or (key == 'plusasc_mod') then
+    if (key == 'plus_asc') or (key == 'plusasc_mod') or key == "asc" or key == "asc_mod" then
         local e = card_eval_status_text
         for i, v in pairs(SMODS.find_card("j_entr_axeh")) do
             amount = amount * v.ability.asc_mod
@@ -309,12 +309,12 @@ function Card:get_slib_h_plus_asc()
 return self.ability.slib_perma_h_plus_asc
 end
 
-function Card:get_slib_asc()
-return self.ability.slib_perma_asc + 1
+function Card:get_slib_x_asc()
+return self.ability.slib_perma_x_asc + 1
 end
 
-function Card:get_slib_h_asc()
-return self.ability.slib_perma_h_asc + 1
+function Card:get_slib_h_x_asc()
+return self.ability.slib_perma_h_x_asc + 1
 end
 
 function Card:get_slib_exp_asc()

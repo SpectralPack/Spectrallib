@@ -18,7 +18,7 @@ return {
 					"{C:gold}#1#{} Ascension Power while held"
 				}
 			},
-			slib_perma_asc = {
+			slib_perma_x_asc = {
 				text = {
 					"{X:money,C:white}X#1#{} Ascension Power"
 				}
