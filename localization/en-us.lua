@@ -57,6 +57,13 @@ return {
 				text = {
 					"{X:mult,C:white}Xlog_#1#(Mult){} Mult while held"
 				}
+			},
+			entr_card_suit_level = {
+				text = {
+					"--------------",
+					"{S:0.8,V:1}#1#{} {S:0.8}({S:0.8,V:2}lvl.#3#{})",
+					"{C:blue}+#2#{} Chips"
+				}
 			}
         }
     },
