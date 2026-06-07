@@ -95,6 +95,16 @@ function Spectrallib.xl_mult(hand, card, l_mult, instant)
 	Cryptid.reset_to_none()
 end
 
+function Spectrallib.get_arrow_color(op)
+    if op == "exponent" then --idk what the actual colours are meant to be
+        return G.C.FILTER
+    elseif op == "add" then
+        return G.C.GREEN
+    else
+        return G.C.RED
+    end
+end
+
 local upgrade_hands_ref = SMODS.upgrade_poker_hands
 function SMODS.upgrade_poker_hands(args)
     args.hands = args.hands or G.handlist
