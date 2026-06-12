@@ -99,6 +99,11 @@ return {
 					"{X:slib_emult,C:white}^#1#{} Mult while held"
 				}
 			},
+			slib_multiuse = {
+				text = {
+					"Multiuse: {V:1}#1#{} left"
+				}
+			}
         }
     },
     misc = {
