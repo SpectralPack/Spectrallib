@@ -706,3 +706,17 @@ end
 
 --#endregion
 -----------------------------
+
+-----------
+-- HOOKS --
+-----------
+
+-- remove sell value from cards (used by multiuse)
+local cssv = Card.set_sell_value
+function Card:set_sell_value()
+	cssv(self)
+	if self.ability and self.ability.slib_no_sell_value then
+		self.sell_cost = 0 + (self.ability.extra_value or 0)
+		self.sell_cost_label = self.facing == 'back' and '?' or self.sell_cost
+	end
+end

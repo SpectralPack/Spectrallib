@@ -370,7 +370,7 @@ G.FUNCS.open_booster = function(e)
     if c1.ability.cry_multiuse and to_big(c1.ability.cry_multiuse) > to_big(1) then
         local card = c1
         card.ability.cry_multiuse = card.ability.cry_multiuse - 1
-        card.ability.extra_value = -1 * math.max(1, math.floor(card.cost/2))
+        card.ability.slib_no_sell_value = true
         card:set_cost()
         delay(0.4)
 
@@ -383,7 +383,7 @@ G.FUNCS.open_booster = function(e)
             scale = 1.1,
             hold = 0.6,
             major = card,
-            backdrop_colour = G.C.SET[card.config.center.set],
+            backdrop_colour = get_type_colour(card.config.center, card),
             align = 'bm',
             offset = {x = 0, y = 0.2}
         })
@@ -411,7 +411,7 @@ G.FUNCS.open_voucher = function(e)
     if c1.ability.cry_multiuse and to_big(c1.ability.cry_multiuse) > to_big(1) then
         local card = c1
         card.ability.cry_multiuse = card.ability.cry_multiuse - 1
-        card.ability.extra_value = -1 * math.max(1, math.floor(card.cost/2))
+        card.ability.slib_no_sell_value = true
         card:set_cost()
         delay(0.4)
 
@@ -424,7 +424,7 @@ G.FUNCS.open_voucher = function(e)
             scale = 1.1,
             hold = 0.6,
             major = card,
-            backdrop_colour = G.C.SET[card.config.center.set],
+            backdrop_colour = get_type_colour(card.config.center, card),
             align = 'bm',
             offset = {x = 0, y = 0.2}
         })

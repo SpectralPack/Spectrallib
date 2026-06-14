@@ -285,6 +285,20 @@ function Spectrallib.l_asc(hand, card, asc_power, instant)
     G.GAME.current_round.current_hand.cry_asc_num_text = ""
 end
 
+---@param op string Return value is G.C.RED
+---| "exponent" # Return value is G.C.FILTER
+---| "add"      # Return value is G.C.GREEN
+---@return [number, number, number, number]
+function Spectrallib.get_arrow_color(op)
+    if op == "exponent" then --idk what the actual colours are meant to be
+        return G.C.FILTER
+    elseif op == "add" then
+        return G.C.GREEN
+    else
+        return G.C.RED
+    end
+end
+
 -----------
 -- HOOKS --
 -----------
