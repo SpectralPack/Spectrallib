@@ -1,0 +1,11 @@
+---@meta
+-- DO NOT LOAD! (There's nothing to load, anyways)
+
+---@class SMODS.Blind
+---@field before_play fun(self: SMODS.Blind|table) Calculates effects that occur before scoring a hand.
+---@field after_play fun(self: SMODS.Blind|table) Calculates effects that occur after scoring a hand.
+---@field ante_base_mod fun(self: SMODS.Blind|table, dt: number): number
+---@field round_base_mod fun(self: SMODS.Blind|table, dt: number): number
+---@field modify_score fun(self: SMODS.Blind|table, score: number): number
+---@field cap_score fun(self: SMODS.Blind|table, score: number): number
+---@field get_copied_blinds fun(self: SMODS.Blind|table, blind: Blind): string[] The returned list of keys are of blinds whose effects are copied by the main blind.

@@ -1,100 +1,294 @@
+-----------------------------
+-- SUPPLEMENTARY FUNCTIONS --
+-----------------------------
+
+local function uht_snd(volume, pitch, delay)
+    return {
+        sound = "button", volume = volume,
+        pitch = pitch, delay = delay
+    }
+end
+
+local function JUICE_CARD_EVENT(card, delay)
+    Spectrallib.event{
+        function ()
+            if card and card.juice_up then
+                card:juice_up(0.8, 0.5)
+            end
+            G.TAROT_INTERRUPT_PULSE = nil
+            return true
+        end,
+        trigger = 'after',
+        delay = delay or 0.9
+    }
+end
+
+---------------
+-- FUNCTIONS --
+---------------
+
+-- Apply the ascension formula to a given value, with the ascension power being that of a poker hand.
+---@param num number
+---@param hand string Key of the poker hand.
+---@return number
+function Spectrallib.ascend_hand(num, hand) -- edit this function at your leisure
+    local ret = Spectrallib.ascend(num, (G.GAME.hands[hand].AscensionPower or 0))
+    return ret
+end
+
+-- Additively increase the chips and mult level-up amounts.
+---@param hand string Poker hand key.
+---@param card? Card The card responsible for the levelling.
+---@param l_chips number
+---@param l_mult number
+---@param instant? boolean If true, skips animations.
+---@return nil
 function Spectrallib.l_chipsmult(hand, card, l_chips, l_mult, instant)
-	if not instant then
-		update_hand_text({delay = 0}, {handname = localize(hand, "poker_hands"), level = G.GAME.hands[hand].level, mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand), chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand)})
-		delay(1)
-		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
-			play_sound('tarot1')
-			if card and card.juice_up then card:juice_up(0.8, 0.5) end
-			G.TAROT_INTERRUPT_PULSE = true
-			return true end
-		}))
-		update_hand_text({delay = 0}, {handname = localize("k_level_chips"), chips = G.GAME.hands[hand].l_chips, mult = G.GAME.hands[hand].l_mult})
-		delay(2)
-	end
+    if instant then
+        G.GAME.hands[hand].l_chips = G.GAME.hands[hand].l_chips + l_chips
+        G.GAME.hands[hand].l_mult = G.GAME.hands[hand].l_mult + l_mult
+        return
+    end
+
+    update_hand_text({delay = 0}, {
+        handname = localize(hand, "poker_hands"),
+        level = G.GAME.hands[hand].level,
+        mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand),
+        chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand)
+    })
+    delay(2)
+    Spectrallib.event(function ()
+        play_sound('tarot1')
+        return true
+    end)
+    update_hand_text({delay = 0}, {
+        handname = localize("k_level_chips"),
+        chips = G.GAME.hands[hand].l_chips,
+        mult = G.GAME.hands[hand].l_mult
+    })
+    delay(1)
+    JUICE_CARD_EVENT(card, 0.2)
 	G.GAME.hands[hand].l_chips = G.GAME.hands[hand].l_chips + l_chips
-	if not instant then
-		update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {chips = G.GAME.hands[hand].l_chips, StatusText = true})
-		delay(0.7)
-		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
-			play_sound('tarot1')
-			if card and card.juice_up then card:juice_up(0.8, 0.5) end
-			G.TAROT_INTERRUPT_PULSE = true
-			return true end
-		}))
-		update_hand_text({delay = 0}, {handname = localize("k_level_mult"), chips = G.GAME.hands[hand].l_chips, mult = G.GAME.hands[hand].l_mult})
-		delay(2)
-		G.GAME.hands[hand].l_mult = G.GAME.hands[hand].l_mult + l_mult
-		update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {mult = G.GAME.hands[hand].l_mult, StatusText = true})
-		delay(0.7)
-		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
-			play_sound('tarot1')
-			if card and card.juice_up then card:juice_up(0.8, 0.5) end
-			G.TAROT_INTERRUPT_PULSE = true
-			return true end
-		}))
-		delay(1.3)
-	end
-	Cryptid.reset_to_none()
+    update_hand_text(uht_snd(0.7, 0.9, 0), {
+        chips = G.GAME.hands[hand].l_chips,
+        StatusText = true
+    })
+    delay(2)
+    Spectrallib.event(function ()
+        play_sound('tarot1')
+        return true
+    end)
+    update_hand_text({delay = 0}, {
+        handname = localize("k_level_mult"),
+        chips = G.GAME.hands[hand].l_chips,
+        mult = G.GAME.hands[hand].l_mult
+    })
+    delay(1)
+    JUICE_CARD_EVENT(card, 0.2)
+    G.GAME.hands[hand].l_mult = G.GAME.hands[hand].l_mult + l_mult
+    update_hand_text(uht_snd(0.7, 0.9, 0), {
+        mult = G.GAME.hands[hand].l_mult,
+        StatusText = true
+    })
+    delay(2)
+	Spectrallib.reset_to_none()
 end
 
+-- Multiplicatively increase the chips level-up amount.
+---@param hand string Poker hand key.
+---@param card? Card The card responsible for the levelling.
+---@param l_chips number
+---@param instant? boolean If true, skips animations.
+---@return nil
 function Spectrallib.xl_chips(hand, card, l_chips, instant)
-	if not instant then
-		update_hand_text({delay = 0}, {handname = localize(hand, "poker_hands"), level = G.GAME.hands[hand].level, mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand), chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand)})
-		delay(1)
-		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
-			play_sound('tarot1')
-			if card and card.juice_up then card:juice_up(0.8, 0.5) end
-			G.TAROT_INTERRUPT_PULSE = true
-			return true end
-		}))
-		update_hand_text({delay = 0}, {handname = localize("k_level_chips"), chips = G.GAME.hands[hand].l_chips, mult = G.GAME.hands[hand].l_mult})
-		delay(2)
-	end
+    if instant then
+        G.GAME.hands[hand].l_chips = G.GAME.hands[hand].l_chips * l_chips
+        return
+    end
+
+    update_hand_text({delay = 0}, {
+        handname = localize(hand, "poker_hands"),
+        level = G.GAME.hands[hand].level,
+        mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand),
+        chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand)
+    })
+    delay(2)
+    Spectrallib.event(function ()
+        play_sound('tarot1')
+        return true
+    end)
+    update_hand_text({delay = 0}, {
+        handname = localize("k_level_chips"),
+        chips = G.GAME.hands[hand].l_chips,
+        mult = G.GAME.hands[hand].l_mult
+    })
+    delay(1)
+    JUICE_CARD_EVENT(card, 0.2)
 	G.GAME.hands[hand].l_chips = G.GAME.hands[hand].l_chips * l_chips
-	if not instant then
-		update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {chips = "X"..number_format(l_chips), StatusText = true})
-		delay(0.7)
-		update_hand_text({delay = 0}, {handname = localize("k_level_mult"), chips = G.GAME.hands[hand].l_chips, mult = G.GAME.hands[hand].l_mult})
-		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
-			play_sound('tarot1')
-			if card and card.juice_up then card:juice_up(0.8, 0.5) end
-			G.TAROT_INTERRUPT_PULSE = true
-			return true end
-		}))
-		delay(1.3)
-	end
-	Cryptid.reset_to_none()
+    update_hand_text(uht_snd(0.7, 0.9, 0), {
+        chips = "X"..number_format(l_chips),
+        StatusText = true
+    })
+    update_hand_text({delay = 0, volume = 0}, {
+        chips = G.GAME.hands[hand].l_chips
+    })
+    delay(2)
+	Spectrallib.reset_to_none()
 end
 
+-- Multiplicatively increase the mult level-up amount.
+---@param hand string Poker hand key.
+---@param card? Card The card responsible for the levelling.
+---@param l_mult number
+---@param instant? boolean If true, skips animations.
+---@return nil
 function Spectrallib.xl_mult(hand, card, l_mult, instant)
-	if not instant then
-		update_hand_text({delay = 0}, {handname = localize(hand, "poker_hands"), level = G.GAME.hands[hand].level, mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand), chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand)})
-		delay(1)
-		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
-			play_sound('tarot1')
-			if card and card.juice_up then card:juice_up(0.8, 0.5) end
-			G.TAROT_INTERRUPT_PULSE = true
-			return true end
-		}))
-		update_hand_text({delay = 0}, {handname = localize("k_level_mult"), chips = G.GAME.hands[hand].l_chips, mult = G.GAME.hands[hand].l_mult})
-		delay(2)
-	end
+    if instant then
+        G.GAME.hands[hand].l_mult = G.GAME.hands[hand].l_mult * l_mult
+        return
+    end
+
+    update_hand_text({delay = 0}, {
+        handname = localize(hand, "poker_hands"),
+        level = G.GAME.hands[hand].level,
+        mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand),
+        chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand)
+    })
+    delay(2)
+    Spectrallib.event(function ()
+        play_sound('tarot1')
+        return true
+    end)
+    update_hand_text({delay = 0}, {
+        handname = localize("k_level_mult"),
+        chips = G.GAME.hands[hand].l_chips,
+        mult = G.GAME.hands[hand].l_mult
+    })
+    delay(1)
+    JUICE_CARD_EVENT(card, 0.2)
 	G.GAME.hands[hand].l_mult = G.GAME.hands[hand].l_mult * l_mult
-	if not intant then
-		update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {mult = "X"..number_format(l_mult), StatusText = true})
-		delay(0.7)
-		update_hand_text({delay = 0}, {handname = localize("k_level_mult"), chips = G.GAME.hands[hand].l_chips, mult = G.GAME.hands[hand].l_mult})
-		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
-			play_sound('tarot1')
-			if card and card.juice_up then card:juice_up(0.8, 0.5) end
-			G.TAROT_INTERRUPT_PULSE = true
-			return true end
-		}))
-		delay(1.3)
-	end
-	Cryptid.reset_to_none()
+    update_hand_text(uht_snd(0.7, 0.9, 0), {
+        mult = "X"..number_format(l_mult),
+        StatusText = true
+    })
+    update_hand_text({delay = 0, volume = 0}, {
+        mult = G.GAME.hands[hand].l_mult
+    })
+    delay(2)
+	Spectrallib.reset_to_none()
 end
 
+-- Increase the hand's ascension power.
+---@param hand string Poker hand key.
+---@param card? Card The card responsible for the levelling.
+---@param asc_power number
+---@param instant? boolean If true, skips animations.
+---@return nil
+function Spectrallib.l_asc(hand, card, asc_power, instant)
+    if instant then
+        local chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand)
+        local mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand)
+        G.GAME.hands[hand].AscensionPower = to_big((G.GAME.hands[hand].AscensionPower or 0)) + asc_power
+        chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand) - chips
+        mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand) - mult
+        if G.entr_add_to_stats then
+            SMODS.Scoring_Parameters.chips.current = SMODS.Scoring_Parameters.chips.current + chips
+            SMODS.Scoring_Parameters.mult.current = SMODS.Scoring_Parameters.mult.current + mult
+        end
+
+        if (
+            card and card.edition
+            and ((asc_power or 1) > 0)
+            and not noengulf and Engulf
+        ) then
+            if Engulf.SpecialFuncs[card.config.center.key] then 
+            else
+                Engulf.EditionHand(card, hand, card.edition, asc_power, instant)
+            end
+        end
+
+        G.hand:parse_highlighted()
+        G.GAME.current_round.current_hand.cry_asc_num = 0
+        G.GAME.current_round.current_hand.cry_asc_num_text = ""
+
+        return
+    end
+
+    local chips_color = copy_table(G.C.UI_CHIPS)
+    local mult_color = copy_table(G.C.UI_MULT)
+    delay(0.4)
+    update_hand_text(uht_snd(0.7, 0.8, 0.3), {
+        handname = localize(hand,'poker_hands'),
+        chips = "...", mult = "...", level = "..."
+    })
+
+    local chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand)
+    local mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand)
+    G.GAME.hands[hand].AscensionPower = to_big((G.GAME.hands[hand].AscensionPower or 0)) + asc_power
+    chips = Spectrallib.ascend_hand(G.GAME.hands[hand].chips, hand) - chips
+    mult = Spectrallib.ascend_hand(G.GAME.hands[hand].mult, hand) - mult
+    if G.entr_add_to_stats then
+        SMODS.Scoring_Parameters.chips.current = SMODS.Scoring_Parameters.chips.current + chips
+        SMODS.Scoring_Parameters.mult.current = SMODS.Scoring_Parameters.mult.current + mult
+    end
+
+    Spectrallib.event(1.0)
+    Spectrallib.event{
+        function ()
+            play_sound("tarot1")
+            ease_colour(G.C.UI_CHIPS, HEX("ffb400"), 0.1)
+            ease_colour(G.C.UI_MULT, HEX("ffb400"), 0.1)
+            Spectrallib.pulse_flame(0.01, sunlevel) -- todo: figure where sunlevel is form
+            if card and card.juice_up then card:juice_up(0.8, 0.5) end
+            G.E_MANAGER:add_event(Event({
+                trigger = "after",
+                blockable = false,
+                blocking = false,
+                delay = 1.2,
+                func = function()
+                ease_colour(G.C.UI_CHIPS, chips_color, 1)
+                ease_colour(G.C.UI_MULT, mult_color, 1)
+                return true
+                end,
+            }))
+            return true
+        end,
+        trigger = "after",
+        delay = 0.2
+    }
+
+    update_hand_text(uht_snd(0.7, 0.9, 0), {
+        level = (asc_power > 0 and "+" or "")..number_format(asc_power)
+    })
+    delay(1.6)
+
+    if (
+        card and card.edition
+        and ((asc_power or 1) > 0)
+        and not noengulf and Engulf
+    ) then
+        if Engulf.SpecialFuncs[card.config.center.key] then 
+        else
+            Engulf.EditionHand(card, hand, card.edition, asc_power, instant)
+        end
+    end
+
+    delay(1.6)
+    update_hand_text(uht_snd(0.7, 1.1, 0), {
+        mult = 0, chips = 0,
+        handname = "", level = ""
+    })
+    delay(1)
+
+    G.hand:parse_highlighted()
+    G.GAME.current_round.current_hand.cry_asc_num = 0
+    G.GAME.current_round.current_hand.cry_asc_num_text = ""
+end
+
+---@param op string Return value is G.C.RED
+---| "exponent" # Return value is G.C.FILTER
+---| "add"      # Return value is G.C.GREEN
+---@return [number, number, number, number]
 function Spectrallib.get_arrow_color(op)
     if op == "exponent" then --idk what the actual colours are meant to be
         return G.C.FILTER
@@ -105,121 +299,55 @@ function Spectrallib.get_arrow_color(op)
     end
 end
 
+-----------
+-- HOOKS --
+-----------
+
+-- Hook to incorporate previous functions
 local upgrade_hands_ref = SMODS.upgrade_poker_hands
 function SMODS.upgrade_poker_hands(args)
     args.hands = args.hands or G.handlist
     if type(args.hands) == "string" then args.hands = {args.hands} end
-    if next(SMODS.find_card("j_entr_strawberry_pie")) then
-        for i, v in pairs(SMODS.find_card("j_entr_strawberry_pie")) do
-            for index, hand in pairs(args.hands) do
-                if args.hands[index] == "Full House" or args.hands[index] == "Straight" or args.hands[index] == "Flush" then
-                    args.hands[index] = "High Card"
-                end
-            end
-        end 
-    end
+
     if args.ascension_power then
         local card = args.from
-        for i, v in pairs(args.hands) do
-            local amt = args.ascension_power
-            local handname = v
-            local used_consumable = card
-            local c
-            local m
-            local chips = Spectrallib.ascend_hand(G.GAME.hands[handname].chips, handname)
-            local mult = Spectrallib.ascend_hand(G.GAME.hands[handname].mult, handname)
-            if not args.instant then
-                c = copy_table(G.C.UI_CHIPS)
-                m = copy_table(G.C.UI_MULT)
-                delay(0.4)
-                update_hand_text(
-                    { sound = "button", volume = 0.7, pitch = 0.8, delay = 0.3 },
-                    { handname = localize(handname,'poker_hands'), chips = "...", mult = "...", level = "..." }
-                )
-            end
-            G.GAME.hands[handname].AscensionPower = to_big((G.GAME.hands[handname].AscensionPower or 0)) + to_big(amt) 
-            chips = Spectrallib.ascend_hand(G.GAME.hands[handname].chips, handname) - chips
-            mult = Spectrallib.ascend_hand(G.GAME.hands[handname].mult, handname) - mult
-            if G.entr_add_to_stats then
-                SMODS.Scoring_Parameters.chips.current = SMODS.Scoring_Parameters.chips.current + chips
-                SMODS.Scoring_Parameters.mult.current = SMODS.Scoring_Parameters.mult.current + mult
-            end
-            if not args.instant then
-                delay(1.0)
-                G.E_MANAGER:add_event(Event({
-                    trigger = "after",
-                    delay = 0.2,
-                    func = function()
-                    play_sound("tarot1")
-                    ease_colour(G.C.UI_CHIPS, HEX("ffb400"), 0.1)
-                    ease_colour(G.C.UI_MULT, HEX("ffb400"), 0.1)
-                    Cryptid.pulse_flame(0.01, sunlevel)
-                    if used_consumable and used_consumable.juice_up then used_consumable:juice_up(0.8, 0.5) end
-                    G.E_MANAGER:add_event(Event({
-                        trigger = "after",
-                        blockable = false,
-                        blocking = false,
-                        delay = 1.2,
-                        func = function()
-                        ease_colour(G.C.UI_CHIPS, c, 1)
-                        ease_colour(G.C.UI_MULT, m, 1)
-                        return true
-                        end,
-                    }))
-                    return true
-                    end,
-                }))
-            end
-            if not args.instant then
-                update_hand_text({ sound = "button", volume = 0.7, pitch = 0.9, delay = 0 }, { level = (to_big(amt) > to_big(0) and "+" or "")..number_format(to_big(amt) ) })
-                delay(1.6)
-            end
-            if card and card.edition and to_big(amt or 1) > to_big(0) and not noengulf and Engulf then
-                if Engulf.SpecialFuncs[card.config.center.key] then 
-                else Engulf.EditionHand(card, handname, card.edition, amt, instant) end 
-            end
-            if not args.instant then
-                delay(1.6)
-                update_hand_text(
-                    { sound = "button", volume = 0.7, pitch = 1.1, delay = 0 },
-                    { mult = 0, chips = 0, handname = "", level = "" }
-                )
-                delay(1)
-            end
-            G.hand:parse_highlighted()
-            G.GAME.current_round.current_hand.cry_asc_num = 0
-            G.GAME.current_round.current_hand.cry_asc_num_text = ""
+        for _, hand in pairs(args.hands) do
+            Spectrallib.l_asc(hand, args.from, args.ascension_power, args.instant)
         end
         return
     end
+
     if args.per_level then
         local mult = args.per_level.mult
         local chips = args.per_level.chips
         if mult or chips then
-            for i, v in pairs(args.hands) do
-                Spectrallib.l_chipsmult(v, args.from, chips, mult, args.instant)
+            for _, hand in pairs(args.hands) do
+                Spectrallib.l_chipsmult(hand, args.from, chips, mult, args.instant)
             end
         end
         return
     end
+
     if args.x_per_level then
         local mult = args.x_per_level.mult
         local chips = args.x_per_level.chips
         if mult then
-            for i, v in pairs(args.hands) do
-                Spectrallib.xl_mult(v, args.from, mult, args.instant)
+            for _, hand in pairs(args.hands) do
+                Spectrallib.xl_mult(hand, args.from, mult, args.instant)
             end
         end
         if chips then
-            for i, v in pairs(args.hands) do
-                Spectrallib.xl_chips(v, args.from, chips, args.instant)
+            for _, hand in pairs(args.hands) do
+                Spectrallib.xl_chips(hand, args.from, chips, args.instant)
             end
         end
         return
     end
+
     return upgrade_hands_ref(args)
 end
 
+-- Add ascension power info to hands
 local hand_row_ref = create_UIBox_current_hand_row
 function create_UIBox_current_hand_row(handname, simple)
     G.GAME.badarg = G.GAME.badarg or {}
@@ -309,13 +437,8 @@ function create_UIBox_current_hand_row(handname, simple)
     end
 end
 
-
-function Spectrallib.ascend_hand(num, hand) -- edit this function at your leisure
-    local ret = Cryptid.ascend(num, (G.GAME.hands[hand].AscensionPower or 0))
-    return ret
-end
-
 --TODO: clean up later to merge with cryptid stuff
+--todo: figure this out
 local pokerhandinforef = G.FUNCS.get_poker_hand_info
 function G.FUNCS.get_poker_hand_info(_cards)
 	local text, loc_disp_text, poker_hands, scoring_hand, disp_text = pokerhandinforef(_cards)

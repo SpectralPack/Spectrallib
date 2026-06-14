@@ -1,87 +1,40 @@
+-------------------------
+--#region CARD METHODS --
+-------------------------
+
+---@return nil
 function Card:has_stickers()
-	for i, v in pairs(SMODS.Sticker.obj_table) do
-		if self.ability[i] then
+	for sticker_key in pairs(SMODS.Sticker.obj_table) do
+		if self.ability[sticker_key] then
 			return true
 		end
 	end
 end
+
+---@param seed string|any
+---@return nil
 function Card:remove_random_sticker(seed)
-	local s = {}
-	for i, v in pairs(SMODS.Sticker.obj_table) do
-		if not v.hidden and i ~= "cry_absolute" and self.ability[i] then
-			s[#s + 1] = i
+	local selectable_stickers = {}
+	for sticker_key, sticker_def in pairs(SMODS.Sticker.obj_table) do
+		if (
+			not sticker_def.hidden
+			and sticker_key ~= "cry_absolute"
+			and self.ability[sticker_key]
+		) then
+			table.insert(selectable_stickers, sticker_key)
 		end
 	end
-	if #s > 0 then
-		local sticker = pseudorandom_element(s, pseudoseed(seed))
-		self.ability[sticker] = nil
-		if sticker == "perishable" then
-			self.ability.perish_tally = nil
-		end
+
+	if #selectable_stickers == 0 then return end
+
+	local sticker = pseudorandom_element(selectable_stickers, pseudoseed(seed))
+	self.ability[sticker] = nil
+	if sticker == "perishable" then
+		self.ability.perish_tally = nil
 	end
 end
 
-function Spectrallib.table_merge(t1, t2)
-	local tbl = {}
-	for i, v in pairs(t1) do
-		tbl[#tbl + 1] = v
-	end
-	for i, v in pairs(t2) do
-		tbl[#tbl + 1] = v
-	end
-	return tbl
-end
-
-function Spectrallib.get_highlighted_cards(areas, ignore, min, max, blacklist, seed)
-	ignore.checked = true
-	blacklist = blacklist or function()
-		return true
-	end
-	local cards = {}
-	for i, area in pairs(areas) do
-		if area.cards then
-			for i2, card in pairs(area.cards) do
-				if
-					card ~= ignore
-					and blacklist(card)
-					and (card.highlighted or G.cry_force_use)
-					and not card.checked
-				then
-					cards[#cards + 1] = card
-					card.checked = true
-				end
-			end
-		end
-	end
-	for i, v in ipairs(cards) do
-		v.checked = nil
-	end
-	if (#cards >= min and #cards <= max) or not G.cry_force_use then
-		ignore.checked = nil
-		return cards
-	else
-		for i, v in pairs(cards) do
-			v.f_use_order = i
-		end
-		pseudoshuffle(cards, pseudoseed("forcehighlight" or seed))
-		local actual = {}
-		for i = 1, max do
-			if cards[i] and not cards[i].checked and actual ~= ignore then
-				actual[#actual + 1] = cards[i]
-			end
-		end
-		table.sort(actual, function(a, b)
-			return a.f_use_order < b.f_use_order
-		end)
-		for i, v in pairs(cards) do
-			v.f_use_order = nil
-		end
-		ignore.checked = nil
-		return actual
-	end
-	return {}
-end
-
+---@return boolean
 function Card:is_food()
 	--you cant really check if vanilla jokers are in a pool because its hardcoded
 	--so i have to hardcode it here too for the starfruit unlock
@@ -96,24 +49,154 @@ function Card:is_food()
 		j_ramen = true,
 		j_selzer = true,
 	}
-	if food[self.config.center.key] or Spectrallib.safe_get(self.config.center, "pools", "Food") then
+	if (
+		food[self.config.center.key]
+		or Spectrallib.safe_get(self.config.center, "pools", "Food")
+	) then
 		return true
 	end
+	return false
 end
 
-function Spectrallib.cry_rankname_to_id(rankname)
-	for i, v in pairs(SMODS.Rank.obj_buffer) do
-		if rankname == v then
-			return i
-		end
+-- Checks if the key `"no_"..m` is defined in a card's center,
+-- or if the card's center's key is a key in the table `G.GAME[m]` and assigned to a truthy value.
+---@param m string
+---@param no_no boolean
+---@return boolean|nil
+function Card:no(m, no_no)
+	if no_no then
+		return self.config.center[m] or Spectrallib.safe_get(G.GAME, m, self.config.center_key) or false --[[@as boolean|nil]]
 	end
-	return nil
+	return Card.no(self, "no_" .. m, true)
 end
 
---Utility function to check things without erroring
+--#endregion
+-------------------------
+
+------------------
+--#region HOOKS --
+------------------
+
+-- Hook to add redeemable backs object type
+local inj = SMODS.injectItems
+function SMODS.injectItems(...)
+	inj(...)
+	local keys = {}
+	local a_keys = {}
+	for i, v in pairs(SMODS.scoring_parameter_keys) do
+		if not keys[v] then
+			a_keys[#a_keys+1] = v
+		end
+		keys[v] = true
+	end
+	SMODS.scoring_parameter_keys = a_keys
+	SMODS.ObjectType({
+		key = "RedeemableBacks",
+		default = "b_red",
+		cards = {},
+		inject = function(self)
+			SMODS.ObjectType.inject(self)
+			for _,key in ipairs({
+				"b_red",
+				"b_blue",
+				"b_yellow",
+				"b_green",
+				"b_black",
+				"b_magic",
+				"b_nebula",
+				"b_ghost",
+				"b_zodiac",
+				"b_painted",
+				"b_anaglyph",
+				"b_plasma",
+				"b_erratic",
+				"b_abandoned",
+				"b_checkered",
+			}) do self:inject_card(G.P_CENTERS[key]) end
+		end,
+	})
+	SMODS.ObjectTypes.RedeemableBacks:inject()
+end
+
+-- Create third card layer
+if not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
+	local set_spritesref = Card.set_sprites
+	function Card:set_sprites(_center, _front)
+		set_spritesref(self, _center, _front)
+
+		if not Spectrallib.safe_get(_center, "soul_pos", "extra") then return end
+
+		self.children.floating_sprite2 = Sprite(
+			self.T.x, self.T.y,
+			self.T.w, self.T.h,
+			G.ASSET_ATLAS[_center.atlas or _center.set],
+			_center.soul_pos.extra
+		)
+		local floating_sprite2 = self.children.floating_sprite2
+		floating_sprite2.role.draw_major = self
+		floating_sprite2.states.hover.can = false
+		floating_sprite2.states.click.can = false
+	end
+
+	SMODS.DrawStep({
+		key = "floating_sprite2",
+		order = 59,
+		func = function(self)
+			local center = self.config.center
+			if not (
+				center.soul_pos
+				and center.soul_pos.extra
+				and (center.discovered or self.bypass_discovery_center)
+			) then return end
+
+			local scale_mod = 0.07
+			local rotate_mod = 0
+			local floating_sprite2 = self.children.floating_sprite2
+
+			floating_sprite2:draw_shader(
+				"dissolve",   0, nil, nil, self.children.center, scale_mod, rotate_mod, nil, 0.1, nil, 0.6
+			)
+			floating_sprite2:draw_shader(
+				"dissolve", nil, nil, nil, self.children.center, scale_mod, rotate_mod
+			)
+		end,
+		conditions = {
+			vortex = false,
+			facing = "front"
+		},
+	})
+
+	SMODS.draw_ignore_keys.floating_sprite2 = true
+end
+
+--#endregion
+------------------
+
+-------------------------------
+--#region INTERNAL UTILITIES --
+-------------------------------
+
+-- Merge the contents of two lists into a new list; the returned list has the contents of `t1` then `t2`.
+---@param t1 any[]
+---@param t2 any[]
+---@return any[]
+function Spectrallib.table_merge(t1, t2)
+	local tbl = {}
+	for _,v in pairs(t1) do
+		table.insert(tbl, v)
+	end
+	for _, v in pairs(t2) do
+		table.insert(tbl, v)
+	end
+	return tbl
+end
+
+-- Descend a deeply nested table by following a list of keys.<br>
+-- If at any point a key is assigned `nil`, returns `false`;<br>
+-- otherwise returns the value assigned to the last listed key.
 ---@param t table
 ---@param ... any
----@return table|false
+---@return table|any|false
 function Spectrallib.safe_get(t, ...)
 	local current = t
 	for _, k in ipairs({ ... }) do
@@ -125,82 +208,14 @@ function Spectrallib.safe_get(t, ...)
 	return current
 end
 
-function Spectrallib.is_card_big(joker)
-	if not Talisman then
-		return false
-	end
-	local center = joker.config and joker.config.center
-	if not center then
-		return false
-	end
-
-	if center.immutable and center.immutable == true then
-		return false
-	end
-    -- im making bignums not work with Spectrallib. since i dont see the point
-    -- could be changed but i dont feel like making 2 blacklists or making this mod use the Spectrallib table either
-	if center.mod and not (Spectrallib or {}).mod_whitelist[center.mod.name] then
-		return false
-	end
-
-	local in_blacklist = ((Spectrallib or {}).big_num_blacklist or {})[center.key or "Nope!"] or false
-
-	return not in_blacklist --[[or
-	       (center.mod and center.mod.id == "Spectrallib" and not center.no_break_infinity) or center.break_infinity--]]
-end
-
--- Check G.GAME as well as joker info for banned keys
-function Card:no(m, no_no)
-	if no_no then
-		-- Infinifusion Compat
-		if self.infinifusion then
-			for i = 1, #self.infinifusion do
-				if
-					G.P_CENTERS[self.infinifusion[i].key][m]
-					or (G.GAME and G.GAME[m] and G.GAME[m][self.infinifusion[i].key])
-				then
-					return true
-				end
-			end
-			return false
-		end
-		if not self.config then
-			--assume this is from one component of infinifusion
-			return G.P_CENTERS[self.key][m] or (G.GAME and G.GAME[m] and G.GAME[m][self.key])
-		end
-
-		return self.config.center[m] or (G.GAME and G.GAME[m] and G.GAME[m][self.config.center_key]) or false
-	end
-	return Card.no(self, "no_" .. m, true)
-end
-
-function Spectrallib.no(center, m, key, no_no)
-	if no_no then
-		return center[m] or (G.GAME and G.GAME[m] and G.GAME[m][key]) or false
-	end
-	return Spectrallib.no(center, "no_" .. m, key, true)
-end
-
-function Spectrallib.deck_effects(card, func)
-	if not card.added_to_deck then
-		return func(card)
-	else
-		card.from_quantum = true
-		card:remove_from_deck(true)
-		local ret = func(card)
-		card:add_to_deck(true)
-		card.from_quantum = nil
-		return ret
-	end
-end
-
+-- Fully copies a table and its tables recursively.
+---@param obj table
+---@param seen? table Used within the function itself.
+---@return table
 function Spectrallib.deep_copy(obj, seen)
-	if type(obj) ~= "table" then
-		return obj
-	end
-	if seen and seen[obj] then
-		return seen[obj]
-	end
+	if type(obj) ~= "table" then return obj end
+	if seen and seen[obj] then return seen[obj] end
+
 	local s = seen or {}
 	local res = setmetatable({}, getmetatable(obj))
 	s[obj] = res
@@ -210,70 +225,35 @@ function Spectrallib.deep_copy(obj, seen)
 	return res
 end
 
--- generate a random edition (e.g. Antimatter Deck)
-function Spectrallib.poll_random_edition()
-	local random_edition = pseudorandom_element(G.P_CENTER_POOLS.Edition, pseudoseed("cry_ant_edition"))
-	while random_edition.key == "e_base" do
-		random_edition = pseudorandom_element(G.P_CENTER_POOLS.Edition, pseudoseed("cry_ant_edition"))
-	end
-	ed_table = { [random_edition.key:sub(3)] = true }
-	return ed_table
-end
-
--- gets a random, valid consumeable (used for Hammerspace, CCD Deck, Blessing, etc.)
-function Spectrallib.random_consumable(seed, excluded_flags, banned_card, pool, no_undiscovered)
-	-- set up excluded flags - these are the kinds of consumables we DON'T want to have generating
-	excluded_flags = excluded_flags or { "hidden", "no_doe", "no_grc" }
-	local selection = "n/a"
-	local passes = 0
-	local tries = 500
-	while true do
-		tries = tries - 1
-		passes = 0
-		-- create a random consumable naively
-		local key = pseudorandom_element(pool or G.P_CENTER_POOLS.Consumeables, pseudoseed(seed or "grc")).key
-		selection = G.P_CENTERS[key]
-		-- check if it is valid
-		if selection.discovered or not no_undiscovered then
-			for k, v in pairs(excluded_flags) do
-				if not Spectrallib.no(selection, v, key, true) then
-					--Makes the consumable invalid if it's a specific card unless it's set to
-					--I use this so cards don't create copies of themselves (eg potential inf Blessing chain, Hammerspace from Hammerspace...)
-					if not banned_card or (banned_card and banned_card ~= key) then
-						passes = passes + 1
-					end
-				end
-			end
-		end
-		-- use it if it's valid or we've run out of attempts
-		if passes >= #excluded_flags or tries <= 0 then
-			if tries <= 0 and no_undiscovered then
-				return G.P_CENTERS["c_strength"]
-			else
-				return selection
-			end
-		end
-	end
-end
-
--- simple plural s function for localisation
+-- Evaluate plural notation, e.g. #<s>1#, #<ies,y>2#.
+---@param str string
+---@param vars any[]
+---@return string
 function Spectrallib.pluralize(str, vars)
-	local inside = str:match("<(.-)>") -- finds args
+	-- todo: improve syntax
+
+	-- Example str: "<s>1", "<ies,y>2"
+	local inside = str:match("<(.-)>") -- From str, match: "s", "ies,y"
 	local _table = {}
 	if inside then
-		for v in inside:gmatch("[^,]+") do -- adds args to array
-			table.insert(_table, v)
+		-- Delimit ","
+		for substr in inside:gmatch("[^,]+") do -- From inside, match: ["s"], ["ies", "y"]
+			table.insert(_table, substr)
 		end
-		local num = vars[tonumber(string.match(str, ">(%d+)"))] -- gets reference variable
+
+		local var_index = tonumber(str:match(">(%d+)")) -- From str, match: "1", "2"
+		local num = vars[var_index]
 		if type(num) == "string" then
 			num = (Big and to_number(to_big(num))) or num
 		end
 		if not num then
 			num = 1
 		end
-		local plural = _table[1] -- default
+
+		local selected_affix = _table[1] -- default
 		local checks = { [1] = "=" } -- checks 1 by default
 		local checks1mod = false -- tracks if 1 was modified
+
 		if #_table > 1 then
 			for i = 2, #_table do
 				local isnum = tonumber(_table[i])
@@ -291,9 +271,11 @@ function Spectrallib.pluralize(str, vars)
 				end
 			end
 		end
+
 		local function fch(str, c)
-			return string.sub(str, 1, 1) == c -- gets first char and returns boolean
+			return str:sub(1, 1) == c -- gets first char and returns boolean
 		end
+
 		local keys = {}
 		for k in pairs(checks) do
 			table.insert(keys, k)
@@ -315,135 +297,40 @@ function Spectrallib.pluralize(str, vars)
 				end
 			end
 		end
-		return plural
+		return selected_affix
 	end
 end
 
-function Spectrallib.advanced_find_joker(name, rarity, edition, ability, non_debuff, area)
-	local jokers = {}
-	if not G.jokers or not G.jokers.cards then
-		return {}
-	end
-	local filter = 0
-	if name then
-		filter = filter + 1
-	end
-	if edition then
-		filter = filter + 1
-	end
-	if type(rarity) ~= "table" then
-		if type(rarity) == "string" then
-			rarity = { rarity }
-		else
-			rarity = nil
-		end
-	end
-	if rarity then
-		filter = filter + 1
-	end
-	if type(ability) ~= "table" then
-		if type(ability) == "string" then
-			ability = { ability }
-		else
-			ability = nil
-		end
-	end
-	if ability then
-		filter = filter + 1
-	end
-	-- return nothing if function is called with no useful arguments
-	if filter == 0 then
-		return {}
-	end
-	if not area or area == "j" then
-		for k, v in pairs(G.jokers.cards) do
-			if v and type(v) == "table" and (non_debuff or not v.debuff) then
-				local check = 0
-				if name and v.ability.name == name then
-					check = check + 1
-				end
-				if
-					edition
-					and (v.edition and v.edition.key == edition) --[[ make this use Spectrallib.safe_get later? if it's possible anyways]]
-				then
-					check = check + 1
-				end
-				if rarity then
-					--Passes as valid if rarity matches ANY of the values in the rarity table
-					for _, a in ipairs(rarity) do
-						if v.config.center.rarity == a then
-							check = check + 1
-							break
-						end
-					end
-				end
-				if ability then
-					--Only passes if the joker has everything in the ability table
-					local abilitycheck = true
-					for _, b in ipairs(ability) do
-						if not v.ability[b] then
-							abilitycheck = false
-							break
-						end
-					end
-					if abilitycheck then
-						check = check + 1
-					end
-				end
-				if check == filter then
-					table.insert(jokers, v)
-				end
-			end
-		end
-	end
-	if not area or area == "c" then
-		for k, v in pairs(G.consumeables.cards) do
-			if v and type(v) == "table" and (non_debuff or not v.debuff) then
-				local check = 0
-				if name and v.ability.name == name then
-					check = check + 1
-				end
-				if
-					edition
-					and (v.edition and v.edition.key == edition) --[[ make this use Spectrallib.safe_get later? if it's possible anyways]]
-				then
-					check = check + 1
-				end
-				if ability then
-					--Only passes if the joker has everything in the ability table
-					local abilitycheck = true
-					for _, b in ipairs(ability) do
-						if not v.ability[b] then
-							abilitycheck = false
-							break
-						end
-					end
-					if abilitycheck then
-						check = check + 1
-					end
-				end
-				--Consumables don't have a rarity, so this should ignore it in that case (untested lmfao)
-				if check == filter then
-					table.insert(jokers, v)
-				end
-			end
-		end
-	end
-	return jokers
+-- Restricts the input within the range `[min,max]`.
+---@param x number
+---@param min number
+---@param max number
+---@return number
+function Spectrallib.clamp(x, min, max)
+    return math.max(min, math.min(x, max))
 end
 
--- backwards compat, not needed when smods updates, also doesnt do anything here really
--- mostly just to stop crashes
-function cry_prob(owned, den, rigged)
-	prob = G.GAME and G.GAME.probabilities.normal or 1
-	if rigged then
-		return to_number(math.min(den, 1e300))
-	else
-		if owned then return to_number(math.min(prob*owned, 1e300)) else return to_number(math.min(prob, 1e300)) end
+-- Converts a list of items into a table with keys being the items in the given list,<br>
+-- effectively converting a list into a set.
+---@generic Spectrallib.list_to_keys.T
+---@param list any[]
+---@param all_values? Spectrallib.list_to_keys.T The value that all keys map to. nil defaults to true.
+---@return {any: Spectrallib.list_to_keys.T}
+function Spectrallib.list_to_keys(list, all_values)
+	if type(list) ~= table then return {} end
+	if all_values == nil then all_values = true end
+	local ret_table = {}
+	for _,key in ipairs(list) do
+		ret_table[key] = all_values
 	end
+	return ret_table
 end
 
-function Spectrallib.with_deck_effects(card, func)
+-- todo: figure out what this is for
+---@param card Card
+---@param func function
+---@return any
+function Spectrallib.deck_effects(card, func)
 	if not card.added_to_deck then
 		return func(card)
 	else
@@ -455,148 +342,331 @@ function Spectrallib.with_deck_effects(card, func)
 		return ret
 	end
 end
+-- needed for compat
+Spectrallib.with_deck_effects = Spectrallib.deck_effects
 
-if not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
-	local set_spritesref = Card.set_sprites
-	function Card:set_sprites(_center, _front)
-		set_spritesref(self, _center, _front)
-		if _center and _center.soul_pos and _center.soul_pos.extra then
-			self.children.floating_sprite2 = Sprite(
-				self.T.x,
-				self.T.y,
-				self.T.w,
-				self.T.h,
-				G.ASSET_ATLAS[_center.atlas or _center.set],
-				_center.soul_pos.extra
-			)
-			self.children.floating_sprite2.role.draw_major = self
-			self.children.floating_sprite2.states.hover.can = false
-			self.children.floating_sprite2.states.click.can = false
+--#endregion
+-------------------------------
+
+------------------------------
+--#region BOOLEAN FUNCTIONS --
+------------------------------
+
+-- Determines if a card can contain BigNumber values. (I think)
+---@param card Card
+---@return boolean
+function Spectrallib.is_card_big(card)
+	if not Spectrallib.can_mods_load({'Talisman'}) then
+		return false
+	end
+
+	local center = card.config and card.config.center
+	if not center then
+		return false
+	end
+
+	if center.immutable and center.immutable == true then
+		return false
+	end
+
+    -- im making bignums not work with Spectrallib. since i dont see the point
+    -- could be changed but i dont feel like making 2 blacklists or making this mod use the Spectrallib table either
+	if center.mod and not (Spectrallib or {}).mod_whitelist[center.mod.name] then
+		return false
+	end
+
+	local in_blacklist = ((Spectrallib or {}).big_num_blacklist or {})[center.key or "Nope!"] or false
+
+	return not in_blacklist
+end
+
+-- Determines whether a table has a value assigned to the key `"no_"..m`.
+---@param center SMODS.Center|table
+---@param m string
+---@param key string
+---@param no_no boolean If true, check m and not `"no_"..m`.
+---@return boolean|any
+function Spectrallib.no(center, m, key, no_no)
+	if no_no then
+		return center[m] or (G.GAME and G.GAME[m] and G.GAME[m][key]) or false
+	end
+	return Spectrallib.no(center, "no_" .. m, key, true)
+end
+
+-- Truthy if input is a number/BigNumber.
+---@param x any
+---@return boolean
+function Spectrallib.is_number(x)
+	return type(x) == "number" or Spectrallib.is_big(x)
+end
+
+-- Truthy if input is strictly a BigNumber.
+---@param x any
+---@return boolean
+function Spectrallib.is_big(x)
+	return (type(x) == "table" and is_number(x)) or (is_big and is_big(x))
+end
+
+--#endregion
+------------------------------
+
+--------------------------------------
+--#region GAMEPLAY OBJECT RETRIEVAL --
+--------------------------------------
+
+-- Get all highlighted cards in the specified list of card areas.
+---@param areas CardArea[]
+---@param ignore Card|table A card to exclude from the highlighted list.
+---@param min number
+---@param max number If the count of highlighted cards exceeds this value, returned table will be a max-sized list of randomly selected highlighted cards.
+---@param blacklist? string[]|(fun(card: Card): boolean) If function returns true, card is included into the highlighted list. Table entries are keys of centers to exclude.
+---@param seed? string|any Can be used alongside the `max` parameter.
+---@return Card[]
+function Spectrallib.get_highlighted_cards(areas, ignore, min, max, blacklist, seed)
+	ignore = ignore or {}
+	ignore.checked = true
+	min = min or 1
+	max = max or 1
+	-- Convert blacklist tables to function
+	if type(blacklist) == "table" then
+		blacklist = function (card)
+			local center_key = card.config.center.key
+			-- blacklist is (formerly) table; its reference saved by this new function
+			return not blacklist[center_key]
+		end
+	else -- function or nil
+		blacklist = blacklist or function()
+			return true
 		end
 	end
-	SMODS.DrawStep({
-		key = "floating_sprite2",
-		order = 59,
-		func = function(self)
-			if
-				self.config.center.soul_pos
-				and self.config.center.soul_pos.extra
-				and (self.config.center.discovered or self.bypass_discovery_center)
-			then
-				local scale_mod = 0.07 -- + 0.02*math.cos(1.8*G.TIMERS.REAL) + 0.00*math.cos((G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
-				local rotate_mod = 0 --0.05*math.cos(1.219*G.TIMERS.REAL) + 0.00*math.cos((G.TIMERS.REAL)*math.pi*5)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^2
-				if self.children.floating_sprite2 then
-					self.children.floating_sprite2:draw_shader(
-						"dissolve",
-						0,
-						nil,
-						nil,
-						self.children.center,
-						scale_mod,
-						rotate_mod,
-						nil,
-						0.1 --[[ + 0.03*math.cos(1.8*G.TIMERS.REAL)--]],
-						nil,
-						0.6
-					)
-					self.children.floating_sprite2:draw_shader(
-						"dissolve",
-						nil,
-						nil,
-						nil,
-						self.children.center,
-						scale_mod,
-						rotate_mod
-					)
-				else
-					local center = self.config.center
-					if _center and _center.soul_pos and _center.soul_pos.extra then
-						self.children.floating_sprite2 = Sprite(
-							self.T.x,
-							self.T.y,
-							self.T.w,
-							self.T.h,
-							G.ASSET_ATLAS[_center.atlas or _center.set],
-							_center.soul_pos.extra
-						)
-						self.children.floating_sprite2.role.draw_major = self
-						self.children.floating_sprite2.states.hover.can = false
-						self.children.floating_sprite2.states.click.can = false
-					end
+
+	local highlighted_cards = {}
+	for card in Spectrallib.iter.areacards(areas) do
+		if (
+			card ~= ignore
+			and blacklist(card)
+			and (card.highlighted or G.cry_force_use)
+			and not card.checked
+		) then
+			table.insert(highlighted_cards, card)
+			card.checked = true
+		end
+	end
+	for _, card in ipairs(highlighted_cards) do
+		card.checked = nil
+	end
+
+	if (min <= #highlighted_cards and #highlighted_cards <= max) or not G.cry_force_use then
+		ignore.checked = nil
+		return highlighted_cards
+	else -- Pick a random set of highlighted cards
+		for i, card in pairs(highlighted_cards) do
+			card.f_use_order = i
+		end
+
+		pseudoshuffle(highlighted_cards, pseudoseed("forcehighlight" or seed))
+		local ret_cards = {}
+		for i = 1, max do
+			if highlighted_cards[i] and not highlighted_cards[i].checked then
+				table.insert(ret_cards, highlighted_cards[i])
+			end
+		end
+		table.sort(ret_cards, function(a, b)
+			return a.f_use_order < b.f_use_order
+		end)
+
+		for _, card in pairs(highlighted_cards) do
+			card.f_use_order = nil
+		end
+		ignore.checked = nil
+		return ret_cards
+	end
+end
+
+-- Get a rank's ID given its name.
+---@param rankname string
+---@return integer|nil
+function Spectrallib.cry_rankname_to_id(rankname)
+	for id, name in pairs(SMODS.Rank.obj_buffer --[[@as string[] ]]) do
+		if rankname == name then
+			return id
+		end
+	end
+	return nil
+end
+
+-- Gets a random edition.<br>
+-- (Used by Antimatter Deck (Cryptid))
+---@return { string: true } # String is the key of the edition.
+function Spectrallib.poll_random_edition()
+	local random_edition = pseudorandom_element(G.P_CENTER_POOLS.Edition, pseudoseed("cry_ant_edition"))
+	while random_edition.key == "e_base" do
+		random_edition = pseudorandom_element(G.P_CENTER_POOLS.Edition, pseudoseed("cry_ant_edition"))
+	end
+	local ed_table = { [random_edition.key:sub(3)] = true }
+	return ed_table
+end
+
+-- Gets a random obtainable consumable that satisfies a flag blacklist.<br>
+-- (Used by Hammerspace, CCD Deck, Blessing, etc. (Cryptid))
+---@param seed? string|any
+---@param excluded_flags? string[] Defaults to {"hidden", "no_doe", "no_grc"}
+---@param banned_card? string
+---@param pool? SMODS.Consumable[]
+---@param no_undiscovered? boolean
+---@return SMODS.Consumable -- Consumable definition.
+function Spectrallib.random_consumable(seed, excluded_flags, banned_card, pool, no_undiscovered)
+	-- set up excluded flags - these are the kinds of consumables we DON'T want to have generating
+	excluded_flags = excluded_flags or { "hidden", "no_doe", "no_grc" }
+	pool = pool or G.P_CENTER_POOLS.Consumeables
+
+	local selected_card
+	local tries = 500
+
+	for _=1, tries do
+		local passed_flag_count = 0
+
+		-- create a random consumable naively
+		local consumable_key = pseudorandom_element(pool, pseudoseed(seed or "grc")).key
+		selected_card = G.P_CENTERS[consumable_key]
+
+		-- banned_card = nil makes this always false
+		local card_equals_banned = consumable_key == banned_card
+		-- no_undiscovered = true makes this always true
+		local card_is_discovered = selected_card.discovered or not no_undiscovered
+
+		if not card_equals_banned and card_is_discovered then
+			for _,flag in ipairs(excluded_flags) do
+				if not Spectrallib.no(selected_card, flag, consumable_key, true) then
+					passed_flag_count = passed_flag_count + 1
 				end
 			end
-		end,
-		conditions = { vortex = false, facing = "front" },
-	})
-	SMODS.draw_ignore_keys.floating_sprite2 = true
-end
-
-local inj = SMODS.injectItems
-function SMODS.injectItems(...)
-	inj(...)
-	local keys = {}
-	local a_keys = {}
-	for i, v in pairs(SMODS.scoring_parameter_keys) do
-		if not keys[v] then
-			a_keys[#a_keys+1] = v
 		end
-		keys[v] = true
+
+		if passed_flag_count >= #excluded_flags then
+			return selected_card
+		end
 	end
-	SMODS.scoring_parameter_keys = a_keys
-	SMODS.ObjectType({
-            key = "RedeemableBacks",
-            default = "b_red",
-            cards = {},
-            inject = function(self)
-				--[[
-                local cards = {
-                    "b_entr_twisted",
-                    --"b_entr_destiny",
-                    "b_entr_ambisinister",
-                    "b_entr_butterfly",
-                    "b_entr_gemstone",
-                    "b_entr_corrupted",
-                    HotPotato and "b_hpot_lime" or nil,
-                    HotPotato and "b_hpot_ublockdeck" or nil,
-                    HotPotato and "b_hpot_domn" or nil,
-                    HotPotato and "b_hpot_window" or nil,
-                }
-                for i, v in pairs(cards) do
-                    self:inject_card(G.P_CENTERS[v])
-                end]]
-				SMODS.ObjectType.inject(self)
-                self:inject_card(G.P_CENTERS.b_red)
-                self:inject_card(G.P_CENTERS.b_blue)
-                self:inject_card(G.P_CENTERS.b_yellow)
-                self:inject_card(G.P_CENTERS.b_green)
-                self:inject_card(G.P_CENTERS.b_black)
-                self:inject_card(G.P_CENTERS.b_magic)
-                self:inject_card(G.P_CENTERS.b_nebula)
-                self:inject_card(G.P_CENTERS.b_ghost)
-                self:inject_card(G.P_CENTERS.b_zodiac)
-                self:inject_card(G.P_CENTERS.b_painted)
-                self:inject_card(G.P_CENTERS.b_anaglyph)
-                self:inject_card(G.P_CENTERS.b_plasma)
-                self:inject_card(G.P_CENTERS.b_erratic)
-                self:inject_card(G.P_CENTERS.b_abandoned)
-                self:inject_card(G.P_CENTERS.b_checkered)
-            end,
-        })
-        SMODS.ObjectTypes.RedeemableBacks:inject()
+
+	if tries <= 0 and no_undiscovered then
+		return G.P_CENTERS["c_strength"]
+	end
+
+	return selected_card
 end
 
-function Spectrallib.pulse_flame(duration, intensity) -- duration is in seconds, intensity is in idfk honestly, but it increases pretty quickly
+-- Finds a Joker or consumable, with additional filters for specificity.
+---@param name string
+---@param rarity? string|string[]
+---@param edition? string
+---@param ability? string|string[]
+---@param non_debuff? boolean If true, include debuffed Jokers in the search.
+---@param area? "j"|"c" If "j", search Jokers. If "c", search consumables. Otherwise, search does not occur.
+---@return Card[]
+function Spectrallib.advanced_find_joker(name, rarity, edition, ability, non_debuff, area)
+	if not G.jokers or not G.jokers.cards then
+		return {}
+	end
+
+	local filter_count = 0
+	if name then filter_count = filter_count + 1 end
+	if edition then filter_count = filter_count + 1 end
+
+	if not rarity then
+	elseif type(rarity) == "string" then
+		rarity = { rarity }
+	elseif type(rarity) ~= "table" then
+		rarity = nil
+	end
+	if rarity then filter_count = filter_count + 1 end
+
+	if not ability then
+	elseif type(ability) == "string" then
+		ability = { ability }
+	elseif type(ability) ~= "table" then
+		ability = nil
+	end
+	if ability then filter_count = filter_count + 1 end
+
+	-- Return nothing if function is called with no useful arguments
+	if filter_count == 0 then
+		return {}
+	end
+
+	-- Card check process
+	local found_cards = {}
+	local function filter_check_card(card)
+		if not (non_debuff or not card.debuff) then return end
+		local satisfied_filter_count = 0
+
+		if name and card.ability.name == name then
+			satisfied_filter_count = satisfied_filter_count + 1
+		end
+		if edition and Spectrallib.safe_get(card, "edition", "key") == edition then
+			satisfied_filter_count = satisfied_filter_count + 1
+		end
+		if rarity and card.area == G.jokers then
+			for _,rarity_key in ipairs(rarity) do
+				if card.config.center.rarity == rarity_key then
+					satisfied_filter_count = satisfied_filter_count + 1
+					break
+				end
+			end
+		end
+		if ability then
+			-- Assume ahead of time ability filter satisfied
+			satisfied_filter_count = satisfied_filter_count + 1
+			for _,ability_key in ipairs(ability) do
+				if not card.ability[ability_key] then
+					-- Retract assumption and scold accordingly
+					satisfied_filter_count = satisfied_filter_count - 1
+					break
+				end
+			end
+		end
+
+		if satisfied_filter_count == filter_count then
+			table.insert(found_cards, card)
+		end
+	end
+
+	-- Begin checking cards
+	local cardlists = {}
+	if not area or area == "j" then
+		table.insert(cardlists, G.jokers)
+	end
+	if not area or area == "c" then
+		table.insert(cardlists, G.consumeables)
+	end
+	for card in Spectrallib.iter.areacards(cardlists) do
+		filter_check_card(card)
+	end
+
+	return found_cards
+end
+
+--#endregion
+--------------------------------------
+
+-----------------------------
+--#region VISUAL FUNCTIONS --
+-----------------------------
+
+-- Pulses the flames on chips and mult temporarily.
+---@param duration? number duration of the pulse in seconds
+---@param intensity? number intensity of the flames in idfk, it increases pretty quickly though
+function Spectrallib.pulse_flame(duration, intensity)
 	G.cry_flame_override = G.cry_flame_override or {}
 	G.cry_flame_override["duration"] = duration or 0.01
 	G.cry_flame_override["intensity"] = intensity or 2
 end
 
--- format: {UI color, original color}
-Spectrallib.scoring_window_pulse_targets = {
-	{G.C.UI_MULT, G.C.RED},
-	{G.C.UI_CHIPS, G.C.BLUE},
-}
-
+-- Pulses the colors on chips and mult temporarily.
+---@param new_color [number, number, number, number]
+---@param fade_in? number
+---@param hold? number
+---@param fade_out? number
+---@return nil
 function Spectrallib.pulse_scoring_window_colors(new_color, fade_in, hold, fade_out)
 	fade_in = fade_in or 0.1
 	fade_out = fade_out or 1
@@ -622,27 +692,26 @@ function Spectrallib.pulse_scoring_window_colors(new_color, fade_in, hold, fade_
 		delay = fade_in + hold,
 	}
 end
+-- format: {UI color, original color}
+Spectrallib.scoring_window_pulse_targets = {
+	{G.C.UI_MULT, G.C.RED},
+	{G.C.UI_CHIPS, G.C.BLUE},
+}
 
-function Spectrallib.get_next_tag()
-
-end
-
-function Spectrallib.is_number(x)
-	return type(x) == "number" or (type(x) == "table" and is_number(x)) or (is_big and is_big(x))
-end
-function Spectrallib.is_big(x)
-	return (type(x) == "table" and is_number(x)) or (is_big and is_big(x))
-end
-
-function Spectrallib.clamp(x, min, max)
-    return math.max(min, math.min(x, max))
-end
-
+-- Resets the Poker Hand information to be for nothing (not None).
+---@return nil
 function Spectrallib.reset_to_none()
 	update_hand_text({delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
 end
 
---remove sell value from cards (used by multiuse)
+--#endregion
+-----------------------------
+
+-----------
+-- HOOKS --
+-----------
+
+-- remove sell value from cards (used by multiuse)
 local cssv = Card.set_sell_value
 function Card:set_sell_value()
 	cssv(self)

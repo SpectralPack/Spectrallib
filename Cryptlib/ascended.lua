@@ -1,15 +1,11 @@
--- ascended.lua - Used for Ascended Hands
+-- ascended.lua - Used for Ascended Hands\
 
-G.FUNCS.cry_asc_UI_set = function(e)
-	if G.GAME.cry_exploit_override then
-		e.config.object.colours = { darken(G.C.SECONDARY_SET.Code, 0.2) }
-	else
-		e.config.object.colours = { G.C.GOLD }
-	end
-	e.config.object:update_text()
-end
+------------------
+--#region HOOKS --
+------------------
 
--- Needed because get_poker_hand_info isnt called at the end of the road
+-- Reset Chips/Mult colors at end of round
+	-- Needed because get_poker_hand_info isnt called at the end of the road
 local evaluateroundref = G.FUNCS.evaluate_round
 function G.FUNCS.evaluate_round()
 	evaluateroundref()
@@ -20,308 +16,201 @@ function G.FUNCS.evaluate_round()
 	end
 end
 
--- this is a hook to make funny "x of a kind"/"flush x" display text
+-- UI changes to display ascensded hand details
 local pokerhandinforef = G.FUNCS.get_poker_hand_info
 function G.FUNCS.get_poker_hand_info(_cards)
 	local text, loc_disp_text, poker_hands, scoring_hand, disp_text = pokerhandinforef(_cards)
-	-- Display text if played hand contains a Cluster and a Bulwark
-	-- Not Ascended hand related but this hooks in the same spot so i'm lumping it here anyways muahahahahahaha
-	if text == "cry_Clusterfuck" then
-		if next(poker_hands["cry_Bulwark"]) then
-			disp_text = "cry-Cluster Bulwark"
-			loc_disp_text = localize(disp_text, "poker_hands")
-		end
-	end
+
 	local hidden = false
-	for i, v in pairs(scoring_hand) do
-		if type(v) == "table" and v.facing == "back" then
+	for _, card in pairs(scoring_hand) do
+		if card.facing == "back" then
 			hidden = true
 			break
 		end
 	end
-	if G.SETTINGS.language == "en-us" then
-		if #scoring_hand > 5 and (text == "Flush Five" or text == "Five of a Kind" or text == "bunc_Spectrum Five") then
-			local rank_array = {}
-			local county = 0
-			for i = 1, #scoring_hand do
-				local val = scoring_hand[i]:get_id()
-				rank_array[val] = (rank_array[val] or 0) + 1
-				if rank_array[val] > county then
-					county = rank_array[val]
-				end
-			end
-			local function create_num_chunk(int) -- maybe useful enough to not be local? but tbh this function is probably some common coding exercise
-				if int >= 1000 then
-					int = 999
-				end
-				local ones = {
-					["1"] = "One",
-					["2"] = "Two",
-					["3"] = "Three",
-					["4"] = "Four",
-					["5"] = "Five",
-					["6"] = "Six",
-					["7"] = "Seven",
-					["8"] = "Eight",
-					["9"] = "Nine",
-				}
-				local tens = {
-					["1"] = "Ten",
-					["2"] = "Twenty",
-					["3"] = "Thirty",
-					["4"] = "Forty",
-					["5"] = "Fifty",
-					["6"] = "Sixty",
-					["7"] = "Seventy",
-					["8"] = "Eighty",
-					["9"] = "Ninety",
-				}
-				local str_int = string.reverse(int .. "") -- ehhhh whatever
-				local str_ret = ""
-				for i = 1, string.len(str_int) do
-					local place = str_int:sub(i, i)
-					if place ~= "0" then
-						if i == 1 then
-							str_ret = ones[place]
-						elseif i == 2 then
-							if place == "1" and str_ret ~= "" then -- admittedly not my smartest moment, i dug myself into a hole here...
-								if str_ret == "One" then
-									str_ret = "Eleven"
-								elseif str_ret == "Two" then
-									str_ret = "Twelve"
-								elseif str_ret == "Three" then
-									str_ret = "Thirteen"
-								elseif str_ret == "Five" then
-									str_ret = "Fifteen"
-								elseif str_ret == "Eight" then
-									str_ret = "Eighteen"
-								else
-									str_ret = str_ret .. "teen"
-								end
-							else
-								str_ret = tens[place] .. ((string.len(str_ret) > 0 and " " or "") .. str_ret)
-							end
-						elseif i == 3 then
-							str_ret = ones[place]
-								.. (" Hundred" .. ((string.len(str_ret) > 0 and " and " or "") .. str_ret))
-						end -- this line is wild
-					end
-				end
-				return str_ret
-			end
-			-- text gets stupid small at 100+ anyway
-			loc_disp_text = (text == "Flush Five" and "Flush " or text == "bunc_Spectrum Five" and "Spectrum " or "")
-				.. (
-					(county < 1000 and create_num_chunk(county) or "Thousand")
-					.. (text == "Five of a Kind" and " of a Kind" or "")
-				)
-		end
+
+	-- funy display text (see localization/ascended_hand_text_generators)
+	local ascend_hand_text_func = Spectrallib.safe_get(G.localization, "dynamic", "ascend_hand_text")
+	if ascend_hand_text_func then
+		text = ascend_hand_text_func(text, scoring_hand)
 	end
-	-- Ascension power
-	local a_power = Spectrallib.calculate_ascension_power(
-		text,
-		_cards,
-		scoring_hand,
-		G.GAME.used_vouchers.v_cry_hyperspacetether,
-		G.GAME.bonus_asc_power
-	)
-	if a_power > 0 then
-		G.GAME.current_round.current_hand.cry_asc_num = a_power
+
+	-- Get ascension power
+	local asc_power = Spectrallib.calculate_ascension_power(text, _cards, scoring_hand)
+
+	-- UI displaying ascension power
+	G.GAME.current_round.current_hand.cry_asc_num = asc_power
+	if asc_power > 0 and not hidden then
 		-- Change mult and chips colors if hand is ascended
-		if not hidden then
-			ease_colour(G.C.UI_CHIPS, copy_table(G.C.GOLD), 0.3)
-			ease_colour(G.C.UI_MULT, copy_table(G.C.GOLD), 0.3)
-			G.GAME.current_round.current_hand.cry_asc_num_text = (
-				a_power and (type(a_power) == "table" and a_power:gt(to_big(0)) or a_power > 0)
-			)
-					and " (+" .. a_power .. ")"
-				or ""
-		else
-			ease_colour(G.C.UI_CHIPS, G.C.BLUE, 0.3)
-			ease_colour(G.C.UI_MULT, G.C.RED, 0.3)
-			G.GAME.current_round.current_hand.cry_asc_num_text = ""
-		end
+		ease_colour(G.C.UI_CHIPS, copy_table(G.C.GOLD), 0.3)
+		ease_colour(G.C.UI_MULT, copy_table(G.C.GOLD), 0.3)
+		G.GAME.current_round.current_hand.cry_asc_num_text =
+			("(+%s)"):format(number_format(asc_power))
 	else
-		G.GAME.current_round.current_hand.cry_asc_num = 0
 		ease_colour(G.C.UI_CHIPS, G.C.BLUE, 0.3)
 		ease_colour(G.C.UI_MULT, G.C.RED, 0.3)
 		G.GAME.current_round.current_hand.cry_asc_num_text = ""
 	end
+
 	return text, loc_disp_text, poker_hands, scoring_hand, disp_text
 end
-function Spectrallib.ascend(num, curr2) -- edit this function at your leisure
-	G.GAME.sunnumber = G.GAME.sunnumber or {not_modest = 0, modest = 0}
-    local snum
-    if type(G.GAME.sunnumber) == "table" then snum = G.GAME.sunnumber.not_modest or 0
-    else snum = G.GAME.sunnumber end
-    curr2 =
-        curr2 or
-        ((G.GAME.current_round.current_hand.cry_asc_num or 0) + (G.GAME.asc_power_hand or 0)) *
-            (1 + (G.GAME.nemesisnumber or 0))
-    local num2 = math.min(curr2 or 0, 50)
-    local diff = curr2 - num2
-    if to_big(curr2 or 0) > to_big(40) then
-        num2 = num2 + diff ^ 0.3
-    end
-    curr2 = num2
-    return num * (to_big((1.25 + snum)) ^ to_big(curr2))
+
+--#endregion
+------------------
+
+----------------------
+--#region FUNCTIONS --
+----------------------
+
+-- Sets color of Ascension power text
+G.FUNCS.cry_asc_UI_set = function(e)
+	e.config.object.colours = { G.C.GOLD }
+	e.config.object:update_text()
 end
 
----Pulses the flames on chips and mult temporarily
----@param duration number duration of the pulse in seconds
----@param intensity number intensity of the flames in idfk, it increases pretty quickly though
-function Spectrallib.pulse_flame(duration, intensity)
-	G.cry_flame_override = G.cry_flame_override or {}
-	G.cry_flame_override["duration"] = duration or 0.01
-	G.cry_flame_override["intensity"] = intensity or 2
-end
-
---this function is retained so that you can hook it to enable only sometimes
+-- Determines if Ascended Hands is enabled;
+-- intended to be hooked for conditional activation.
+---@return boolean|any
 function Spectrallib.ascension_power_enabled()
 	if Spectrallib.optional_feature("ascension_power") then return true end
-	if Spectrallib.can_mods_load({"Cryptid"}) then
-		return Spectrallib.enabled("set_cry_poker_hand_stuff")
-	end
 end
 
-function Spectrallib.calculate_ascension_power(hand_name, hand_cards, hand_scoring_cards, tether, bonus)
-	bonus = bonus or 0
-	local starting = 0
-	if not Spectrallib.ascension_power_enabled() then
-		return 0
-	end
-	if hand_name then
-		-- Get Starting Ascension power from Poker Hands
-		if hand_cards then
-			local check = Spectrallib.hand_ascension_numbers(hand_name, tether)
-			if check then
-				starting = (tether and #hand_cards or #hand_scoring_cards) - check
-			end
-		end
-		-- Extra starting calculation for Declare hands
-		if G.GAME.hands[hand_name] and G.GAME.hands[hand_name].declare_cards then
-			local total = 0
-			for i, v in pairs(G.GAME.hands[hand_name].declare_cards or {}) do
-				local how_many_fit = 0
-				local suit, rank
-				for i2, v2 in pairs(hand_cards) do
-					if not v2.marked then
-						if SMODS.has_no_rank(v2) and v.rank == "rankless" or v2:get_id() == v.rank then
-							rank = true
-						end
-						if v2:is_suit(v.suit) or (v.suit == "suitless" and SMODS.has_no_suit(v2)) or not v.suit then
-							suit = true
-						end
-						if not (suit and rank) then
-							suit = false
-							rank = false
-						end
-						if suit and rank then
-							how_many_fit = how_many_fit + 1
-							v2.marked = true
-						end
-					end
-				end
-				if not rank or not suit then
-					how_many_fit = 0
-				end
-				total = total + how_many_fit
-			end
-			for i2, v2 in pairs(hand_cards) do
-				v2.marked = nil
-			end
-			starting = starting + (total - #hand_scoring_cards)
-		end
-	end
-	-- Get Ascension power from Exploit
-	if G.GAME.cry_exploit_override then
-		bonus = bonus + 1
-	end
-	-- Get Ascension Power From Sol/Perkele (Observatory effect)
-	if
-		G.GAME.used_vouchers.v_observatory and (next(SMODS.find_card("cry-sunplanet")) or next(SMODS.find_card("cry-Perkele")))
-	then
-		-- switch this to not use find_joker eventually please for the love of god
-		local super_entropic_local_variable_that_stores_the_amount_of_suns = #SMODS.find_card("cry-sunplanet")
-			+ #SMODS.find_card("cry-Perkele")
+-- Determines if all selected cards count toward Ascension Power;
+-- intended to be hooked for conditional activation.
+---@return boolean
+function Spectrallib.has_tether()
+	return false
+end
 
-		if super_entropic_local_variable_that_stores_the_amount_of_suns == 1 then
-			bonus = bonus + 1
-		else
-			bonus = bonus
-				+ Spectrallib.nuke_decimals(
-					Spectrallib.funny_log(2, super_entropic_local_variable_that_stores_the_amount_of_suns + 1),
-					2
-				)
+-- Apply the ascension formula to a given value.
+---@param value number
+---@param asc_power number
+---@return number
+function Spectrallib.ascend(value, asc_power) -- edit this function at your leisure
+	-- Sun number fallback (thing that Sol (Cryptid) increases)
+	G.GAME.sunnumber = G.GAME.sunnumber or {not_modest = 0, modest = 0}
+    local sun_number
+    if type(G.GAME.sunnumber) == "table" then
+		sun_number = G.GAME.sunnumber.not_modest or 0
+    else
+		sun_number = G.GAME.sunnumber
+	end
+
+	-- Ascension power fallback
+    asc_power = asc_power or (1 + (G.GAME.nemesisnumber or 0))*(
+		(G.GAME.current_round.current_hand.cry_asc_num or 0)
+		+ (G.GAME.asc_power_hand or 0)
+	)
+
+	-- ???? please explanation
+    local num2 = math.min(asc_power or 0, 50)
+    local diff = asc_power - num2
+    if to_big(asc_power or 0) > to_big(40) then
+        num2 = num2 + diff ^ 0.3
+    end
+    asc_power = num2
+
+	-- The formula
+    return value * (to_big((1.25 + sun_number)) ^ to_big(asc_power))
+end
+
+-- Get the ascension threshold for a hand.
+---@param hand_name string
+---@return number|nil
+function Spectrallib.hand_ascension_numbers(hand_name)
+	local hand_ascension_number = Spectrallib.ascension_numbers[hand_name]
+	-- type checks double as nil check
+	if type(hand_ascension_number) == "function" then
+		return hand_ascension_number()
+	end
+	return hand_ascension_number -- can be nil
+end
+
+-- Get the starting (hand-dependent) ascension power of the current hand;
+-- intended to be hooked for additional sources.
+---@param hand_name string
+---@param hand_cards Card[]
+---@param hand_scoring_cards Card[]
+---@return number
+function Spectrallib.calculate_starting_asc_power(hand_name, hand_cards, hand_scoring_cards)
+	local starting_power = 0
+	-- Get starting_power Ascension power from Poker Hands
+	if hand_cards then
+		local asc_threshold = Spectrallib.hand_ascension_numbers(hand_name)
+		if asc_threshold then
+			local card_count = Spectrallib.has_tether() and #hand_cards or #hand_scoring_cards
+			starting_power = card_count - asc_threshold
 		end
 	end
-	local final = math.max(0, starting + bonus)
-	-- Round to 1 if final value is less than 1 but greater than 0
-	if final > 0 and final < 1 then
-		final = 1
-	end
-	return final
+	return starting_power
 end
-function Spectrallib.hand_ascension_numbers(hand_name, tether)
-	if Spectrallib.ascension_numbers[hand_name] and type(Spectrallib.ascension_numbers[hand_name]) == "function" then
-		return Spectrallib.ascension_numbers[hand_name](hand_name, tether)
-	end
-	if hand_name == "High Card" then
-		return tether and 1 or nil
-	elseif hand_name == "Pair" then
-		return tether and 2 or nil
-	elseif hand_name == "Two Pair" then
-		return 4
-	elseif hand_name == "Three of a Kind" then
-		return tether and 3 or nil
-	elseif hand_name == "Straight" or hand_name == "Flush" or hand_name == "Straight Flush" then
-		return next(SMODS.find_card("j_four_fingers")) and Spectrallib.gameset() ~= "modest" and 4 or 5
-	elseif
-		hand_name == "Full House"
-		or hand_name == "Five of a Kind"
-		or hand_name == "Flush House"
-		or hand_name == "cry_Bulwark"
-		or hand_name == "Flush Five"
-		or hand_name == "bunc_Spectrum"
-		or hand_name == "bunc_Straight Spectrum"
-		or hand_name == "bunc_Spectrum House"
-		or hand_name == "bunc_Spectrum Five"
-	then
-		return 5
-	elseif hand_name == "Four of a Kind" then
-		return tether and 4 or nil
-	elseif hand_name == "cry_Clusterfuck" or hand_name == "cry_UltPair" then
-		return 8
-	elseif hand_name == "cry_WholeDeck" then
-		return 52
-	elseif hand_name == "cry_Declare0" then
-		return G.GAME.hands.cry_Declare0
-			and G.GAME.hands.cry_Declare0.declare_cards
-			and #G.GAME.hands.cry_Declare0.declare_cards
-	elseif hand_name == "cry_Declare1" then
-		return G.GAME.hands.cry_Declare1
-			and G.GAME.hands.cry_Declare1.declare_cards
-			and #G.GAME.hands.cry_Declare1.declare_cards
-	elseif hand_name == "cry_Declare2" then
-		return G.GAME.hands.cry_Declare2
-			and G.GAME.hands.cry_Declare2.declare_cards
-			and #G.GAME.hands.cry_Declare2.declare_cards
-	elseif
-		hand_name == "spa_Spectrum"
-		or hand_name == "spa_Straight_Spectrum"
-		or hand_name == "spa_Spectrum_House"
-		or hand_name == "spa_Spectrum_Five"
-		or hand_name == "spa_Flush_Spectrum"
-		or hand_name == "spa_Straight_Flush_Spectrum"
-		or hand_name == "spa_Flush_Spectrum_House"
-		or hand_name == "spa_Flush_Spectrum_Five"
-	then
-		return SpectrumAPI
-				and SpectrumAPI.configuration.misc.four_fingers_spectrums
-				and next(SMODS.find_card("j_four_fingers"))
-				and Spectrallib.gameset() ~= "modest"
-				and 4
-			or 5
-	end
-	return nil
+
+-- Get the bonus (external) ascension power of the current hand;
+-- intended to be hooked for additional sources.
+---@param hand_name string
+---@param hand_cards Card[]
+---@param hand_scoring_cards Card[]
+---@return number
+function Spectrallib.calculate_bonus_asc_power(hand_name, hand_cards, hand_scoring_cards)
+	return 0
 end
+
+-- Get the ascension power of the current hand.
+---@param hand_name string
+---@param hand_cards Card[]
+---@param hand_scoring_cards Card[]
+---@return number
+function Spectrallib.calculate_ascension_power(hand_name, hand_cards, hand_scoring_cards)
+	if not Spectrallib.ascension_power_enabled() then return 0 end
+
+	local starting_power = Spectrallib.calculate_starting_asc_power(hand_name, hand_cards, hand_scoring_cards)
+	local bonus_power = (G.GAME.bonus_asc_power or 0) + Spectrallib.calculate_bonus_asc_power(hand_name, hand_cards, hand_scoring_cards)
+
+	local final_power = math.max(0, starting_power + bonus_power)
+	-- Needed to avoid awkwardness from raising to power of <1
+	if 0 < final_power and final_power < 1 then
+		final_power = 1
+	end
+	return final_power
+end
+
+--#endregion
+----------------------
+
+-----------------------------
+--#region HAND DEFINITIONS --
+-----------------------------
+
+--Ascension numbers for Vanilla hands
+---@param x integer
+---@return fun(): integer|nil
+local function tether_check(x)
+    return function()
+        return Spectrallib.has_tether() and x or nil
+    end
+end
+local function straight_flush()
+	return (
+		next(SMODS.find_card("j_four_fingers"))
+		and Spectrallib.gameset() ~= "modest"
+		and 4
+		or 5
+	)
+end
+---@type { [string]: integer | fun():(integer|nil) }
+Spectrallib.ascension_numbers = {
+	["High Card"]       = tether_check(1),
+	["Pair"]            = tether_check(2),
+	["Three of a Kind"] = tether_check(3),
+	["Four of a Kind"]  = tether_check(4),
+	["Straight"]        = straight_flush,
+	["Flush"]           = straight_flush,
+	["Two Pair"]        = 4,
+	["Full House"]      = 5,
+	["Five of a Kind"]  = 5,
+	["Flush House"]     = 5,
+	["Flush Five"]      = 5,
+}
+
+--#endregion
+-----------------------------

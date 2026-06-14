@@ -2,19 +2,20 @@
 --- @param mod number
 --- @param instant boolean? If true, triggers immediately instead of as an event.
 --- @param silent boolean? If true, does not play a sound effect.
+--- @return nil
 function Spectrallib.x_hands_played(mod, instant, silent)
-    local _mod = function(mod)
-        mod = mod or 1
+    local _mod = function(modd)
+        modd = modd or 1
         local hand_UI = G.HUD:get_UIE_by_ID('hand_UI_count')
-        local col = mod < 1 and G.C.RED or G.C.GREEN
+        local col = modd < 1 and G.C.RED or G.C.GREEN
 
-        G.GAME.current_round.hands_left = G.GAME.current_round.hands_left * mod
+        G.GAME.current_round.hands_left = G.GAME.current_round.hands_left * modd
         hand_UI.config.object:update()
         G.HUD:recalculate()
 
         -- text
         attention_text {
-            text = "X"..mod,
+            text = "X"..modd,
             scale = 0.8,
             hold = 0.7,
             cover = hand_UI.parent,
@@ -38,19 +39,20 @@ end
 --- @param mod number
 --- @param instant boolean? If true, triggers immediately instead of as an event.
 --- @param silent boolean? If true, does not play a sound effect.
+--- @return nil
 function Spectrallib.x_discards(mod, instant, silent)
-    local _mod = function(mod)
-        mod = mod or 1
+    local _mod = function(modd)
+        modd = modd or 1
         local discard_UI = G.HUD:get_UIE_by_ID('discard_UI_count')
-        local col = mod < 1 and G.C.RED or G.C.GREEN
+        local col = modd < 1 and G.C.RED or G.C.GREEN
 
-        G.GAME.current_round.discards_left = G.GAME.current_round.discards_left * mod
+        G.GAME.current_round.discards_left = G.GAME.current_round.discards_left * modd
         discard_UI.config.object:update()
         G.HUD:recalculate()
 
         -- text
         attention_text {
-            text = "X"..mod,
+            text = "X"..modd,
             scale = 0.8,
             hold = 0.7,
             cover = discard_UI.parent,
@@ -74,19 +76,20 @@ end
 --- @param mod number
 --- @param instant boolean? If true, triggers immediately instead of as an event.
 --- @param silent boolean? If true, does not play a sound effect.
+--- @return nil
 function Spectrallib.eq_hands(mod, instant, silent)
-    local _mod = function(mod)
-        mod = mod or 0
+    local _mod = function(modd)
+        modd = modd or 0
         local hand_UI = G.HUD:get_UIE_by_ID('hand_UI_count')
         local col = G.C.DARK_EDITION
 
-        G.GAME.current_round.hands_left = mod
+        G.GAME.current_round.hands_left = modd
         hand_UI.config.object:update()
         G.HUD:recalculate()
 
         -- text
         attention_text {
-            text = "="..mod,
+            text = "="..modd,
             scale = 0.8,
             hold = 0.7,
             cover = hand_UI.parent,
@@ -110,19 +113,20 @@ end
 --- @param mod number
 --- @param instant boolean? If true, triggers immediately instead of as an event.
 --- @param silent boolean? If true, does not play a sound effect.
+--- @return nil
 function Spectrallib.eq_discards(mod, instant, silent)
-    local _mod = function(mod)
-        mod = mod or 0
+    local _mod = function(modd)
+        modd = modd or 0
         local discard_UI = G.HUD:get_UIE_by_ID('discard_UI_count')
         local col = G.C.DARK_EDITION
 
-        G.GAME.current_round.discards_left = mod
+        G.GAME.current_round.discards_left = modd
         discard_UI.config.object:update()
         G.HUD:recalculate()
 
         -- text
         attention_text {
-            text = "="..mod,
+            text = "="..modd,
             scale = 0.8,
             hold = 0.7,
             cover = discard_UI.parent,
@@ -142,27 +146,29 @@ function Spectrallib.eq_discards(mod, instant, silent)
     }
 end
 
---- Multiplies hand levels.
---- @param args table
-function Spectrallib.x_levels(args)
-    -- args.hands
-    -- args.level_up
-    -- args.instant
-    -- args.from
-    -- args.bypass_calculate
-    -- args.colour
+--- @class Spectrallib.x_levels.args
+--- @field level_up number
+--- @field hands? string|string[] Keys of hands to level up.
+--- @field instant? boolean If true, no animation plays when this function is called.
+--- @field from? Card|Card[] A card or set of cards causing the level-up.
+--- @field bypass_calculate? boolean If true, function will not send out calculation contexts.
+--- @field colour? [number, number, number, number] Colour of StatusText.
 
+--- Multiplies hand levels by 2.
+--- @param args Spectrallib.x_levels.args
+--- @return nil
+function Spectrallib.x_levels(args)
     assert(args, "No arguments given to Spectrallib.x_levels")
     assert(args.level_up, "Must provide amount to Spectrallib.x_levels")
 
     args.hands = args.hands or G.handlist
-    if type(args.hands) == 'string' then args.hands = {args.hands} end
+    if type(args.hands) == 'string' then args.hands = {args.hands --[[@as string]]} end
     if args.from and #args.from < 1 then
         args.from = {args.from}
     end
     local instant = args.instant or Spectrallib.should_skip_animations()
 
-    local vals_after_level
+    local vals_after_level = {mult = 0, chips = 0, handname = '', level = ''}
     if SMODS.displaying_scoring then
         vals_after_level = copy_table(G.GAME.current_round.current_hand)
         local text,disp_text,_,_,_ = G.FUNCS.get_poker_hand_info(G.play.cards)
@@ -175,16 +181,22 @@ function Spectrallib.x_levels(args)
 
     local displayed = false
     local context = {poker_hand_changed = true, card = args.from, slib_x_levels = args.level_up}
-    for _, hand in ipairs(args.hands) do
+    for _, hand in ipairs(args.hands --[[@as string[] ]]) do
         displayed = hand == SMODS.displayed_hand
         local level = G.GAME.hands[hand].level
 
         context.scoring_name = hand
         if not instant then
-            update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3}, {handname=localize(hand, 'poker_hands'), level=G.GAME.hands[hand].level})
-            for name, p in pairs(SMODS.Scoring_Parameters) do
-                p.current = G.GAME.hands[hand][name] or p.default_value
-                update_hand_text({nopulse = nil, delay = 0}, {[name] = p.current})
+            update_hand_text({
+                sound = 'button', volume = 0.7,
+                pitch = 0.8, delay = 0.3
+            }, {
+                handname = localize(hand, 'poker_hands'),
+                level = G.GAME.hands[hand].level
+            })
+            for name, sc_param in pairs(SMODS.Scoring_Parameters) do
+                sc_param.current = G.GAME.hands[hand][name] or sc_param.default_value
+                update_hand_text({nopulse = nil, delay = 0}, {[name] = sc_param.current})
             end
         end
 
@@ -195,7 +207,7 @@ function Spectrallib.x_levels(args)
         G.GAME.hands[hand].level = math.max(0, G.GAME.hands[hand].level * 2)
         context.new_level = G.GAME.hands[hand].level
 
-        for i, parameter in ipairs(SMODS.Scoring_Parameter.obj_buffer) do
+        for _, parameter in ipairs(SMODS.Scoring_Parameter.obj_buffer) do
             if G.GAME.hands[hand][parameter] then
                 context.old_parameters[parameter] = G.GAME.hands[hand][parameter]
                 G.GAME.hands[hand][parameter] = G.GAME.hands[hand][parameter] + G.GAME.hands[hand]['l_' .. parameter] * level
@@ -212,14 +224,16 @@ function Spectrallib.x_levels(args)
                 trigger = "after",
                 delay = 0,
             }
-            delay(1.3)
+            Spectrallib.event(1.3)
             Spectrallib.event{
                 function()
                     play_sound("slib_eechips")
                     play_sound("slib_eemult")
                     if args.from then
-                        for _, v in ipairs(args.from) do
-                            if v and v.juice_up then v:juice_up(0.8, 0.5) end
+                        for _, card in ipairs(args.from) do
+                            if card and card.juice_up then
+                                card:juice_up(0.8, 0.5)
+                            end
                         end
                     end
                     Spectrallib.pulse_flame(0.5, Spectrallib.clamp(0, to_number(G.GAME.hands[hand].level), 1e200))
@@ -236,7 +250,7 @@ function Spectrallib.x_levels(args)
                 level = G.GAME.hands[hand].level,
             }
 
-            for i, parameter in ipairs(SMODS.Scoring_Parameter.obj_buffer) do
+            for _, parameter in ipairs(SMODS.Scoring_Parameter.obj_buffer) do
                 if G.GAME.hands[hand][parameter] then
                     uht_args[parameter] = "X" .. number_format(args.level_up)
                 end
@@ -249,6 +263,9 @@ function Spectrallib.x_levels(args)
     end
 
     if not instant and not displayed then
-        update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, vals_after_level or {mult = 0, chips = 0, handname = '', level = ''})
+        update_hand_text({
+            sound = 'button', volume = 0.7,
+            pitch = 1.1, delay = 0
+        }, vals_after_level)
     end
 end

@@ -54,30 +54,6 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = '''add_tag(_tag.config.ref_table)'''
-position = "at"
-payload = '''
-local tag = Spectrallib.get_next_tag()
-add_tag(tag and Tag(tag) or _tag.config.ref_table, true)
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/UI_definitions.lua"
-pattern = "local _tag = Tag(G.GAME.round_resets.blind_tags[blind_choice], nil, blind_choice)"
-position = "after"
-payload = '''
-local tag = Spectrallib.get_next_tag()
-if tag then
-	_tag = Tag(tag, nil, blind_choice)
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
 target = "functions/misc_functions.lua"
 pattern = '''
 assembled_string = assembled_string..(type(subpart) == 'string' and subpart or format_ui_value(args.vars[tonumber(subpart[1])]) or 'ERROR')

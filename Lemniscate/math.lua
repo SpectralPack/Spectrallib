@@ -1,28 +1,36 @@
 local NaN = 0/0
 
---- Approximates W_0(x)
+--- Approximates W_0(x), the principal branch of the Lambert W function.
 --- @param x number
 --- @return number
 function Spectrallib.lambert_w(x)
+    -- Uses Newton's method to approximate
+    -- Based on Amulet/Talisman/OmegaNum.js implementation
+    -- which were based on https://math.stackexchange.com/a/465183
     local tolerance = 1e-10
     local w, wn
     local OMEGA = 0.56714329040978387299997
+
     if x == 0 then return 0 end
     if x == 1 then return OMEGA end
-    if x < 10 then w = 0 else w = math.log(x) - math.log(math.log(x)) end
+    if x < 10 then
+        w = 0
+    else
+        w = math.log(x) - math.log(math.log(x))
+    end
+
     for _ = 0,99 do
         wn = (x*math.exp(-w) + w*w) / (w+1)
-        if (math.abs(wn-w) < tolerance*math.abs(wn)) then
+        if (math.abs(wn - w) < tolerance*math.abs(wn)) then
             return wn
         end
-        w=wn
+        w = wn
     end
 
     error("Lambert W iteration failed to converge")
 end
 
---- Calculates a ^^ b;
---- Less precise for high heights
+--- Calculates a ^^ b; less precise for high heights.
 --- @param base number
 --- @param height number
 --- @return number
@@ -45,7 +53,7 @@ function Spectrallib.tetrate(base, height)
             local negln = -math.log(base)
             return Spectrallib.lambert_w(negln) / negln
         end
-        return base == 1 and 1 or (base > 0 and base < 1 and 0) or (base < 0 and NaN) or math.huge
+        return base == 1 and 1 or (0 < base and base < 1 and 0) or (base < 0 and NaN) or math.huge
     end
     local frac = height - math.floor(height)
     local tower = {}
@@ -61,21 +69,30 @@ end
 
 --- Creates a pair of normally-distributed pseudorandom numbers using the Box-Muller transform.
 --- @param seed string The random seed used.
---- @param mean number? The normal distribution's mean. Defaults to 0.
---- @param stdev number? The normal distribution's standard deviation. Defaults to 1.
+--- @param mean number The normal distribution's mean. Defaults to 0.
+--- @param stdev number The normal distribution's standard deviation. Defaults to 1.
+--- @return number
+--- @return number
 function Spectrallib.pseudorandom_normal(seed, mean, stdev)
     local theta = 2 * math.pi * pseudorandom(seed)
     local r = math.sqrt(-2 * math.log(pseudorandom(seed)))
+    local r_stdev = r * stdev
 
-    return mean + stdev * (r * math.cos(theta)), mean + stdev * (r * math.sin(theta))
+    return mean + (r_stdev * math.cos(theta)), mean + (r_stdev * math.sin(theta))
 end
 
 --- Returns 1 if `x` is positive, -1 if x is negative
 --- Returns 0 if `x` == 0, so float -0 isn't treated as negative here
 --- @param x number
+--- @return number
 function Spectrallib.sign(x)
     -- fast math.sign for luaJIT
-    -- from stack overflow: https://stackoverflow.com/questions/1318220/lua-decimal-sign#1318344
+    -- from stack overflow: https://stackoverflow.com/a/64878952
+    --[["""
+        The reason is that it avoids branches, which can be expensive.
+        The double multiplication ensures that the result is correct even with inputs in the denormal range.
+        Infinity can't be used because with an input of zero, it would produce NaN.
+    """]]
     return Spectrallib.clamp(to_number(x) * 1e200 * 1e200, -1, 1)
 end
 
@@ -91,8 +108,7 @@ end
 --- @param power integer? Defaults to 0.
 --- @return number
 function Spectrallib.round_power(num, power)
-    local power = power or 0
-
+    power = power or 0
     return Spectrallib.round_nearest(num * 10^-power) * 10^power
 end
 
@@ -126,7 +142,7 @@ function Spectrallib.alt_number_format(num, e_switch_point, precision_loss_point
     local formatted_int = string.format("%d", floored_num):reverse():gsub("(%d%d%d)", "%1,"):gsub(",$", ""):reverse()
 
     -- format and round decimal portion
-    local decimal_num = Spectrallib.round_power(decimal_num, -decimal_places)
+    decimal_num = Spectrallib.round_power(decimal_num, -decimal_places)
     local formatted_dec = string.format("%." .. decimal_places .. "f", decimal_num)
 
     -- remove leading zero

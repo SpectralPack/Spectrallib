@@ -1,132 +1,155 @@
 -- gameset.lua: functions for gameset UI and logic
 
-------------------------
----- GAMESET SYSTEM ----
-------------------------
+---------------------------
+--#region GAMESET SYSTEM --
+---------------------------
 
--- designed to work on any object type
-function Spectrallib.gameset(card, center)
-	if not center then
-		if not card then
-			return G.PROFILES[G.SETTINGS.profile].cry_gameset or "mainline"
-		end
-		center = card.config and card.config.center or card.effect and card.effect.center or card
+-- Get the gameset of an object or its prototype.
+-- If neither object nor prototype is given, get the gameset of the current save.
+---@param object? table
+---@param prototype? table
+---@return "modest"|"mainline"|"madness"
+function Spectrallib.gameset(object, prototype)
+	local current_save = G.PROFILES[G.SETTINGS.profile]
+	local save_gameset = current_save.cry_gameset or "mainline"
+
+	if not prototype then
+		if not object then return save_gameset end
+		prototype = (
+			(object.config and object.config.center)
+			or (object.effect and object.effect.center)
+			or object
+		)
 	end
-	if card.force_gameset then
-		return card.force_gameset
-	end
-	if center.force_gameset then
-		return center.force_gameset
-	end
-	if center.fake_card then
-		return G.PROFILES[G.SETTINGS.profile].cry_gameset or "mainline"
-	end
-	if not center.key then
-		if center.tag and center.tag.key then --dumb fix for tags
-			center = center.tag
+
+	if object and object.force_gameset then return object.force_gameset end
+	if prototype.force_gameset then return prototype.force_gameset end
+	if prototype.fake_card then return save_gameset end
+
+	if not prototype.key then
+		if prototype.tag and prototype.tag.key then --dumb fix for tags
+			prototype = prototype.tag
 		else
-			if false then
-				print("Could not find key for center: " .. tprint(center))
-			end
-			return G.PROFILES[G.SETTINGS.profile].cry_gameset or "mainline"
+			return save_gameset
 		end
 	end
-	local gameset = G.PROFILES[G.SETTINGS.profile].cry_gameset or "mainline"
-	if
-		G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides and G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides[center.key]
-	then
-		return G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides[center.key]
-	end
-	return gameset
+
+	local prototype_gameset_override = Spectrallib.safe_get(current_save, "cry_gameset_overrides", prototype.key)
+	if prototype_gameset_override then return prototype_gameset_override end
+
+	return save_gameset
 end
--- set_ability accounts for gamesets
+
+-- Get the card's gameset.
+---@param center table
+---@return "madness"|"mainline"|"modest"
 function Card:get_gameset(center)
 	return Spectrallib.gameset(self, center)
 end
+
+-- Hook to allow set_ability to account for gamesets
 local csa = Card.set_ability
 function Card:set_ability(center, y, z)
-	if not center then
-		return
-	end
-	-- Addition by IcyEthics to make compatible with strings used on set_ability. Copied directly from the smods set_ability implementation
+	if not center then return end
+
+	-- Addition by IcyEthics to make compatible with strings used on set_ability.
+	-- Copied directly from the smods set_ability implementation
 	if type(center) == "string" then
 		assert(G.P_CENTERS[center], ('Could not find center "%s"'):format(center))
 		center = G.P_CENTERS[center]
 	end
-	if not center.config then
-		center.config = {} --crashproofing
-	end
+
+	center.config = center.config or {} --crashproofing
+
 	csa(self, center, y, z)
-	if center.gameset_config and center.gameset_config[self:get_gameset(center)] then
-		for k, v in pairs(center.gameset_config[self:get_gameset(center)]) do
-			if k ~= "disabled" and k ~= "center" then
-				if k == "cost" then
-					self.base_cost = v
+
+	local card_gameset = self:get_gameset(center)
+	local center_gameset_config = Spectrallib.safe_get(center.gameset_config, card_gameset)
+	if center_gameset_config then
+		-- Copy values: center gameset config -> card ability
+		for config_key, config_value in pairs(center_gameset_config) do
+			if config_key ~= "disabled" and config_key ~= "center" then
+				if config_key == "cost" then
+					self.base_cost = config_value
 				else
-					self.ability[k] = v
+					self.ability[config_key] = config_value
 				end
 			end
 		end
-		if center.gameset_config[self:get_gameset(center)].disabled then
+
+		if center_gameset_config.disabled then
 			self.cry_disabled = true
 		end
-		if center.gameset_config[self:get_gameset(center)].center and not self.gameset_select then
-			for k, v in pairs(center.gameset_config[self:get_gameset(center)].center) do
-				center[k] = v
-				self[k] = v
-				if k == "rarity" then
-					center:set_rarity(v)
+
+		if center_gameset_config.center and not self.gameset_select then
+			for config_key, config_value in pairs(center_gameset_config.center) do
+				center[config_key] = config_value
+				self[config_key] = config_value
+
+				if config_key == "rarity" then
+					center:set_rarity(config_value)
 				else
-					self.config.center[k] = v
+					self.config.center[config_key] = config_value
 				end
 			end
 		end
 	end
 end
 
--- open gameset config UI when clicking on a card in the Spectrallib collection
+local function card_in_collection(card)
+	if not G.your_collection then return false end
+	for _,collection_area in pairs(G.your_collection) do
+		if card.area == collection_area then
+			return true
+		end
+	end
+	return false
+end
+
+-- Open gameset config UI when clicking a card in the Spectrallib collection
 local ccl = Card.click
 function Card:click()
 	ccl(self)
-	if G.your_collection then
-		for k, v in pairs(G.your_collection) do
-			if
-				self.area == v
-				and G.ACTIVE_MOD_UI
-				and (Spectrallib.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Spectrallib")
-			then
-				if not self.config.center or self.config.center and self.config.center.set == "Default" then
-					--make a fake center
-					local old_force_gameset = self.config.center and self.config.center.force_gameset
-					if self.seal then
-						self.config.center = SMODS.Seal.obj_table[self.seal]
-						self.config.center.set = "Seal"
-					end
-					for k, v in pairs(SMODS.Stickers) do
-						if self.ability[k] then
-							self.config.center = SMODS.Sticker.obj_table[k]
-							self.config.center.set = "Sticker"
-						end
-					end
-					if self.config.center then
-						self.config.center.force_gameset = old_force_gameset
-					end
+	if not G.your_collection then return end
+
+	if (
+		card_in_collection(self) and G.ACTIVE_MOD_UI
+		and (Spectrallib.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Spectrallib")
+	) then
+		if not self.config.center or self.config.center and self.config.center.set == "Default" then
+			--make a fake center
+			local old_force_gameset = self.config.center and self.config.center.force_gameset
+			if self.seal then
+				self.config.center = SMODS.Seal.obj_table[self.seal]
+				self.config.center.set = "Seal"
+			end
+			for sticker_key in pairs(SMODS.Stickers) do
+				if self.ability[sticker_key] then
+					self.config.center = SMODS.Sticker.obj_table[sticker_key]
+					self.config.center.set = "Sticker"
 				end
-				if self.gameset_select then
-					Card.cry_set_gameset(self, self.config.center, self.config.center.force_gameset)
-					Spectrallib.update_obj_registry()
-				end
-				Spectrallib.gameset_config_UI(self.config.center)
+			end
+			if self.config.center then
+				self.config.center.force_gameset = old_force_gameset
 			end
 		end
+
+		if self.gameset_select then
+			Card.cry_set_gameset(self, self.config.center, self.config.center.force_gameset)
+			Spectrallib.update_obj_registry()
+		end
+
+		Spectrallib.gameset_config_UI(self.config.center)
 	end
 end
 
--- gameset config UI
+-- Opens the gameset configuration UI for a given center.
+---@param center table
+---@return nil
 function Spectrallib.gameset_config_UI(center)
-	if not center then
-		center = G.viewedContentSet
-	end
+	center = center or G.viewedContentSet
+	local content_set_selected = center.set == "Content Set"
+
 	G.SETTINGS.paused = true
 	G.your_collection = {}
 	G.your_collection[1] = CardArea(
@@ -136,26 +159,21 @@ function Spectrallib.gameset_config_UI(center)
 		1.03 * G.CARD_H,
 		{ card_limit = 5, type = "title", highlight_limit = 0, collection = true }
 	)
+
 	local deck_tables = {
 		n = G.UIT.R,
-		config = { align = "cm", padding = 0, no_fill = true },
+		config = {align = "cm", padding = 0, no_fill = true},
 		nodes = {
-			{ n = G.UIT.O, config = { object = G.your_collection[1] } },
+			{n=G.UIT.O, config={object = G.your_collection[1]}},
 		},
 	}
 
 	local gamesets = { "disabled", "mainline" }
-	if center.set == "Content Set" then
+	if content_set_selected then
 		gamesets = { "disabled", G.PROFILES[G.SETTINGS.profile].cry_gameset or "mainline" }
 	end
 	for i = 1, #gamesets do
-		if
-			not (
-				center.gameset_config
-				and center.gameset_config[gamesets[i]]
-				and center.gameset_config[gamesets[i]].disabled
-			)
-		then
+		if not Spectrallib.safe_get(center.gameset_config, gamesets[i], "disabled") then
 			local _center = Spectrallib.deep_copy(center)
 			_center.force_gameset = gamesets[i]
 			local card = Spectrallib.generic_card(_center)
@@ -164,37 +182,11 @@ function Spectrallib.gameset_config_UI(center)
 				card.debuff = true
 			end
 			G.your_collection[1]:emplace(card)
-			--[[if not is_back then
-				local card = Card(
-					G.your_collection[1].T.x + G.your_collection[1].T.w / 2,
-					G.your_collection[1].T.y,
-					G.CARD_W,
-					G.CARD_H,
-					G.P_CARDS.empty,
-					_center
-				)
-				card:start_materialize()
-				card.gameset_select = true
-				G.your_collection[1]:emplace(card)
-			else
-				local fake_center = {
-					set = "Back",
-					force_gameset = gamesets[i],
-					pos = center.pos,
-					atlas = center.atlas,
-					key = center.key,
-					config = {}
-				}
-				local card = Card(G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h, G.CARD_W, G.CARD_H, G.P_CARDS.empty, fake_center)
-				card:start_materialize()
-				card.gameset_select = true
-				G.your_collection[1]:emplace(card)
-			end--]]
 		end
 	end
 
 	INIT_COLLECTION_CARD_ALERTS()
-	local args = {
+	local generic_options_args = {
 		infotip = localize("cry_gameset_explanation"),
 		back_func = G.cry_prev_collec,
 		snap_back = true,
@@ -206,53 +198,43 @@ function Spectrallib.gameset_config_UI(center)
 			},
 		},
 	}
-	if center.set == "Content Set" and not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
+	if content_set_selected and not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
 		G.viewedContentSet = center
-		args.back2 = true
-		args.back2_func = "your_collection_current_set"
-		args.back2_label = localize("cry_view_set_contents")
-		args.back2_colour = G.C.CRY_SELECTED
+		generic_options_args.back2 = true
+		generic_options_args.back2_func = "your_collection_current_set"
+		generic_options_args.back2_label = localize("cry_view_set_contents")
+		generic_options_args.back2_colour = G.C.CRY_SELECTED
 	end
-	local t = create_UIBox_generic_options(args)
 	G.FUNCS.overlay_menu({
-		definition = t,
+		definition = create_UIBox_generic_options(generic_options_args),
 	})
 end
 
+-- Wrapper for Spectrallib.gameset_config_UI
 function G.FUNCS.cry_gameset_config_UI()
 	G.cry_prev_collec = "your_collection_content_sets"
 	Spectrallib.gameset_config_UI()
 end
 
 local collection_shtuff = {
-	"blinds",
-	"jokers",
+	"blinds", "jokers",
 
 	-- consumables don't work
 	-- idk what smods is doing with consumable collection stuff, anyone know what the buttons are doing?
-	"tarots",
-	"planets",
-	"spectrals",
-	"codes",
+	"tarots", "planets", "spectrals", "codes",
 
-	"vouchers",
-	"enhancements",
-	"decks",
-	"editions",
-	"tags",
-	"seals",
-	"boosters",
-	"stickers",
-	"content_sets",
+	"vouchers", "enhancements", "decks",
+	"editions", "tags", "seals", "boosters",
+	"stickers", "content_sets",
 }
 
 -- sure this is cool and all but it doesn't keep page yet so it's pretty useless
 -- would need to regex patch that
 
-for i, v in ipairs(collection_shtuff) do
-	local ref = G.FUNCS["your_collection_" .. v]
-	G.FUNCS["your_collection_" .. v] = function(e)
-		G.cry_prev_collec = "your_collection_" .. v
+for _, item_type_name in ipairs(collection_shtuff) do
+	local ref = G.FUNCS["your_collection_" .. item_type_name]
+	G.FUNCS["your_collection_" .. item_type_name] = function(e)
+		G.cry_prev_collec = "your_collection_" .. item_type_name
 		ref(e)
 	end
 end
@@ -265,11 +247,11 @@ function get_type_colour(center, card)
 	if center.set == "Back" or center.set == "Tag" or center.set == "Blind" then
 		color = G.C.CRY_SELECTED
 	end
-	if card.gameset_select then
-		if center.force_gameset == "mainline" then
-			color = G.C.PURPLE
-		end
+
+	if card.gameset_select and center.force_gameset == "mainline" then
+		color = G.C.PURPLE
 	end
+
 	if
 		Spectrallib.gameset(card, center) == "disabled"
 		or (center.cry_disabled and (not card.gameset_select or center.cry_disabled.type ~= "manual"))
@@ -277,88 +259,99 @@ function get_type_colour(center, card)
 		color = mix_colours(G.C.RED, G.C.GREY, 0.7)
 		card.debuff = true
 	end
+
 	return color
 end
 
+-- Set the gameset of a center.
+---@param center table
+---@param gameset "modest"|"mainline"|"madness"
+---@return nil
 function Card:cry_set_gameset(center, gameset)
-	if
-		G.PROFILES[G.SETTINGS.profile].cry_gameset == gameset
-		and not G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides
-	then
+	local current_save = G.PROFILES[G.SETTINGS.profile]
+	local gameset_already_set = current_save.cry_gameset == gameset
+
+	if gameset_already_set and not current_save.cry_gameset_overrides then
 		return
 	end
-	if not G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides then
-		G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides = {}
+
+	current_save.cry_gameset_overrides = current_save.cry_gameset_overrides or {}
+	current_save.cry_gameset_overrides[center.key] = gameset
+	if gameset_already_set then
+		current_save.cry_gameset_overrides[center.key] = nil
 	end
-	G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides[center.key] = gameset
-	if G.PROFILES[G.SETTINGS.profile].cry_gameset == gameset then
-		G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides[center.key] = nil
-	end
+
 	local empty = true
-	for _, _ in pairs(G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides) do
+	for _ in pairs(current_save.cry_gameset_overrides) do
 		empty = false
 		break
 	end
-	if empty then
-		G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides = nil
-	end
+	if empty then current_save.cry_gameset_overrides = nil end
+
 	G:save_progress()
 end
 
+---@return nil
 function G.FUNCS.reset_gameset_config()
 	G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides = nil
 	Spectrallib.update_obj_registry()
 	G:save_progress()
 end
 
+-- Given an object's key, check if the object is enabled.
+---@param key string
+---@param iter? number Used internally to prevent infinite loops
+---@return {type: "card_dependency"|"mod_dependency"|"mod_conflict", key: string}|true
 function Spectrallib.enabled(key, iter)
-	if not iter then
-		iter = 0
-	end --iter is used to prevent infinite loops from freezing on startup
+	iter = iter or 0 --iter is used to prevent infinite loops from freezing on startup
 	if iter > 10 then
 		print("Warning: Circular dependency with " .. key)
 		return true
 	end
+
 	local card = Spectrallib.get_center(key)
-	if
+	if (
 		not card
 		or Spectrallib.gameset(card) == "disabled"
-		or card.gameset_config
-			and card.gameset_config[Spectrallib.gameset(card)]
-			and card.gameset_config[Spectrallib.gameset(card)].disabled
-	then
+		or Spectrallib.safe_get(card.gameset_config, Spectrallib.gameset(card), "disabled")
+	) then
 		return { type = "manual" }
 	end
+
 	if card.dependencies then
 		if card.dependencies.items then
-			for i = 1, #card.dependencies.items do
-				if Spectrallib.enabled(card.dependencies.items[i], iter + 1) ~= true then
-					return { type = "card_dependency", key = card.dependencies.items[i] }
+			for _,dependent_item in ipairs(card.dependencies.items) do
+				if Spectrallib.enabled(dependent_item, iter + 1) ~= true then
+					return { type = "card_dependency", key = dependent_item }
 				end
 			end
 		end
 		if card.dependencies.mods then
-			for i = 1, #card.dependencies.mods do
-				if not (SMODS.Mods[card.dependencies.mods[i]] or {}).can_load then
-					return { type = "mod_dependency", key = card.dependencies.mods[i] }
+			for _,dependent_mod in ipairs(card.dependencies.mods) do
+				if not (SMODS.Mods[dependent_mod] or {}).can_load then
+					return { type = "mod_dependency", key = dependent_mod }
 				end
 			end
 		end
 	end
+
 	if card.conflicts then
 		if card.conflicts.mods then
-			for i = 1, #card.conflicts.mods do
-				if (SMODS.Mods[card.conflicts.mods[i]] or {}).can_load then
-					return { type = "mod_conflict", key = card.conflicts.mods[i] }
+			for _,conflicting_mod in ipairs(card.conflicts.mods) do
+				if (SMODS.Mods[conflicting_mod] or {}).can_load then
+					return { type = "mod_conflict", key = conflicting_mod }
 				end
 			end
 		end
 	end
+
 	return true
 end
 
-function Spectrallib.get_center(key, m)
-	if not m then
+---@param key string
+-- todo: figure out param/return data types
+function Spectrallib.get_center(key, class)
+	if not class then
 		-- check for non game objects
 		if SMODS.Seals.obj_table and SMODS.Seals.obj_table[key] then
 			return SMODS.Seals.obj_table[key]
@@ -366,44 +359,53 @@ function Spectrallib.get_center(key, m)
 		if SMODS.Stickers.obj_table and SMODS.Stickers.obj_table[key] then
 			return SMODS.Stickers.obj_table[key]
 		end
-		m = SMODS.GameObject
-		if m.subclasses then
-			for k, v in pairs(m.subclasses) do
-				local c = Spectrallib.get_center(key, v)
-				if c then
-					return c
-				end
+		class = SMODS.GameObject
+		if class.subclasses then
+			for _, subclass in pairs(class.subclasses) do
+				local center = Spectrallib.get_center(key, subclass)
+				if center then return center end
 			end
 		end
 	end
-	return m.obj_table and m.obj_table[key]
+	return class.obj_table and class.obj_table[key]
 end
 
-function Spectrallib.gameset_loc(card, config)
-	local gameset = Spectrallib.gameset(card)
-	if config[gameset] then
-		return card.key .. "_" .. config[gameset]
+-- Get the gameset-specific localization key of an object.
+---@param object table
+---@param config? table
+---@return string
+function Spectrallib.gameset_loc(object, config)
+	local gameset = Spectrallib.gameset(object)
+	if config and config[gameset] then
+		return object.key .. "_" .. config[gameset]
 	else
-		return card.key
+		return object.key
 	end
 end
 
-------------------------------
----- CARD ENABLING SYSTEM ----
-------------------------------
+--#endregion
+---------------------------
+
+---------------------------------
+--#region CARD ENABLING SYSTEM --
+---------------------------------
+
+--#region GameObject methods
 
 ---@type fun(self: SMODS.GameObject|table, reason: table)?
 SMODS.GameObject._disable = function(self, reason)
-	if not self.cry_disabled then
-		self.cry_disabled = reason or { type = "manual" } --used to display more information that can be used later
-	end
+	--used to display more information that can be used later
+	self.cry_disabled = self.cry_disabled or reason or { type = "manual" }
 end
+
 ---@type fun(self: SMODS.GameObject|table)?
 SMODS.GameObject.enable = function(self)
-	if self.cry_disabled then
-		self.cry_disabled = nil
-	end
+	self.cry_disabled = nil
 end
+
+--#endregion
+
+--#region Center methods
 
 -- Note: For custom pools, these only support Center.pools, not ObjectType.cards
 -- That could cause issues with mod compat in the future
@@ -413,58 +415,68 @@ SMODS.Center._disable = function(self, reason)
 	if not self.cry_disabled then
 		self.cry_disabled = reason or { type = "manual" } --used to display more information that can be used later
 		SMODS.remove_pool(G.P_CENTER_POOLS[self.set], self.key)
-		for k, v in pairs(self.pools or {}) do
-			if SMODS.ObjectTypes[k] then
-				SMODS.ObjectTypes[k]:delete_card(self)
+		for type_key in pairs(self.pools or {}) do
+			if SMODS.ObjectTypes[type_key] then
+				SMODS.ObjectTypes[type_key]:delete_card(self)
 			end
 		end
 		G.P_CENTERS[self.key] = nil
 	end
 end
+
 ---@type fun(self: SMODS.Center|table)?
 SMODS.Center.enable = function(self)
 	if self.cry_disabled then
 		self.cry_disabled = nil
 		SMODS.insert_pool(G.P_CENTER_POOLS[self.set], self)
 		G.P_CENTERS[self.key] = self
-		for k, v in pairs(self.pools or {}) do
-			SMODS.ObjectTypes[k]:inject_card(self)
+		for type_key in pairs(self.pools or {}) do
+			SMODS.ObjectTypes[type_key]:inject_card(self)
 		end
 	end
 end
+
+--#endregion
+
+--#region Joker methods
+
+local vanilla_rarities = { ["Common"] = 1, ["Uncommon"] = 2, ["Rare"] = 3, ["Legendary"] = 4 }
 
 ---@type fun(self: SMODS.Joker|table)?
 SMODS.Joker.enable = function(self)
 	if self.cry_disabled then
 		SMODS.Center.enable(self)
 		SMODS.insert_pool(G.P_JOKER_RARITY_POOLS[self.rarity], self)
-		local vanilla_rarities = { ["Common"] = 1, ["Uncommon"] = 2, ["Rare"] = 3, ["Legendary"] = 4 }
 		if vanilla_rarities[self.rarity] then
 			SMODS.insert_pool(G.P_JOKER_RARITY_POOLS[vanilla_rarities[self.rarity]], self)
 		end
 	end
 end
+
 ---@type fun(self: SMODS.Joker|table, reason: table)?
 SMODS.Joker._disable = function(self, reason)
 	if not self.cry_disabled then
 		SMODS.Center._disable(self, reason)
 		SMODS.remove_pool(G.P_JOKER_RARITY_POOLS[self.rarity], self.key)
-		local vanilla_rarities = { ["Common"] = 1, ["Uncommon"] = 2, ["Rare"] = 3, ["Legendary"] = 4 }
 		if vanilla_rarities[self.rarity] then
 			SMODS.remove_pool(G.P_JOKER_RARITY_POOLS[vanilla_rarities[self.rarity]], self.key)
 		end
 	end
 end
+
 ---@type fun(self: SMODS.Joker|table, rarity: string|number)?
 SMODS.Joker.set_rarity = function(self, rarity)
 	SMODS.remove_pool(G.P_JOKER_RARITY_POOLS[self.rarity], self.key)
 	self.rarity = rarity
 	SMODS.insert_pool(G.P_JOKER_RARITY_POOLS[self.rarity], self)
-	local vanilla_rarities = { ["Common"] = 1, ["Uncommon"] = 2, ["Rare"] = 3, ["Legendary"] = 4 }
 	if vanilla_rarities[self.rarity] then
 		SMODS.insert_pool(G.P_JOKER_RARITY_POOLS[vanilla_rarities[self.rarity]], self)
 	end
 end
+
+--#endregion
+
+--#region Consumable methods
 
 ---@type fun(self: SMODS.Consumable|table)?
 SMODS.Consumable.enable = function(self)
@@ -480,6 +492,10 @@ SMODS.Consumable._disable = function(self, reason)
 		SMODS.remove_pool(G.P_CENTER_POOLS["Consumeables"], self.key)
 	end
 end
+
+--#endregion
+
+--#region Tag methods
 
 ---@type fun(self: SMODS.Tag|table, reason: table)?
 SMODS.Tag._disable = function(self, reason)
@@ -498,6 +514,10 @@ SMODS.Tag.enable = function(self)
 	end
 end
 
+--#endregion
+
+--#region Blind methods
+
 ---@type fun(self: SMODS.Blind|table, reason: table)?
 SMODS.Blind._disable = function(self, reason)
 	if not self.cry_disabled then
@@ -512,6 +532,10 @@ SMODS.Blind.enable = function(self)
 		G.P_BLINDS[self.key] = self
 	end
 end
+
+--#endregion
+
+--#region Seal methods
 
 --Removing seals from the center table causes issues
 ---@type fun(self: SMODS.Seal|table, reason: table)?
@@ -528,6 +552,10 @@ SMODS.Seal.enable = function(self)
 		SMODS.insert_pool(G.P_CENTER_POOLS[self.set], self)
 	end
 end
+
+--#endregion
+
+--#region Edition methods
 
 --Removing editions from the center table causes issues, so instead we make them unable to spawn naturally
 ---@type fun(self: SMODS.Seal|table, reason: table)?
@@ -551,59 +579,62 @@ SMODS.Edition.enable = function(self)
 	end
 end
 
-function Spectrallib.update_obj_registry(m, force_enable)
-	if not m then
-		m = SMODS.GameObject
-		if m.subclasses then
-			for k, v in pairs(m.subclasses) do
-				Spectrallib.update_obj_registry(v, force_enable)
+--#endregion
+
+-- todo: figure out params
+---@param force_enable? boolean
+---@return nil
+function Spectrallib.update_obj_registry(class, force_enable)
+	Spectrallib.index_items(function(object, obj_key)
+		local is_enabled = force_enable or Spectrallib.enabled(obj_key)
+		if is_enabled == true then
+			if object.cry_disabled then
+				object:enable()
+			end
+		else
+			if not object.cry_disabled then
+				object:_disable(is_enabled)
+			end
+		end
+	end, class)
+end
+
+-- Iterate through each item registered under a class.\
+-- todo: figure out params
+---@param func fun(object: table, obj_key: string): nil
+---@return nil
+function Spectrallib.index_items(func, class)
+	if not class then
+		class = SMODS.GameObject
+		if class.subclasses then
+			for _,subclass in pairs(class.subclasses) do
+				Spectrallib.index_items(func, subclass)
 			end
 		end
 	end
-	if m.obj_table then
-		for k, v in pairs(m.obj_table) do
-			if v.mod and (v.mod.id == "Spectrallib" or Spectrallib.mod_gameset_whitelist[v.mod.id]) then
-				local en = force_enable or Spectrallib.enabled(k)
-				if en == true then
-					if v.cry_disabled then
-						v:enable()
-					end
-				else
-					if not v.cry_disabled then
-						v:_disable(en)
-					end
-				end
+	if class.obj_table then
+		for obj_key,object in pairs(class.obj_table) do
+			if object.mod and (object.mod.id == "Spectrallib" or Spectrallib.mod_gameset_whitelist[object.mod.id]) then
+				func(object, obj_key)
 			end
 		end
 	end
 end
-function Spectrallib.index_items(func, m)
-	if not m then
-		m = SMODS.GameObject
-		if m.subclasses then
-			for k, v in pairs(m.subclasses) do
-				Spectrallib.index_items(func, v)
-			end
-		end
-	end
-	if m.obj_table then
-		for k, v in pairs(m.obj_table) do
-			if v.mod and (v.mod.id == "Spectrallib" or Spectrallib.mod_gameset_whitelist[v.mod.id]) then
-				func(v)
-			end
-		end
-	end
-end
+
 local init_item_prototypes_ref = Game.init_item_prototypes
 function Game:init_item_prototypes()
-	Spectrallib.update_obj_registry(nil, true) --force enable, to prevent issues with profile reloading
+	--force enable, to prevent issues with profile reloading
+	Spectrallib.update_obj_registry(nil, true)
 	init_item_prototypes_ref(self)
 	Spectrallib.update_obj_registry()
 end
 
-------------------------
------ CONTENT SETS -----
-------------------------
+--#endregion
+---------------------------------
+
+-------------------------
+--#region CONTENT SETS --
+-------------------------
 
 SMODS.ContentSet = SMODS.Center:extend({
 	set = "Content Set",
@@ -672,15 +703,13 @@ function create_UIBox_your_collection_content_sets()
 	table.sort(joker_pool, function(a, b)
 		return a.cry_order < b.cry_order
 	end)
+
 	local joker_options = {}
-	for i = 1, math.ceil(#joker_pool / (5 * #G.your_collection)) do
+	local page_count = math.ceil(#joker_pool / (5 * #G.your_collection))
+	for i = 1, page_count do
 		table.insert(
 			joker_options,
-			localize("k_page")
-				.. " "
-				.. tostring(i)
-				.. "/"
-				.. tostring(math.ceil(#joker_pool / (5 * #G.your_collection)))
+			table.concat({localize("k_page"), " ", i, "/", page_count})
 		)
 	end
 
@@ -897,9 +926,12 @@ G.FUNCS.your_collection_current_set_page = function(args)
 	INIT_COLLECTION_CARD_ALERTS()
 end
 
-------------------------------
----- GENERIC COLLECTIONS -----
-------------------------------
+--#endregion
+-------------------------
+
+--------------------------------
+--#region GENERIC COLLECTIONS --
+--------------------------------
 
 function Spectrallib.generic_card(center, x, y)
 	--todo: make gameset stickers play nicely with resized sprites
@@ -1253,3 +1285,6 @@ if (SMODS.Mods["AntePreview"] or {}).can_load and not Spectrallib.can_mods_load(
 		return predictions
 	end
 end
+
+--#endregion
+--------------------------------
