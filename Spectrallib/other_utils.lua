@@ -144,6 +144,31 @@ function Spectrallib.redeem_animation(card, cfg)
     }
 end
 
+-- Get the interest rate;
+-- intended to be hooked for additional sources.
+---@return number
+function Spectrallib.interest_rate()
+    return 5
+end
+
+-- Calculate interest given the amount of currently held dollars.
+---@param add_rows? any Unused
+---@return number
+function Spectrallib.get_interest(add_rows)
+    local rate = Spectrallib.interest_rate()
+    local interest = math.min(math.floor(G.GAME.dollars / rate), G.GAME.interest_cap / 5)
+    interest = interest * G.GAME.interest_amount
+    for card in Spectrallib.iter.areacards(SMODS.get_card_areas("jokers")) do
+        if card.config.center.calculate_interest then
+            interest = card.config.center:calculate_interest(card, interest)
+        elseif card.config.center.cry_calc_interest then
+            interest = card.config.center:cry_calc_interest(card, interest)
+        end
+    end
+
+    return interest
+end
+
 ---------------
 -- ITERATORS --
 ---------------
@@ -247,26 +272,6 @@ function Spectrallib.iter.areacards(...)
             end
         end
     end
-end
-
---TODO: write lsp stuff
-function Spectrallib.interest_rate()
-    return 5
-end
-
-function Spectrallib.get_interest(add_rows)
-    local rate = Spectrallib.interest_rate()
-    local interest = math.min(math.floor(G.GAME.dollars / rate), G.GAME.interest_cap / 5)
-    interest = interest * G.GAME.interest_amount
-    for _, a in pairs(SMODS.get_card_areas("jokers")) do
-        for i, c in pairs(a.cards) do
-            if c.config.center.cry_calc_interest then
-                interest = c.config.center:cry_calc_interest(c, interest)
-            end
-        end
-    end
-
-    return interest
 end
 
 -----------
