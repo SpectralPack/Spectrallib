@@ -1496,7 +1496,7 @@ function Card:is_playing_card()
     end
 end
 
--- Depreciated; please use SMODS.poll_object instead.
+-- Deprecated; please use SMODS.poll_object instead.
 ---@deprecated
 function Spectrallib.get_pooled_center(_type, twisted, _rarity, _noparakmi, soulable, key_append)
     return SMODS.poll_object({
@@ -1508,7 +1508,7 @@ function Spectrallib.get_pooled_center(_type, twisted, _rarity, _noparakmi, soul
     -- todo: hook SMODS.poll_object to account _noparakmi
 end
 
--- Depreciated: Please use table.concat instead
+-- Deprecated; Please use table.concat instead
 ---@deprecated
 function Spectrallib.concat_strings(tbl)
     return table.concat(tbl)

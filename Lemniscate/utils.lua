@@ -135,55 +135,15 @@ Spectrallib.event({
 
 ]]
 
---- Cleaner interface for `copy_card()` that automatically handles adding the card to the deck.
---- Modified from code by somethingcom515: https://discord.com/channels/1116389027176787968/1233186615086813277/1442656562249466026
---- @param args {card: Card, new_card: Card?, area: CardArea?, card_scale: number?, strip_edition: boolean?, auto_materialize: boolean?} Contains arguments passed to the function.
---- @return Card
+-- Deprecated; please use SMODS.copy_card instead.
+---@deprecated
 function Spectrallib.copy_card(args)
-    -- can return nil but if you follow the annotations it won't do that
-    if not args or not args.card then return end
-
-    local area = args.area or (args.new_card and args.new_card.area) or args.card.area or G.jokers
-    local cardwasindeck = args.new_card and args.new_card.added_to_deck or nil
-    local playing_card = args.card.playing_card
-
-    -- handle G.playing_card
-    if playing_card then
-        G.playing_card = (G.playing_card and G.playing_card + 1) or 1
-    end
-
-    -- create the fucking card
-    local copy = copy_card(
-        args.card,
-        args.new_card,
-        args.card_scale,
-        playing_card and G.playing_card or nil,
-        args.strip_edition
-    )
-
-    -- death-like effects
-    if args.new_card and cardwasindeck then copy:remove_from_deck() end
-
-    -- handle card limit
-    if playing_card then
-        G.deck.config.card_limit = G.deck.config.card_limit + 1
-        table.insert(G.playing_cards, copy)
-    end
-
-    -- handle add to deck/emplace
-    if (args.new_card and cardwasindeck) or not args.new_card then copy:add_to_deck() end
-    if not args.new_card then area:emplace(copy) end
-
-    if args.auto_materialize then
-        copy.states.visible = nil
-
-        Spectrallib.event(function()
-            copy:start_materialize()
-            return true
-        end)
-    end
-
-    return copy
+    -- Doesn't account for auto_materialize
+    return SMODS.copy_card(args.card, {
+        new_card = args.card,
+        card_scale = args.card_scale,
+        strip_edition = args.strip_edition
+    })
 end
 
 --- Forces an object's hover description to update
