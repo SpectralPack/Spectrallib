@@ -286,7 +286,7 @@ match_indent = true
 target = "card.lua"
 pattern = "if G.hand.highlighted[i] ~= rightmost then"
 position = "at"
-payload = "if G.hand.highlighted[i] ~= rightmost and (Spectrallib.death_can_eternal or SMODS.is_eternal(G.hand.highlighted[i])) then"
+payload = "if G.hand.highlighted[i] ~= rightmost and (Spectrallib.death_can_eternal or not SMODS.is_eternal(G.hand.highlighted[i])) then"
 match_indent = true
 
 

@@ -233,6 +233,7 @@ function Spectrallib.pluralize(str, vars)
 	-- todo: improve syntax
 
 	-- Example str: "<s>1", "<ies,y>2"
+	if not str.match then return end
 	local inside = str:match("<(.-)>") -- From str, match: "s", "ies,y"
 	local _table = {}
 	if inside then
