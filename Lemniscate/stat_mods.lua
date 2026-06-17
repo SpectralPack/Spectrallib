@@ -147,14 +147,14 @@ function Spectrallib.eq_discards(mod, instant, silent)
 end
 
 --- @class Spectrallib.x_levels.args
---- @field level_up number
+--- @field level_up number The multiplier on each hand level.
 --- @field hands? string|string[] Keys of hands to level up.
 --- @field instant? boolean If true, no animation plays when this function is called.
 --- @field from? Card|Card[] A card or set of cards causing the level-up.
 --- @field bypass_calculate? boolean If true, function will not send out calculation contexts.
 --- @field colour? [number, number, number, number] Colour of StatusText.
 
---- Multiplies hand levels by 2.
+--- Multiplies hand levels by `args.level_up`.
 --- @param args Spectrallib.x_levels.args
 --- @return nil
 function Spectrallib.x_levels(args)
@@ -204,7 +204,7 @@ function Spectrallib.x_levels(args)
         context.new_parameters = {}
 
         context.old_level = G.GAME.hands[hand].level
-        G.GAME.hands[hand].level = math.max(0, G.GAME.hands[hand].level * 2)
+        G.GAME.hands[hand].level = math.max(0, G.GAME.hands[hand].level * args.level_up)
         context.new_level = G.GAME.hands[hand].level
 
         for _, parameter in ipairs(SMODS.Scoring_Parameter.obj_buffer) do

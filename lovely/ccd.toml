@@ -403,7 +403,7 @@ target = '''functions/common_events.lua'''
 pattern = '''if main_end then'''
 position = "before"
 payload = '''
-if cfg and cfg.cry_multiuse and not (SMODS.Mods.Cryptid or {}).can_load then
+if cfg and cfg.cry_multiuse then
 	local loc = {}
 	localize{type = 'other', key = 'slib_multiuse', nodes = loc, vars = {cfg.cry_multiuse, colours = { get_type_colour(_c, card) } }}
 	desc_nodes[#desc_nodes+1] = loc[1]
