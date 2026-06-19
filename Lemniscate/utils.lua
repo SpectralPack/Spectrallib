@@ -137,13 +137,14 @@ Spectrallib.event({
 
 --- Creates a nested event declaration. `input` and `_prepend` will only affect the bottommost event.
 --- @param input function|Spectrallib.event.input?
---- @param _count number Nesting depth.
+--- @param _count number? Nesting depth. Defaults to 1.
 --- @param _queue string?
 --- @param _prepend boolean?
 --- @return Event|table
 function Spectrallib.nested_event(input, _count, _queue, _prepend)
     input = input or {}
-    if not _count or _count == 0 then
+    _count = _count or 1
+    if _count == 0 then
         return Spectrallib.event(input, _queue, _prepend)
     end
 
