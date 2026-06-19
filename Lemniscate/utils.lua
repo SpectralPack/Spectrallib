@@ -152,7 +152,7 @@ function Spectrallib.nested_event(input, _count, _queue, _prepend)
     local queue = input.queue or _queue
 
     return Spectrallib.event {
-        function() Spectrallib.nested_event(input, _count - 1, queue, _prepend) end,
+        function() Spectrallib.nested_event(input, _count - 1, queue, _prepend) return true end,
         queue = queue
     }
 end
