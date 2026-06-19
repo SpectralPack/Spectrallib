@@ -135,6 +135,28 @@ Spectrallib.event({
 
 ]]
 
+--- Creates a nested event declaration. `input` and `_prepend` will only affect the bottommost event.
+--- @param input function|Spectrallib.event.input?
+--- @param _count number Nesting depth.
+--- @param _queue string?
+--- @param _prepend boolean?
+--- @return Event|table
+function Spectrallib.nested_event(input, _count, _queue, _prepend)
+    input = input or {}
+    if not _count or _count == 0 then
+        return Spectrallib.event(input, _queue, _prepend)
+    end
+
+    if type(input) == "number" then input = { delay = input } end
+    if type(input) == "function" then input = { input } end
+    local queue = input.queue or _queue
+
+    return Spectrallib.event {
+        function() Spectrallib.nested_event(input, _count - 1, queue, _prepend) end,
+        queue = queue
+    }
+end
+
 -- Deprecated; please use SMODS.copy_card instead.
 ---@deprecated
 function Spectrallib.copy_card(args)
