@@ -24,6 +24,12 @@ function Game:init_game_object()
         ret.SuitBuffs[k] = { level = 1, chips = 0, mult = 0 }
     end
     ret.SuitBuffs.suitless = { level = 1, chips = 0, mult = 0 }
+
+    ret.RankBuffs = {}
+    for k in pairs(SMODS.Ranks) do
+        ret.RankBuffs[k] = { level = 1, chips = 0, mult = 0 }
+    end
+    ret.RankBuffs.rankless = { level = 1, chips = 0, mult = 0 }
     return ret
 end
 --[[

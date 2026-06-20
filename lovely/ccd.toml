@@ -168,6 +168,7 @@ if card_type ~= 'Default' and card_type ~= 'Enhanced' and self.playing_card and 
 		nominal_chips = self.base.nominal > 0 and self.base.nominal or nil,
 		bonus_chips = (self.ability.bonus + (self.ability.perma_bonus or 0)) > 0 and (self.ability.bonus + (self.ability.perma_bonus or 0)) or nil,
         suit_bonus = self:get_suit_bonus_table(),
+        rank_bonus = self:get_rank_bonus_table(),
 	}
 end
 '''
@@ -252,6 +253,7 @@ slib_perma_h_x_asc = self.ability.slib_perma_h_x_asc ~= 0 and (self.ability.slib
 slib_perma_exp_asc = self.ability.slib_perma_exp_asc ~= 0 and (self.ability.slib_perma_exp_asc + 1) or nil,
 slib_perma_h_exp_asc = self.ability.slib_perma_h_exp_asc ~= 0 and (self.ability.slib_perma_h_exp_asc + 1) or nil,
 suit_bonus = self:get_suit_bonus_table(),
+rank_bonus = self:get_rank_bonus_table(),
 slib_perma_e_chips = self.ability.slib_perma_e_chips ~= 0 and (self.ability.slib_perma_e_chips + 1) or nil,
 slib_perma_h_e_chips = self.ability.slib_perma_h_e_chips ~= 0 and (self.ability.slib_perma_h_e_chips + 1) or nil,
 slib_perma_e_mult = self.ability.slib_perma_e_mult ~= 0 and (self.ability.slib_perma_e_mult + 1) or nil,
@@ -315,6 +317,14 @@ if specific_vars and specific_vars.suit_bonus and next(specific_vars.suit_bonus)
     for _, v in ipairs(specific_vars.suit_bonus) do
         localize{ type = 'other', key = v.loc_key, nodes = desc_nodes, vars = {localize(v.key, 'suits_plural'), v.chips, v.mult, v.level, colours = {
             G.C.SUITS[v.key],
+            to_big(v.level) < to_big(2) and G.C.BLACK or G.C.HAND_LEVELS[to_number(math.min(7, v.level))]
+        }}}
+    end
+end
+if specific_vars and specific_vars.rank_bonus and next(specific_vars.rank_bonus) then
+    for _, v in ipairs(specific_vars.rank_bonus) do
+        localize{ type = 'other', key = v.loc_key, nodes = desc_nodes, vars = {localize(v.key, 'ranks'), v.chips, v.mult, v.level, colours = {
+            G.C.UI.TEXT_DARK,
             to_big(v.level) < to_big(2) and G.C.BLACK or G.C.HAND_LEVELS[to_number(math.min(7, v.level))]
         }}}
     end

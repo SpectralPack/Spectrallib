@@ -178,6 +178,9 @@ return {
 		},
 		suits_plural = {
 			suitless = "Suitless"
+		},
+		ranks = {
+			rankless = "Rankless"
 		}
     }
 }
