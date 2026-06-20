@@ -80,19 +80,19 @@ end
 ---@param suit string|Suits|'suitless' The suit key to be leveled up. Can be `suitless` to level up suitless cards.
 ---@param card table|Card The card to play the animation on.
 ---@param level_amt? number The amount of levels to upgrade by.
----@param chips_override? number The amount of chips per level. Defaults to `10` if not set.
----@param mult? number The amount of mult per level. Defaults to `0` if not set.
+---@param chips? number The amount of chips per level. Defaults to `G.GAME.SuitBuffs[suit].l_chips or 10` if not set.
+---@param mult? number The amount of mult per level. Defaults to `G.GAME.SuitBuffs[suit].l_mult or 0` if not set.
 ---@param instant? boolean If `true`, skips the animation (similar to `level_up_hand` in vanilla).
 ---@param display_all? boolean If `true`, parameters with a level up amount of `0` will not be displayed as `...` during the animation.
 ---@return nil
-function Spectrallib.level_suit(suit, card, level_amt, chips_override, mult, instant, display_all)
+function Spectrallib.level_suit(suit, card, level_amt, chips, mult, instant, display_all)
     level_amt = level_amt or 1
-    chips_override = chips_override or G.GAME.SuitBuffs[suit].l_chips
-    mult = mult or G.GAME.SuitBuffs[suit].l_mult
+    chips = chips or G.GAME.SuitBuffs[suit].l_chips or 10
+    mult = mult or G.GAME.SuitBuffs[suit].l_mult or 0
 
     local hide = {}
     if (
-        chips_override == 0
+        chips == 0
         and not (hide.chips or display_all)
     ) then hide.chips = "..." end
     if (
@@ -111,7 +111,7 @@ function Spectrallib.level_suit(suit, card, level_amt, chips_override, mult, ins
 
     if instant then
         suit_values.level = suit_values.level + level_amt
-        suit_values.chips = suit_values.chips + (chips_override or 10)*level_amt
+        suit_values.chips = suit_values.chips + (chips or 10)*level_amt
         suit_values.mult  = suit_values.mult  + (mult or 0)*level_amt
         return
     end
@@ -141,13 +141,13 @@ function Spectrallib.level_suit(suit, card, level_amt, chips_override, mult, ins
     })
 
     suit_values.level = suit_values.level + level_amt
-    suit_values.chips = suit_values.chips + (chips_override or 10)*level_amt
+    suit_values.chips = suit_values.chips + (chips or 10)*level_amt
     suit_values.mult  = suit_values.mult  + (mult or 0)*level_amt
 
     JUICE_CARD_EVENT(card)
-    if chips_override ~= 0 then
+    if chips ~= 0 then
         update_hand_text(uht_snd(0.7, 0.9, 0), {
-            chips = "+" .. number_format((chips_override or 10)*level_amt),
+            chips = "+" .. number_format((chips or 10)*level_amt),
             StatusText = true
         })
     end
@@ -174,15 +174,15 @@ end
 ---@param rank string|Ranks|'rankless' The rank key to be leveled up. Can be `rankless` to level up rankless cards.
 ---@param card table|Card The card to play the animation on.
 ---@param level_amt? number The amount of levels to upgrade by.
----@param chips? number The amount of chips per level. Defaults to `0` if not set.
----@param mult? number The amount of mult per level. Defaults to `2` if not set.
+---@param chips? number The amount of chips per level. Defaults to `G.GAME.RankBuffs[rank].l_chips or 10` if not set.
+---@param mult? number The amount of mult per level. Defaults to `G.GAME.RankBuffs[rank].l_mult or 0` if not set.
 ---@param instant? boolean If `true`, skips the animation (similar to `level_up_hand` in vanilla).
 ---@param display_all? boolean If `true`, parameters with a level up amount of `0` will not be displayed as `...` during the animation.
 ---@return nil
 function Spectrallib.level_rank(rank, card, level_amt, chips, mult, instant, display_all)
     level_amt = level_amt or 1
-    chips = chips or G.GAME.RankBuffs[rank].l_chips
-    mult = mult or G.GAME.RankBuffs[rank].l_mult
+    chips = chips or G.GAME.RankBuffs[rank].l_chips or 10
+    mult = mult or G.GAME.RankBuffs[rank].l_mult or 0
 
     local hide = {}
     if (
