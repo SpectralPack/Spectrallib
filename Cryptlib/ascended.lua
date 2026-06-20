@@ -32,7 +32,7 @@ function G.FUNCS.get_poker_hand_info(_cards)
 	-- funy display text (see localization/ascended_hand_text_generators)
 	local ascend_hand_text_func = Spectrallib.safe_get(G.localization, "dynamic", "ascend_hand_text")
 	if ascend_hand_text_func then
-		text = ascend_hand_text_func(text, scoring_hand)
+		loc_disp_text = ascend_hand_text_func(text, scoring_hand)
 	end
 
 	-- Get ascension power
