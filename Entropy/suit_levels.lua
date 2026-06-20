@@ -87,6 +87,8 @@ end
 ---@return nil
 function Spectrallib.level_suit(suit, card, level_amt, chips_override, mult, instant, display_all)
     level_amt = level_amt or 1
+    chips_override = chips_override or G.GAME.SuitBuffs[suit].l_chips
+    mult = mult or G.GAME.SuitBuffs[suit].l_mult
 
     local hide = {}
     if (
@@ -179,6 +181,8 @@ end
 ---@return nil
 function Spectrallib.level_rank(rank, card, level_amt, chips, mult, instant, display_all)
     level_amt = level_amt or 1
+    chips = chips or G.GAME.RankBuffs[rank].l_chips
+    mult = mult or G.GAME.RankBuffs[rank].l_mult
 
     local hide = {}
     if (

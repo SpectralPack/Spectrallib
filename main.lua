@@ -20,14 +20,14 @@ local gigo = Game.init_game_object
 function Game:init_game_object()
     local ret = gigo(self)
     ret.SuitBuffs = {}
-    for k in pairs(SMODS.Suits) do
-        ret.SuitBuffs[k] = { level = 1, chips = 0, mult = 0 }
+    for k, obj in pairs(SMODS.Suits) do
+        ret.SuitBuffs[k] = { level = 1, chips = 0, mult = 0, l_chips = obj.l_chips or 10, l_mult = obj.l_mult or 0 }
     end
     ret.SuitBuffs.suitless = { level = 1, chips = 0, mult = 0 }
 
     ret.RankBuffs = {}
-    for k in pairs(SMODS.Ranks) do
-        ret.RankBuffs[k] = { level = 1, chips = 0, mult = 0 }
+    for k, obj in pairs(SMODS.Ranks) do
+        ret.RankBuffs[k] = { level = 1, chips = 0, mult = 0, l_chips = obj.l_chips or 10, l_mult = obj.l_mult or 0 }
     end
     ret.RankBuffs.rankless = { level = 1, chips = 0, mult = 0 }
     return ret
