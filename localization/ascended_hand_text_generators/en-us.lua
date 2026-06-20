@@ -48,7 +48,7 @@ local function int_to_word(int)
 	return table.concat(concat_table, " ")
 end
 
-local function ascend_hand_text(hand_text, scoring_hand)
+local function ascend_hand_text(hand_text, scoring_hand, disp_text)
 	if #scoring_hand > 5 and ({
 		["Flush Five"] = true,
 		["Five of a Kind"] = true,
@@ -64,9 +64,9 @@ local function ascend_hand_text(hand_text, scoring_hand)
 			end
 		end
 
-		return hand_text:gsub("Five", int_to_word(county))
+		return disp_text:gsub("Five", int_to_word(county))
 	end
-	return hand_text
+	return disp_text
 end
 
 return {
