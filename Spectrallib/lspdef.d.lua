@@ -12,6 +12,13 @@
 ---@field chips number The suit's bonus chips.
 ---@field mult number The suit's bonus mult.
 
+---@class get_rank_bonus_table.item
+---@field key string The rank's key.
+---@field loc_key string The localization key of the rank's name.
+---@field level number The rank's level.
+---@field chips number The rank's bonus chips.
+---@field mult number The rank's bonus mult.
+
 ---@class Card
 -- Redeems a deck and plays the corresponding animation.
 ---@field redeem_deck? fun(): nil
@@ -21,6 +28,13 @@
 ---@field get_suit_mult? fun(): number
 -- Get a list of bonuses applied to each of a card's suits.
 ---@field get_suit_bonus_table? fun(): get_suit_bonus_table.item[]
+-- Calls the `unredeem` method of the card's center (if defined) and plays the corresponding animation.
+-- Get the total amount of bonus chips from all of the card's suits.
+---@field get_rank_bonus? fun(): number
+-- Get the total amount of bonus mult from all of the card's suits.
+---@field get_rank_mult? fun(): number
+-- Get a list of bonuses applied to each of a card's suits.
+---@field get_rank_bonus_table? fun(): get_suit_bonus_table.item[]
 -- Calls the `unredeem` method of the card's center (if defined) and plays the corresponding animation.
 ---@field unredeem? fun(): nil
 -- Calls the `unredeem` method of the card's center (if defined).
