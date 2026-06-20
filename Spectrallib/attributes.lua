@@ -2,7 +2,7 @@ local attributes = {
     "echips", "emult", "hyperchips", "hypermult",
     "eqchips", "eqmult", "asc", "xasc", "easc", "hyperasc",
     "forcetrigger", "value_manip",
-    "multiuse",
+    "multiuse", "ccd",
     "escore", "eblindsize", "hyperscore", "hyperblindsize"
 }
 
