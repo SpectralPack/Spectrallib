@@ -212,8 +212,13 @@ end
 ---| `Card[]`     # Iterate through each card
 ---@return fun(): (Card|table|nil)
 function Spectrallib.iter.areacards(...)
-    local areas = #... == 1 and ... or {unpack(...)}
-    if type(areas) ~= "table" then return function () end end
+    local a,b = ...
+    local areas
+    if type(a) == "table" and not b then
+        areas = a
+    else
+        areas = {...}
+    end
 
     local card_i = 0
     local cardlist
