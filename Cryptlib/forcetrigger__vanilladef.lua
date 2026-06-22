@@ -1,3 +1,10 @@
+-- Forcetrigger results for Vanilla Jokers
+-- (You should really be using context.forcetrigger in Joker calculation)
+
+------------
+-- MACROS --
+------------
+
 local function suit_mult(card, context)
     return { mult = card.ability.extra.s_mult }
 end
@@ -10,15 +17,51 @@ end
 local function hand_xmult(card, context)
     return { xmult = card.ability.x_mult }
 end
+local function simple_return(ret_key, ability_key, extra_key)
+    if ability_key == "extra" and extra_key then
+        return function(card, context)
+            return { [ret_key] = card.ability.extra[extra_key] }
+        end
+    else
+        return function(card, context)
+            return { [ret_key] = card.ability[ability_key] }
+        end
+    end
+end
+--[[
+simple_return("mult", "mult") -> return { mult = card.ability.mult }
+simple_return("mult", "extra", "mult") -> return { mult = card.ability.extra.mult }
+]]
+local function add_consumable(set, key_append)
+    local loc_key = 'k_plus_' .. set:lower()
+    local colour = set == "Spectral" and G.C.SECONDARY_SET.Spectral or nil
+    return function (card, context)
+        Spectrallib.event{
+            function ()
+                SMODS.add_card{
+                    set = set,
+                    key_append = key_append
+                }
+                return true
+            end,
+            trigger = "after",
+            delay = 0.4,
+        }
+        return {
+            message = localize(loc_key),
+            colour = colour
+        }
+    end
+end
 
--- Forcetrigger results for Vanilla Jokers
--- (You should really be using context.forcetrigger in Joker calculation)
+-----------------
+-- DEFINITIONS --
+-----------------
+
 ---@type { [string]: fun(card: Card, context: table): table|nil }
 Spectrallib.vanilla_forcetrigger_results = {
     --#region Page 1
-    ["Joker"] = function (card, context)
-        return { mult = card.ability.mult }
-    end,
+    ["Joker"]            = simple_return("mult", "mult"),
     ["Greedy Joker"]     = suit_mult,
     ["Lusty Joker"]      = suit_mult,
     ["Wrathful Joker"]   = suit_mult,
@@ -35,18 +78,15 @@ Spectrallib.vanilla_forcetrigger_results = {
     ["Crafty Joker"]     = hand_chips,
     --#endregion
     --#region Page 2
-    ["Half Joker"] = function (card, context)
-        return { mult = card.ability.extra.mult }
-    end,
-    ["Joker Stencil"] = function (card, context)
-        return { xmult = card.ability.x_mult }
-    end,
-    -- Four Fingers
-    -- Mime
-    -- Credit Card
+    ["Half Joker"]    = simple_return("mult", "extra", "mult"),
+    ["Joker Stencil"] = simple_return("xmult", "x_mult"),
+    -- ["Four Fingers"]
+    -- ["Mime"]
+    -- ["Credit Card"]
     ["Ceremonial Dagger"] = function (card, context)
         local my_pos = card.rank
         local sliced_card = G.jokers.cards[my_pos + 1]
+        if not sliced_card then return end
         if (
             not card.getting_sliced
             and sliced_card
@@ -68,13 +108,9 @@ Spectrallib.vanilla_forcetrigger_results = {
         end
         return { mut = card.ability.mult }
     end,
-    ["Banner"] = function (card, context)
-        return { chips = card.ability.extra }
-    end,
-    ["Mystic Summit"] = function (card, context)
-        return { mult = card.ability.extra.mult }
-    end,
-    ["Marble Joker"] = function (card, context)
+    ["Banner"]        = simple_return("chips", "extra"),
+    ["Mystic Summit"] = simple_return("mult", "extra", "mult"),
+    ["Marble Joker"]  = function (card, context)
         G.E_MANAGER:add_event(Event({
             trigger = "after",
             delay = 0.4,
@@ -89,65 +125,35 @@ Spectrallib.vanilla_forcetrigger_results = {
             end,
         }))
     end,
-    ["Loyalty Card"] = function (card, context)
-        return { xmult = card.ability.extra.Xmult }
-    end,
-    ["8 Ball"] = function (card, context)
-        G.E_MANAGER:add_event(Event({
-            trigger = "after",
-            delay = 0.4,
-            func = function()
-                SMODS.add_card({
-                    set = "Tarot",
-                    key_append = '8ba'
-                })
-                return true
-            end,
-        }))
-    end,
-    ["Misprint"] = function (card, context)
-        return { mult = card.ability.extra.max }
-    end,
-    -- Dusk
+    ["Loyalty Card"] = simple_return("xmult", "extra", "Xmult"),
+    ["8 Ball"]       = add_consumable("Tarot", '8ba'),
+    ["Misprint"]     = simple_return("mult", "extra", "max"),
+    -- ["Dusk"]
     ["Raised Fist"] = function (card, context)
         return { mult = 22 }
     end,
-    -- Chaos the Clown
+    -- ["Chaos the Clown"]
     --#endregion
     --#region Page 3
-    ["Fibonacci"] = function (card, context)
-        return { mult = card.ability.extra }
-    end,
+    ["Fibonacci"] = simple_return("mult", "extra"),
     ["Steel Joker"] = function (card, context)
         return { xmult = card.ability.extra + 1 }
     end,
-    ["Scary Face"] = function (card, context)
-        return { chips = card.ability.extra }
-    end,
-    ["Abstract Joker"] = function (card, context)
-        return { mult = card.ability.extra }
-    end,
-    ["Delayed Gratification"] = function (card, context)
-        return { dollars = card.ability.extra }
-    end,
-    -- Hack
-    -- Pareidolia
+    ["Scary Face"]            = simple_return("chips", "extra"),
+    ["Abstract Joker"]        = simple_return("mult", "extra"),
+    ["Delayed Gratification"] = simple_return("dollars", "extra"),
+    -- ["Hack"]
+    -- ["Pareidolia"]
     ["Gros Michel"] = function (card, context)
-        G.E_MANAGER:add_event(Event({
-            func = function()
-                SMODS.destroy_cards(card, nil, nil, true)
-                return true
-            end,
-        }))
+        Spectrallib.event(function ()
+            SMODS.destroy_cards(card, {pinch_anim = true})
+            return true
+        end)
         G.GAME.pool_flags.gros_michel_extinct = true
         return { mult = card.ability.extra.mult }
     end,
-    ["Even Steven"] = function (card, context)
-        return { mult = card.ability.extra }
-    end,
-    ["Odd Todd"] = function (card, context)
-        return { chips = card.ability.extra }
-    end,
+    ["Even Steven"] = simple_return("mult", "extra"),
+    ["Odd Todd"]    = simple_return("chips", "extra"),
     ["Scholar"] = function (card, context)
         return {
             chips = card.ability.extra.chips,
@@ -155,8 +161,7 @@ Spectrallib.vanilla_forcetrigger_results = {
         }
     end,
     ["Business Card"] = function (card, context)
-        -- todo: figure out why not return dollars
-        ease_dollars(2)
+        return { dollars = 2 }
     end,
     ["Supernova"] = function (card, context)
         local hand = (
@@ -168,10 +173,7 @@ Spectrallib.vanilla_forcetrigger_results = {
             return { mult = G.GAME.hands[hand].played }
         end
     end,
-    ["Ride the Bus"] = function (card, context)
-        card.ability.mult = card.ability.mult + card.ability.extra
-        return { mult = card.ability.mult }
-    end,
+    ["Ride the Bus"] = simple_return("mult", "mult"),
     ["Space Joker"] = function (card, context)
         if #G.hand.highlighted > 0 then
             local text, disp_text = G.FUNCS.get_poker_hand_info(G.hand.highlighted)
@@ -197,120 +199,47 @@ Spectrallib.vanilla_forcetrigger_results = {
         card:set_cost()
     end,
     ["Burglar"] = function (card, context)
-        G.E_MANAGER:add_event(Event({
-            func = function()
-                ease_discard(-G.GAME.current_round.discards_left, nil, true)
-                ease_hands_played(card.ability.extra)
-                return true
-            end,
-        }))
+        Spectrallib.event(function()
+            ease_discard(-G.GAME.current_round.discards_left, nil, true)
+            ease_hands_played(card.ability.extra)
+            return true
+        end)
     end,
-    ["Blackboard"] = function (card, context)
-        return { xmult = card.ability.extra }
-    end,
-    ["Runner"] = function (card, context)
-            card.ability.extra.chips = card.ability.extra.chips + card.ability.extra.chip_mod
-            return { chips = card.ability.extra.chips }
-    end,
-    ["Ice Cream"] = function (card, context)
-        card.ability.extra.chips = card.ability.extra.chips - card.ability.extra.chip_mod
-        -- Had to switch conditional and return; not sure if that results in anything big
-        if card.ability.extra.chips - card.ability.extra.chip_mod <= 0 then
-            G.E_MANAGER:add_event(Event({
-                trigger = "after",
-                delay = 0.4,
-                func = function()
-                    SMODS.destroy_cards(card, nil, nil, true)
-                    return true
-                end,
-            }))
-        end
-        return { chips = card.ability.extra.chips }
-    end,
+    ["Blackboard"] = simple_return("xmult", "extra"),
+    ["Runner"]     = simple_return("chips", "extra", "chips"),
+    ["Ice Cream"]  = simple_return("chips", "extra", "chips"),
     ["DNA"] = function (card, context)
-        G.playing_card = (G.playing_card and G.playing_card + 1) or 1
-        local _card = copy_card(context.full_hand[1], nil, nil, G.playing_card)
-        _card:add_to_deck()
-        G.deck.config.card_limit = G.deck.config.card_limit + 1
-        table.insert(G.playing_cards, _card)
-        G.hand:emplace(_card)
-        _card.states.visible = nil
-
-        G.E_MANAGER:add_event(Event({
-            func = function()
-                _card:start_materialize()
-                return true
-            end,
-        }))
+        local card_copied = SMODS.copy_card(context.full_hand[1])
+        card_copied.states.visible = nil
+        Spectrallib.event(function ()
+            card_copied:start_materialize()
+            return true
+        end)
     end,
-    -- Splash
-    ["Blue Joker"] = function (card, context)
-        return { chips = card.ability.extra }
-    end,
-    ["Sixth Sense"] = function (card, context)
-        G.E_MANAGER:add_event(Event({
-            trigger = "after",
-            delay = 0.4,
-            func = function()
-                SMODS.add_card({
-                    set = "Spectral",
-                    key_append = "sixth"
-                })
-                return true
-            end,
-        }))
-    end,
-    ["Constellation"] = function (card, context)
-            card.ability.x_mult = card.ability.x_mult + card.ability.extra
-            return { xmult = card.ability.x_mult }
-    end,
-    -- Hiker
-    ["Faceless Joker"] = function (card, context)
-        -- todo: figure out why ease_dollars, not return dollars
-        ease_dollars(card.ability.extra.dollars)
-    end,
-    ["Green Joker"] = function (card, context)
-        return { mult = card.ability.mult }
-    end,
-    ["Superposition"] = function (card, context)
-        G.E_MANAGER:add_event(Event({
-            trigger = "after",
-            delay = 0.4,
-            func = function()
-                SMODS.add_card({
-                    set = "Tarot",
-                    key_append = "sup"
-                })
-                return true
-            end,
-        }))
-    end,
-    ["To Do List"] = function (card, context)
-        -- todo: figure out why ease_dollars, not return dollar
-        ease_dollars(card.ability.extra.dollars)
-    end,
+    -- ["Splash"]
+    ["Blue Joker"]     = simple_return("chips", "extra"),
+    ["Sixth Sense"]    = add_consumable("Spectral", 'sixth'),
+    ["Constellation"]  = simple_return("xmult", "x_mult"),
+    -- ["Hiker"]
+    ["Faceless Joker"] = simple_return("dollars", "extra", "dollars"),
+    ["Green Joker"]    = simple_return("mult", "mult"),
+    ["Superposition"]  = add_consumable("Tarot", 'sup'),
+    ["To Do List"]     = simple_return("dollars", "extra", "dollars"),
     --#endregion
     --#region Page 5
     ["Cavendish"] = function (card, context)
-        G.E_MANAGER:add_event(Event({
-            func = function()
-                SMODS.destroy_cards(card, nil, nil, true)
-                return true
-            end,
-        }))
+        Spectrallib.event(function ()
+            SMODS.destroy_cards(card, {pinch_anim = true})
+            return true
+        end)
         return { xmult = card.ability.extra.Xmult }
     end,
-    ["Card Sharp"] = function (card, context)
-        return { xmult = card.ability.extra.Xmult }
-    end,
-    ["Red Card"] = function (card, context)
-        card.ability.mult = card.ability.mult + card.ability.extra
-        return { mult = card.ability.mult }
-    end,
+    ["Card Sharp"] = simple_return("xmult", "extra", "Xmult"),
+    ["Red Card"]   = simple_return("mult", "mult"),
     ["Madness"] = function (card, context)
         card.ability.x_mult = card.ability.x_mult + card.ability.extra
         local destructable_jokers = {}
-        for _,joker in ipairs(G.jokers.cards) do
+        for joker in Spectrallib.iter.areacards(G.jokers) do
             if
                 joker ~= card
                 and not joker.ability.eternal
@@ -319,44 +248,24 @@ Spectrallib.vanilla_forcetrigger_results = {
                 table.insert(destructable_jokers, joker)
             end
         end
-        local joker_to_destroy = (
-            #destructable_jokers > 0
-            and pseudorandom_element(destructable_jokers, pseudoseed("madness"))
-            or nil
-        )
+        if #destructable_jokers <= 0 then return end
 
-        if joker_to_destroy and not card.getting_sliced then
-            joker_to_destroy.getting_sliced = true
-            G.E_MANAGER:add_event(Event({
-                func = function()
-                    -- todo: can we use SMODS.destroy_cards here
-                    card:juice_up(0.8, 0.8)
-                    joker_to_destroy:start_dissolve({ G.C.RED }, nil, 1.6)
-                    return true
-                end,
-            }))
-        end
+        local joker_to_destroy = pseudorandom_element(destructable_jokers, pseudoseed("madness"))
+        SMODS.destroy_cards(joker_to_destroy, {
+            colours = { G.C.RED },
+            destroy_func = function (destroyed_card, args)
+                destroyed_card:juice_up(0.8, 0.8)
+                return destroyed_card:start_dissolve({ G.C.RED }, nil, 1.6)
+            end
+        })
+
         return { xmult = card.ability.x_mult }
     end,
-    ["Square Joker"] = function (card, context)
-        card.ability.extra.chips = card.ability.extra.chips + card.ability.extra.chip_mod
-        return { chips = card.ability.extra.chips }
-    end,
-    ["Seance"] = function (card, context)
-        G.E_MANAGER:add_event(Event({
-            trigger = "after",
-            delay = 0.4,
-            func = function()
-                SMODS.add_card({
-                    set = "Spectral",
-                    key_append = "sea"
-                })
-                return true
-            end,
-        }))
-    end,
+    ["Square Joker"] = simple_return("chips", "extra", "chips"),
+    ["Seance"]       = add_consumable("Spectral", 'sea'),
     ["Riff-raff"] = function (card, context)
-        local jokers_to_create = math.min(2, G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
+        local empty_slots = G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer)
+        local jokers_to_create = math.min(2, empty_slots)
         G.E_MANAGER:add_event(Event({
             trigger = "after",
             delay = 0.4,
@@ -371,89 +280,38 @@ Spectrallib.vanilla_forcetrigger_results = {
             end,
         }))
     end,
-    ["Vampire"] = function (card, context)
-        local enhanced = {}
-        if context.scoring_hand and #context.scoring_hand > 0 then
-            for k, v in ipairs(context.scoring_hand) do
-                if v.config.center ~= G.P_CENTERS.c_base and not v.debuff and not v.vampired then
-                    enhanced[#enhanced + 1] = v
-                    v.vampired = true
-                    v:set_ability(G.P_CENTERS.c_base, nil, true)
-                end
-                v.vampired = nil
-            end
-        elseif G and G.hand and #G.hand.highlighted > 0 then
-            for k, v in ipairs(G.hand.highlighted) do
-                if v.config.center ~= G.P_CENTERS.c_base and not v.debuff and not v.vampired then
-                    enhanced[#enhanced + 1] = v
-                    v.vampired = true
-                    v:set_ability(G.P_CENTERS.c_base, nil, true)
-                end
-                v.vampired = nil
-            end
-        end
-        card.ability.x_mult = card.ability.x_mult + (card.ability.extra * (#enhanced or 1))
-        return { xmult = card.ability.x_mult }
-    end,
-    -- Shortcut
-    ["Hologram"] = function (card, context)
-        card.ability.x_mult = card.ability.x_mult + card.ability.extra
-        return { xmult = card.ability.x_mult }
-    end,
-    ["Vagabond"] = function (card, context)
-        G.E_MANAGER:add_event(Event({
-            trigger = "after",
-            delay = 0.4,
-            func = function()
-                SMODS.add_card({
-                    set = "Tarot",
-                    key_append = 'vag'
-                })
-                return true
-            end,
-        }))
-    end,
-    ["Baron"] = function (card, context)
-        return { xmult = card.ability.extra }
-    end,
+    ["Vampire"]  = simple_return("xmult", "x_mult"),
+    -- ["Shortcut"]
+    ["Hologram"] = simple_return("xmult", "x_mult"),
+    ["Vagabond"] = add_consumable("Tarot", 'vag'),
+    ["Baron"]    = simple_return("xmult", "extra"),
     ["Cloud 9"] = function (card, context)
-        if card.ability.nine_tally then
-            ease_dollars(card.ability.extra * card.ability.nine_tally)
-        else
-            ease_dollars(card.ability.extra)
-        end
+        return { dollars = card.ability.extra*(card.ability.nine_tally or 1) }
     end,
-    ["Rocket"] = function (card, context)
-        card.ability.extra.dollars = card.ability.extra.dollars + card.ability.extra.increase
-        ease_dollars(card.ability.extra.dollars)
-    end,
-    ["Obelisk"] = function (card, context) -- Sobelisk
-        card.ability.x_mult = card.ability.x_mult + card.ability.extra
-        return { xmult = card.ability.x_mult }
-    end,
+    ["Rocket"]  = simple_return("dollars", "extra", "dollars"),
+    ["Obelisk"] = simple_return("xmult", "x_mult"), -- Sobelisk
     --#endregion
     --#region Page 6
     ["Midas Mask"] = function (card, context)
-        local function convert_cards_in_list(cardlist)
-            for _,select_card in ipairs(cardlist) do
-                if select_card:is_face() then
-                    select_card:set_ability(G.P_CENTERS.m_gold, nil, true)
-                    G.E_MANAGER:add_event(Event({
-                        trigger = "after",
-                        delay = 0.4,
-                        func = function()
-                            v:juice_up()
-                            return true
-                        end,
-                    }))
-                end
-            end
+        local cardlist
+        if context.scoring_hand then
+            cardlist = context.scoring_hand
+        elseif G and G.hand and #G.hand.highlighted > 0 then
+            cardlist = G.hand.highlighted
         end
 
-        if context.scoring_hand then
-            convert_cards_in_list(context.scoring_hand)
-        elseif G and G.hand and #G.hand.highlighted > 0 then
-            convert_cards_in_list(G.hand.highlighted)
+        for select_card in Spectrallib.iter.areacards(cardlist) do
+            if select_card:is_face() then
+                select_card:set_ability(G.P_CENTERS.m_gold, nil, true)
+                G.E_MANAGER:add_event(Event({
+                    trigger = "after",
+                    delay = 0.4,
+                    func = function()
+                        select_card:juice_up()
+                        return true
+                    end,
+                }))
+            end
         end
     end,
     ["Luchador"] = function (card, context)
@@ -461,16 +319,12 @@ Spectrallib.vanilla_forcetrigger_results = {
             G.GAME.blind:disable()
         end
     end,
-    ["Photograph"] = function (card, context)
-        return { xmult = card.ability.extra }
-    end,
+    ["Photograph"] = simple_return("xmult", "extra"),
     ["Gift Card"] = function (card, context)
-        for _,cardlist in ipairs({G.jokers.cards, G.consumeables.cards}) do
-            for _, select_card in ipairs(cardlist) do
-                if select_card.set_cost then
-                    select_card.ability.extra_value = (select_card.ability.extra_value or 0) + card.ability.extra
-                    select_card:set_cost()
-                end
+        for select_card in Spectrallib.iter.areacards{G.jokers, G.consumeables} do
+            if select_card.set_cost then
+                select_card.ability.extra_value = (select_card.ability.extra_value or 0) + card.ability.extra
+                select_card:set_cost()
             end
         end
     end,
@@ -480,28 +334,13 @@ Spectrallib.vanilla_forcetrigger_results = {
         G.hand:change_size(card.ability.extra.h_size)
     end,
     ["Erosion"] = function (card, context)
-        return { mult = card.ability.extra * (G.GAME.starting_deck_size - #G.playing_cards) }
+        local mult_multiplier = G.GAME.starting_deck_size - #G.playing_cards
+        return { mult = card.ability.extra * mult_multiplier }
     end,
-    ["Reserved Parking"] = function (card, context)
-        ease_dollars(card.ability.extra.dollars)
-    end,
-    ["Mail-In Rebate"] = function (card, context)
-       ease_dollars(card.ability.extra) 
-    end,
-    -- To the Moon
-    ["Hallucination"] = function (card, context)
-        G.E_MANAGER:add_event(Event({
-            trigger = "after",
-            delay = 0.4,
-            func = function()
-                SMODS.add_card({
-                    set = "Tarot",
-                    key_append = 'hal'
-                })
-                return true
-            end,
-        }))
-    end,
+    ["Reserved Parking"] = simple_return("dollars", "extra", "dollars"),
+    ["Mail-In Rebate"]   = simple_return("dollars", "extra"),
+    -- ["To the Moon"]
+    ["Hallucination"]    = add_consumable("Tarot", 'hal'),
     ["Fortune Teller"] = function (card, context)
         return { mult = G.GAME.consumeable_usage_total.tarot or 1 }
     end,
@@ -514,81 +353,47 @@ Spectrallib.vanilla_forcetrigger_results = {
     ["Stone Joker"] = function (card, context)
         return { chips = card.ability.extra * card.ability.stone_tally }
     end,
-    ["Golden Joker"] = function (card, context)
-        ease_dollars(card.ability.extra)
-    end,
+    ["Golden Joker"] = simple_return("dollars", "extra"),
     --#endregion
     --#region Page 7
-    ["Lucky Cat"] = function (card, context)
-        card.ability.x_mult = card.ability.x_mult + card.ability.extra
-        return { xmult = card.ability.x_mult }
-    end,
-    ["Baseball Card"] = function (card, context)
-        return { xmult = card.ability.extra }
-    end,
+    ["Lucky Cat"]     = simple_return("xmult", "x_mult"),
+    ["Baseball Card"] = simple_return("xmult", "extra"),
     ["Bull"] = function (card, context)
-        return { chips = card.ability.extra * math.max(0, (G.GAME.dollars + (G.GAME.dollar_buffer or 0))) }
+        local current_dollars = G.GAME.dollars + (G.GAME.dollar_buffer or 0)
+        local chips_multiplier = math.max(0, current_dollars)
+        return { chips = card.ability.extra * chips_multiplier }
     end,
     ["Diet Cola"] = function (card, context)
-        G.E_MANAGER:add_event(Event({
-            func = function()
-                add_tag(Tag("tag_double"))
-                play_sound("generic1", 0.9 + math.random() * 0.1, 0.8)
-                play_sound("holo1", 1.2 + math.random() * 0.1, 0.4)
-                return true
-            end,
-        }))
+        Spectrallib.event(function ()
+            add_tag(Tag("tag_double"))
+            play_sound("generic1", 0.9 + math.random() * 0.1, 0.8)
+            play_sound("holo1", 1.2 + math.random() * 0.1, 0.4)
+            return true
+        end)
     end,
-    ["Trading Card"] = function (card, context)
-        ease_dollars(card.ability.extra)
-    end,
-    ["Flash Card"] = function (card, context)
-        card.ability.mult = card.ability.mult + card.ability.extra
-        return { mult = card.ability.mult }
-    end,
-    ["Popcorn"] = function (card, context)
-        card.ability.mult = card.ability.mult - card.ability.extra
-        return { mult = card.ability.mult }
-    end,
-    ["Spare Trousers"] = function (card, context)
-        card.ability.mult = card.ability.mult + card.ability.extra
-        return { mult = card.ability.mult }
-    end,
-    ["Ancient Joker"] = function (card, context)
-        return { xmult = card.ability.extra }
-    end,
-    ["Ramen"] = function (card, context)
-        card.ability.x_mult = card.ability.x_mult - card.ability.extra
-        return { xmult = card.ability.x_mult }
-    end,
+    ["Trading Card"]   = simple_return("dollars", "extra"),
+    ["Flash Card"]     = simple_return("mult", "mult"),
+    ["Popcorn"]        = simple_return("mult", "mult"),
+    ["Spare Trousers"] = simple_return("mult", "mult"),
+    ["Ancient Joker"]  = simple_return("xmult", "extra"),
+    ["Ramen"]          = simple_return("xmult", "x_mult"),
     ["Walkie Talkie"] = function (card, context)
-        return { mult = card.ability.extra.mult, chips = card.ability.extra.chips }
+        return {
+            mult = card.ability.extra.mult,
+            chips = card.ability.extra.chips
+        }
     end,
-    -- Seltzer
-    ["Castle"] = function (card, context)
-        card.ability.extra.chips = card.ability.extra.chips + card.ability.extra.chip_mod
-        return { chips = card.ability.extra.chips }
-    end,
-    ["Smiley Face"] = function (card, context)
-        return { mult = card.ability.extra }
-    end,
-    ["Campfire"] = function (card, context)
-        card.ability.x_mult = card.ability.x_mult + card.ability.extra
-        return { xmult = card.ability.x_mult }
-    end,
+    -- ["Seltzer"]
+    ["Castle"]      = simple_return("chips", "extra", "chips"),
+    ["Smiley Face"] = simple_return("mult", "extra"),
+    ["Campfire"]    = simple_return("xmult", "x_mult"),
     --#endregion
     --#region Page 8
-    ["Golden Ticket"] = function (card, context)
-        ease_dollars(card.ability.extra)
-    end,
-    -- Mr Bones
-    ["Acrobat"] = function (card, context)
-        return { xmult = card.ability.extra }
-    end,
-    -- Sock and Buskin
-    ["Swashbuckler"] = function (card, context)
-        return { mult = card.ability.mult }
-    end,
+    ["Golden Ticket"] = simple_return("dollars", "extra"),
+    -- ["Mr Bones"]
+    ["Acrobat"]       = simple_return("xmult", "extra"),
+    -- ["Sock and Buskin"]
+    ["Swashbuckler"]  = simple_return("mult", "mult"),
     ["Troubadour"] = function (card, context)
         G.hand:change_size(card.ability.extra.h_size)
         G.GAME.round_resets.hands = G.GAME.round_resets.hands + card.ability.extra.h_plays
@@ -603,43 +408,25 @@ Spectrallib.vanilla_forcetrigger_results = {
             area = G.discard,
             key_append = 'cert_fr'
         })
-        _card:set_seal(SMODS.poll_seal({ guaranteed = true, type_key = "certsl" }))
-        G.E_MANAGER:add_event(Event({
-            func = function()
-                G.hand:emplace(_card)
-                _card:start_materialize()
-                G.GAME.blind:debuff_card(_card)
-                G.hand:sort()
-                return true
-            end,
-        }))
+        Spectrallib.event(function ()
+            G.hand:emplace(_card)
+            _card:start_materialize()
+            G.GAME.blind:debuff_card(_card)
+            G.hand:sort()
+            return true
+        end)
     end,
-    -- Smeared Joker
-    ["Throwback"] = function (card, context)
-        return { xmult = card.ability.x_mult }
-    end,
-    -- Hanging Chad
-    ["Rough Gem"] = function (card, context)
-        ease_dollars(card.ability.extra)
-    end,
-    ["Bloodstone"] = function (card, context)
-        return { xmult = card.ability.extra.Xmult }
-    end,
-    ["Arrowhead"] = function (card, context)
-        return { chips = card.ability.extra }
-    end,
-    ["Onyx Agate"] = function (card, context)
-        return { mult = card.ability.extra }
-    end,
-    ["Glass Joker"] = function (card, context)
-        card.ability.x_mult = card.ability.x_mult + card.ability.extra
-        return { xmult = card.ability.x_mult }
-    end,
+    -- ["Smeared Joker"]
+    ["Throwback"]   = simple_return("xmult", "x_mult"),
+    -- ["Hanging Chad"]
+    ["Rough Gem"]   = simple_return("dollars", "extra"),
+    ["Bloodstone"]  = simple_return("xmult", "extra", "Xmult"),
+    ["Arrowhead"]   = simple_return("chips", "extra"),
+    ["Onyx Agate"]  = simple_return("mult", "extra"),
+    ["Glass Joker"] = simple_return("xmult", "x_mult"),
     --#endregion
     --#region Page 9
-    ["Flower Pot"] = function (card, context)
-        return { xmult = card.ability.extra }
-    end,
+    ["Flower Pot"] = simple_return("xmult", "extra"),
     ["Blueprint"] = function (card, context)
         local my_pos = card.rank
         local other_joker = G.jokers.cards[my_pos + 1]
@@ -651,33 +438,21 @@ Spectrallib.vanilla_forcetrigger_results = {
             end
         end
     end,
-    ["Wee Joker"] = function (card, context)
-        card.ability.extra.chips = card.ability.extra.chips + card.ability.extra.chip_mod
-        return { chips = card.ability.extra.chips }
-    end,
+    ["Wee Joker"] = simple_return("chips", "extra", "chips"),
     ["Merry Andy"] = function (card, context)
         ease_discard(card.ability.d_size)
         G.hand:change_size(card.ability.h_size)
     end,
-    -- Oops! All 6s
-    ["The Idol"] = function (card, context)
-        return { xmult = card.ability.extra }
-    end,
-    ["Seeing Double"] = function (card, context)
-        return { xmult = card.ability.extra }
-    end,
-    ["Matador"] = function (card, context)
-        ease_dollars(card.ability.extra)
-    end,
-    ["Hit The Road"] = function (card, context)
-        card.ability.x_mult = card.ability.x_mult + card.ability.extra
-        return { xmult = card.ability.x_mult }
-    end,
-    ["The Duo"]    = hand_xmult,
-    ["The Trio"]   = hand_xmult,
-    ["The Family"] = hand_xmult,
-    ["The Order"]  = hand_xmult,
-    ["The Tribe"]  = hand_xmult,
+    -- ["Oops! All 6s"]
+    ["The Idol"]      = simple_return("xmult", "extra"),
+    ["Seeing Double"] = simple_return("xmult", "extra"),
+    ["Matador"]       = simple_return("dollars", "extra"),
+    ["Hit The Road"]  = simple_return("xmult", "x_mult"),
+    ["The Duo"]       = hand_xmult,
+    ["The Trio"]      = hand_xmult,
+    ["The Family"]    = hand_xmult,
+    ["The Order"]     = hand_xmult,
+    ["The Tribe"]     = hand_xmult,
     --#endregion
     --#region Page 10
     ["Stuntman"] = function (card, context)
@@ -685,34 +460,24 @@ Spectrallib.vanilla_forcetrigger_results = {
         return { chips = card.ability.extra.chip_mod }
     end,
     ["Invisible Joker"] = function (card, context)
-        -- could be cleaned but idk
-        card.ability.invis_rounds = card.ability.invis_rounds + 1
         local jokers = {}
-        for i = 1, #G.jokers.cards do
-            if G.jokers.cards[i] ~= card then
-                jokers[#jokers + 1] = G.jokers.cards[i]
+        for other_joker in Spectrallib.iter.areacards(G.jokers) do
+            if other_joker ~= card then
+                table.insert(jokers, other_joker)
             end
         end
-        if #jokers > 0 then
-            G.E_MANAGER:add_event(Event({
-                func = function()
-                    local chosen_joker = pseudorandom_element(jokers, pseudoseed("invisible"))
-                    local card = copy_card(
-                        chosen_joker,
-                        nil,
-                        nil,
-                        nil,
-                        chosen_joker.edition and chosen_joker.edition.negative
-                    )
-                    if card.ability.invis_rounds then
-                        card.ability.invis_rounds = 0
-                    end
-                    card:add_to_deck()
-                    G.jokers:emplace(card)
-                    return true
-                end,
-            }))
-        end
+        if #jokers <= 0 then return end
+
+        Spectrallib.event(function ()
+            local select_card = pseudorandom_element(jokers, pseudoseed("invisible"))
+            local copy_card = SMODS.copy_card(select_card, {
+                strip_edition = (select_card.edition or {}).key == "e_negative"
+            })
+            if copy_card.ability.invis_rounds then
+                copy_card.ability.invis_rounds = 0
+            end
+            return true
+        end)
     end,
     ["Brainstorm"] = function (card, context)
         local other_joker = G.jokers.cards[1]
@@ -731,34 +496,21 @@ Spectrallib.vanilla_forcetrigger_results = {
                 planets_used = planets_used + 1
             end
         end
-        ease_dollars(card.ability.extra * (planets_used or 1))
+        if planets_used <= 0 then return end
+        return { dollars = card.ability.extra*planets_used }
     end,
     ["Shoot The Moon"] = function (card, context)
         return  { mult = 13 }
     end,
-    ["Driver's License"] = function (card, context)
-        return { xmult = card.ability.extra }
-    end,
-    ["Cartomancer"] = function (card, context)
-        G.E_MANAGER:add_event(Event({
-            trigger = "after",
-            delay = 0.4,
-            func = function()
-                SMODS.add_card({
-                    set = "Tarot",
-                    key_append = 'car'
-                })
-                return true
-            end,
-        }))
-    end,
+    ["Driver's License"] = simple_return("xmult", "extra"),
+    ["Cartomancer"]      = add_consumable("Tarot", 'car'),
     ["Burnt Joker"] = function (card, context)
         if #G.hand.highlighted > 0 then
             local text, disp_text = G.FUNCS.get_poker_hand_info(G.hand.highlighted)
             update_hand_text({ sound = "button", volume = 0.7, pitch = 0.8, delay = 0.3 }, {
                 handname = localize(text, "poker_hands"),
                 chips = G.GAME.hands[text].chips,
-                mult = G.GAME.hands[text].mult,
+                mult  = G.GAME.hands[text].mult,
                 level = G.GAME.hands[text].level,
             })
             level_up_hand(card, text, nil, 1)
@@ -771,42 +523,33 @@ Spectrallib.vanilla_forcetrigger_results = {
         end
     end,
     ["Bootstraps"] = function (card, context)
-        return { mult = card.ability.mult*math.floor((G.GAME.dollars + (G.GAME.dollar_buffer or 0)) / card.ability.extra.dollars) }
+        local current_dollars = G.GAME.dollars + (G.GAME.dollar_buffer or 0)
+        local mult_multiplier = math.floor(current_dollars / card.ability.extra.dollars)
+        return { mult = card.ability.mult*mult_multiplier }
     end,
-    ["Caino"] = function (card, context)
-        card.ability.caino_xmult = card.ability.caino_xmult + card.ability.extra
-        return { xmult = card.ability.caino_xmult }
-    end,
-    ["Triboulet"] = function (card, context)
-        return { xmult = card.ability.extra }
-    end,
-    ["Yorick"] = function (card, context)
-        card.ability.x_mult = card.ability.x_mult + card.ability.extra.xmult
-        return { xmult = card.ability.x_mult }
-    end,
+    ["Caino"]     = simple_return("xmult", "caino_xmult"),
+    ["Triboulet"] = simple_return("xmult", "extra"),
+    ["Yorick"]    = simple_return("xmult", "x_mult"),
     ["Chicot"] = function (card, context)
         if G.GAME.blind and G.GAME.blind:get_type() == "Boss" then
             G.GAME.blind:disable()
         end
     end,
     ["Perkeo"] = function (card, context)
-        local eligibleJokers = {}
-        for i = 1, #G.consumeables.cards do
-            if G.consumeables.cards[i].ability.consumeable then
-                eligibleJokers[#eligibleJokers + 1] = G.consumeables.cards[i]
+        local eligible_consumables = {}
+        for other_card in Spectrallib.iter.areacards(G.consumeables) do
+            if other_card.ability.consumeable then
+                table.insert(eligible_consumables, other_card)
             end
         end
-        if #eligibleJokers > 0 then
-            G.E_MANAGER:add_event(Event({
-                func = function()
-                    local card_copy = copy_card(pseudorandom_element(eligibleJokers, pseudoseed("perkeo")), nil)
-                    card_copy:set_edition({ negative = true }, true)
-                    card_copy:add_to_deck()
-                    G.consumeables:emplace(card_copy)
-                    return true
-                end,
-            }))
-        end
+        if eligible_consumables <= 0 then return end
+
+        Spectrallib.event(function ()
+            local select_card = pseudorandom_element(eligible_consumables, pseudoseed("perkeo"))
+            local copy_card = SMODS.copy_card(select_card)
+            copy_card:set_edition("e_negative", true)
+            return true
+        end)
     end,
     ["Perkeo (Incantation)"] = function (card, context)
         if G.consumeables.cards[1] then
