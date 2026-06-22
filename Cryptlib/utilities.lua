@@ -228,78 +228,98 @@ end
 -- Evaluate plural notation, e.g. #<s>1#, #<ies,y>2#.
 ---@param str string
 ---@param vars any[]
----@return string
+---@return string|nil
 function Spectrallib.pluralize(str, vars)
-	-- todo: improve syntax
+	if type(str) ~= "string" or type(vars) ~= "table" then return end
+	-- Example strings: "<s>1", "<ies,y>2"
+	-- In following comments:
+		-- "^" are characters part of the pattern match
+		-- but "!" are characters part of selection *groups*
 
-	-- Example str: "<s>1", "<ies,y>2"
-	if not str.match then return end
-	local inside = str:match("<(.-)>") -- From str, match: "s", "ies,y"
-	local _table = {}
-	if inside then
-		-- Delimit ","
-		for substr in inside:gmatch("[^,]+") do -- From inside, match: ["s"], ["ies", "y"]
-			table.insert(_table, substr)
-		end
+	-- Get the inside of the angle brackets
+	local bracket_contents = str:match("<(.-)>")
+	if not bracket_contents then return end
 
-		local var_index = tonumber(str:match(">(%d+)")) -- From str, match: "1", "2"
-		local num = vars[var_index]
-		if type(num) == "string" then
-			num = (Big and to_number(to_big(num))) or num
-		end
-		if not num then
-			num = 1
-		end
-
-		local selected_affix = _table[1] -- default
-		local checks = { [1] = "=" } -- checks 1 by default
-		local checks1mod = false -- tracks if 1 was modified
-
-		if #_table > 1 then
-			for i = 2, #_table do
-				local isnum = tonumber(_table[i])
-				if isnum then
-					if not checks1mod then
-						checks[1] = nil
-					end -- dumb stuff
-					checks[isnum] = "<" .. (_table[i + 1] or "") -- do less than for custom values
-					if isnum == 1 then
-						checks1mod = true
-					end
-					i = i + 1
-				elseif i == 2 then
-					checks[1] = "=" .. _table[i]
-				end
-			end
-		end
-
-		local function fch(str, c)
-			return str:sub(1, 1) == c -- gets first char and returns boolean
-		end
-
-		local keys = {}
-		for k in pairs(checks) do
-			table.insert(keys, k)
-		end
-		table.sort(keys, function(a, b)
-			return a < b
-		end)
-		if not (tonumber(num) or is_number(num)) then
-			num = 1
-		end
-		for _, k in ipairs(keys) do
-			if fch(checks[k], "=") then
-				if to_big(math.abs(num - k)) < to_big(0.001) then
-					return string.sub(checks[k], 2, -1)
-				end
-			elseif fch(checks[k], "<") then
-				if to_big(num) < to_big(k - 0.001) then
-					return string.sub(checks[k], 2, -1)
-				end
-			end
-		end
-		return selected_affix
+	-- Split the bracket contents by the delimiter ","
+	local inside_split = {}
+	for item in bracket_contents:gmatch("[^,]+") do
+		table.insert(inside_split, item)
 	end
+
+	-- Prepare checks for grammatical numbers
+	local plural_affix = inside_split[1] -- default
+	local singular_check_modified = false -- tracks if 1 was modified
+	local grammatical_number_checks = {
+		-- All contents of this table are of this form
+		-- Keys are grammatical numbers:
+			-- 1 = singular, 2 = dual, 3 = trial, 4 = quadral, etc...
+		-- `comparison` is either "=" or "<", compares variable value `V` to grammatical number `G`
+			-- `comparison` == "=" -> `V` == `G`
+			-- `comparison` == "<" -> `V` <= `G`
+			-- If the `comparison` returns true, the `affix` is returned
+			-- (evaluated from smallest to greatest grammatical number)
+		-- If none of the comparisons return true, the plural `affix` is returned
+		[1] = {
+			comparison = "=",
+			affix = ""
+		}
+	}
+	if #inside_split > 1 then
+		for i = 2, #inside_split do
+			local item_is_number = tonumber(inside_split[i])
+			if item_is_number then
+				-- For inputs of the form "#<plural,%d>%d#",
+				-- "#<plural,%d,multi>%d#",
+				-- "#<plural,%d,multi,%d,multi>%d#", etc.
+				local gr_number = item_is_number
+				if not singular_check_modified then
+					grammatical_number_checks[1] = nil
+				end
+				if gr_number == 1 then
+					singular_check_modified = true
+				end
+
+				-- do less than for custom values
+				grammatical_number_checks[gr_number] = {
+					comparison = "<",
+					affix = inside_split[i+1] or ""
+				}
+				i = i + 1 -- This will skip two steps ahead
+			elseif i == 2 then
+				-- For inputs of the form "#<plural,singular>%d#",
+				-- "#<plural>%d#"
+				grammatical_number_checks[1].affix = inside_split[i]
+			end
+		end
+	end
+	local grammatical_numbers = {}
+	for gr_number in pairs(grammatical_number_checks) do
+		table.insert(grammatical_numbers, gr_number)
+	end
+	table.sort(grammatical_numbers)
+
+	-- Get the number next to the angle brackets
+	-- which is the index of `vars`
+	local var_index = tonumber(str:match(">(%d+)"))
+	local var_value = vars[var_index] or 1
+	if type(var_value) == "string" and Big then
+		var_value = to_number(to_big(var_value))
+	end
+	if not (tonumber(var_value) or is_number(var_value)) then
+		var_value = 1
+	end
+
+	-- Finally determine which affix to return, depending on var_value
+	for _,gr_number in ipairs(grammatical_numbers) do
+		local current_check = grammatical_number_checks[gr_number]
+		if (
+			(current_check.comparison == "=" and var_value == gr_number)
+			or (current_check.comparison == "<" and var_value <= gr_number)
+		) then
+			return current_check.affix
+		end
+	end
+	return plural_affix
 end
 
 -- Restricts the input within the range `[min,max]`.
