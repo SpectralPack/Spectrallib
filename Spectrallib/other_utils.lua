@@ -258,10 +258,10 @@ function Spectrallib.iter.areacards(...)
                     cardlist = target.cards
                 elseif type(target) == "table" then
                     cardlist = target
-                else
+                elseif target ~= nil then
                     sendWarnMessage(areacards_warn:format(area_i))
                 end
-                if #cardlist <= 0 then cardlist = nil end
+                if cardlist and #cardlist <= 0 then cardlist = nil end
             end
             card_i = card_i + 1
             if card_i > #cardlist then
