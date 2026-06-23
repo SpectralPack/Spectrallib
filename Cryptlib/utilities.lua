@@ -338,7 +338,7 @@ end
 ---@param all_values? Spectrallib.list_to_keys.T The value that all keys map to. nil defaults to true.
 ---@return {any: Spectrallib.list_to_keys.T}
 function Spectrallib.list_to_keys(list, all_values)
-	if type(list) ~= table then return {} end
+	if type(list) ~= "table" then return {} end
 	if all_values == nil then all_values = true end
 	local ret_table = {}
 	for _,key in ipairs(list) do
