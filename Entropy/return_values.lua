@@ -215,7 +215,7 @@ function Spectrallib.calculate_ascension_modification(args)
         function ()
             local text = number_format(G.GAME.asc_power_hand)
             local text_format = "(%s%s)"
-            local optional_plus = G.GAME.asc_power_hand < 0 and "+" or ""
+            local optional_plus = G.GAME.asc_power_hand >= 0 and "+" or ""
             G.GAME.current_round.current_hand.cry_asc_num_text = text_format:format(optional_plus, text)
             return true
         end,
@@ -255,7 +255,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
         from_edition = from_edition
     }
 
-    if plus_asc_aliases[key] then
+    if plus_asc_aliases[key] and amount ~= 0 then
         return Spectrallib.calculate_ascension_modification{
             calc_args = calc_args,
             apply_func = function(current, apply)
@@ -268,7 +268,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
             end
         }
     end
-    if key == "x_asc" then
+    if key == "x_asc" and amount ~= 1 then
         return Spectrallib.calculate_ascension_modification{
             calc_args = calc_args,
             apply_func = function(current, apply)
@@ -279,7 +279,7 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
             end
         }
     end
-    if exp_asc_aliases[key] then
+    if exp_asc_aliases[key] and amount ~= 1 then
         return Spectrallib.calculate_ascension_modification{
             calc_args = calc_args,
             apply_func = function(current, apply)
@@ -290,14 +290,14 @@ function SMODS.calculate_individual_effect(effect, scored_card, key, amount, fro
             end
         }
     end
-    if hyper_asc_aliases[key] then
+    if hyper_asc_aliases[key] and amount[2] ~= 1 then
         return Spectrallib.calculate_ascension_modification{
             calc_args = calc_args,
             apply_func = function(current, apply)
-                return current:arrow(apply[1], apply[2])
+                return to_big(current):arrow(apply[1], apply[2])
             end,
             message_func = function(apply)
-                return Spectrallib.format_arrow_mult(amount[1], amount[2]) .. " Asc"
+                return Spectrallib.format_arrow_mult(apply[1], apply[2]) .. " Asc"
             end
         }
     end
