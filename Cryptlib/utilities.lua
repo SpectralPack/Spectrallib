@@ -333,10 +333,11 @@ end
 
 -- Converts a list of items into a table with keys being the items in the given list,<br>
 -- effectively converting a list into a set.
----@generic Spectrallib.list_to_keys.T
----@param list any[]
----@param all_values? Spectrallib.list_to_keys.T The value that all keys map to. nil defaults to true.
----@return {any: Spectrallib.list_to_keys.T}
+---@generic Spectrallib.list_to_keys.list_contents
+---@generic Spectrallib.list_to_keys.all_values
+---@param list Spectrallib.list_to_keys.list_contents[]
+---@param all_values? Spectrallib.list_to_keys.all_values The value that all keys map to. nil defaults to true.
+---@return {[Spectrallib.list_to_keys.list_contents]: Spectrallib.list_to_keys.all_values}
 function Spectrallib.list_to_keys(list, all_values)
 	if type(list) ~= "table" then return {} end
 	if all_values == nil then all_values = true end
