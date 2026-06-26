@@ -209,3 +209,13 @@ function Spectrallib.forcetrigger(args)
 		end
 	end
 end
+
+---@param card Card
+---@return boolean
+function Spectrallib.forcetriggerConsumableCheck(card)
+	return card and (
+		card.config.center.forcetrigger_compat
+		or card.config.center.demicoloncompat
+		or not card.config.center.original_mod
+	) or false
+end
