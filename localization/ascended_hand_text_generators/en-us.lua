@@ -48,6 +48,7 @@ local function int_to_word(int)
 	return table.concat(concat_table, " ")
 end
 
+--note that hand_text is the KEY, not the actual displayed text
 local function ascend_hand_text(hand_text, scoring_hand, disp_text)
 	if #scoring_hand > 5 and ({
 		["Flush Five"] = true,
@@ -65,6 +66,10 @@ local function ascend_hand_text(hand_text, scoring_hand, disp_text)
 		end
 
 		return disp_text:gsub("Five", int_to_word(county))
+	end
+	if hand_text == "Two Pair" then
+		local _2 = get_X_same(2, scoring_hand)
+		return disp_text:gsub("Two", int_to_word(#_2))
 	end
 	return disp_text
 end
