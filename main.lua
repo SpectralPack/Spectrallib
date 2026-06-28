@@ -13,6 +13,13 @@ SMODS.current_mod.reset_game_globals = function (run_start)
         Spectrallib.base_values = {}
         ---@type string[] List of deck keys. 
         G.GAME.entr_bought_decks = {}
+        G.GAME.last_boss_ante = 0
+    end
+end
+
+SMODS.current_mod.calculate = function (self, context)
+    if context.ante_change and context.ante_change then
+        G.GAME.last_boss_ante = G.GAME.round_resets.ante
     end
 end
 

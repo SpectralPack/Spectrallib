@@ -36,7 +36,7 @@ local function int_to_word(int)
 	elseif 0 < tens_ones_place and tens_ones_place < 10 then
 		table.insert(concat_table, ones[ones_place])
 	elseif tens_ones_place < 20 then
-		local tens_string = tens[tens_place] .. "teen"
+		local tens_string = ones[ones_place] .. "teen"
 		table.insert(concat_table, tens_string)
 	else
 		table.insert(concat_table, tens[tens_place])
@@ -48,11 +48,16 @@ local function int_to_word(int)
 	return table.concat(concat_table, " ")
 end
 
+--note that hand_text is the KEY, not the actual displayed text
 local function ascend_hand_text(hand_text, scoring_hand, disp_text)
 	if #scoring_hand > 5 and ({
 		["Flush Five"] = true,
 		["Five of a Kind"] = true,
-		["bunc_Spectrum Five"] = true
+		["bunc_Spectrum Five"] = true,
+		["spa_Spectrum_Five"] = true,
+		["spa_Flush_Spectrum_Five"] = true,
+		["garb_str_five"] = true,
+		["garb_str_fl_five"] = true,
 	})[hand_text] then
 		local rank_tracker = {}
 		local county = 0
@@ -65,6 +70,10 @@ local function ascend_hand_text(hand_text, scoring_hand, disp_text)
 		end
 
 		return disp_text:gsub("Five", int_to_word(county))
+	end
+	if hand_text == "Two Pair" then
+		local _2 = get_X_same(2, scoring_hand)
+		return disp_text:gsub("Two", int_to_word(#_2))
 	end
 	return disp_text
 end
