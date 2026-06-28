@@ -101,7 +101,9 @@ function Spectrallib.get_forcetrigger_results(card, context)
 					-- Case 2
 					or held_card.will_be_destroyed
 				) then
-					table.insert(selectable_cards, held_card)
+					if held_card.ability and held_card.highlight and held_card.set_edition then
+						table.insert(selectable_cards, held_card)
+					end
 				end
 			end
 
@@ -126,19 +128,24 @@ function Spectrallib.get_forcetrigger_results(card, context)
 					G.hand:add_to_highlighted(random_card, true)
 				end
 
+
 				G.E_MANAGER:add_event(Event({
 					func = function()
 						for _,target in ipairs(target_cards) do
-							G.hand:add_to_highlighted(target, true)
-							target.will_be_editioned = nil
-							target.will_be_destroyed = nil
-							play_sound("card1", 1)
+							if target.highlight then
+								G.hand:add_to_highlighted(target, true)
+								target.will_be_editioned = nil
+								target.will_be_destroyed = nil
+								play_sound("card1", 1)
+							end
 						end
 						return true
 					end,
 				}))
 
+
 				card:use_consumeable()
+
 
 				G.E_MANAGER:add_event(Event({
 					func = function()
@@ -149,7 +156,7 @@ function Spectrallib.get_forcetrigger_results(card, context)
 
 				--Unhighlight once events are created
 				-- todo: is this needed?
-				G.hand:unhighlight_all()
+				--G.hand:unhighlight_all()
 			end
 		else
 			-- Copy rigged code to guarantee WoF and Planet.lua

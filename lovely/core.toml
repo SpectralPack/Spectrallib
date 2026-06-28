@@ -417,3 +417,65 @@ pattern = '''table.insert(left_text,{n=G.UIT.O, config={object = DynaText({strin
 position = "at"
 payload = '''table.insert(left_text,{n=G.UIT.O, config={object = DynaText({string = {" "..localize{type = 'variable', key = 'interest', vars = {G.GAME.interest_amount, Spectrallib.interest_rate(), G.GAME.interest_amount*G.GAME.interest_cap/5}}}, colours = {G.C.UI.TEXT_LIGHT}, shadow = true, pop_in = 0, scale = 0.4*scale, silent = true})}})'''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''
+if self.highlighted[i].ability.forced_selection and self == G.hand then
+else
+    self.highlighted[i]:highlight(false)
+    table.remove(self.highlighted, i)
+end
+'''
+position = "at"
+payload = '''
+if self.highlighted[i].ability then
+  if self.highlighted[i].ability.forced_selection and self == G.hand then
+  else
+      self.highlighted[i]:highlight(false)
+      table.remove(self.highlighted, i)
+  end
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+pattern = '''
+if hand[i]:get_id() == hand[j]:get_id() and i ~= j then
+'''
+position = "at"
+payload = '''
+if hand[i].get_id and hand[j].get_id and hand[i]:get_id() == hand[j]:get_id() and i ~= j then
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+pattern = '''
+if not SMODS.optional_features.quantum_enhancements or not G.hand then
+'''
+position = "before"
+payload = '''
+if not card.ability then return {} end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''
+local aura_card = G.hand.highlighted[1]
+aura_card:set_edition(edition, true)
+'''
+position = "at"
+payload = '''
+local aura_card = G.hand.highlighted[1]
+if aura_card and aura_card.set_edition then
+  aura_card:set_edition(edition, true)
+end
+'''
+match_indent = true
