@@ -290,3 +290,45 @@ function Game:start_run(args)
     G.consumeables.config.highlighted_limit = 99
     G.jokers.config.highlighted_limit = 99
 end
+
+-- Fractional/negative ante support
+local blindamt_ref = get_blind_amount
+function get_blind_amount(ante)
+    if not ante then return 0 end
+
+    local ante_fraction = ante - math.floor(ante) -- 0 <= ante_fraction < 1
+    if ante_fraction ~= 0 then
+        local lower_bound = get_blind_amount(math.floor(ante))
+        local upper_bound = get_blind_amount(math.floor(ante) + 1)
+        return Spectrallib.blind_amount_interpolate(lower_bound, upper_bound, ante_fraction)
+    elseif ante < 0 then
+        -- -1 = 95
+        -- -2 = 90.25
+        -- -3 = 85.7375
+        -- -4 = 81.45...
+        -- As ante approaches -inf, blind amount approaches 0
+        return Spectrallib.negative_ante_value(ante)
+    else
+        return blindamt_ref(ante)
+    end
+end
+
+-- This function defines how values from `get_blind_amount` should be interpolated with fractional antes.
+-- It uses linear interpolation.
+-- This can be overridden if you do not want to use linear interpolation.
+---@param lower number Given rational ante `x`, this is the blind amount on the integer ante directly before `x`.
+---@param upper number Given rational ante `x`, this is the blind amount on the integer ante directly *after* `x`.
+---@param percent number The "progress" made between `lower` and `upper`.
+---@return number
+function Spectrallib.blind_amount_interpolate(lower, upper, percent)
+    return lower*(1-percent) + upper*percent
+end
+
+-- This function defines how values from `get_blind_amount` should be extrapolated with negative antes.
+-- It follows the formula `100*0.95^(-ante).
+-- `It can be overridden if you wish to use a different formula.
+---@param ante integer
+---@return number
+function Spectrallib.negative_ante_value(ante)
+    return 100*0.95^(-ante)
+end

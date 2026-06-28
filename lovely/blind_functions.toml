@@ -30,3 +30,27 @@ payload = '''
 ease_background_colour{new_colour = Spectrallib.get_bg_colour(), contrast = 1}
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''
+elseif v.boss.showdown and (G.GAME.round_resets.ante)%G.GAME.win_ante == 0 and G.GAME.round_resets.ante >= 2 then
+    eligible_bosses[k] = res and true or nil
+'''
+position = "after"
+payload = '''
+else
+    local ante_modu = (G.GAME.round_resets.ante)%G.GAME.win_ante
+    local ante_int = G.GAME.round_resets.ante - math.floor(G.GAME.round_resets.ante)
+    local last_boss_ante_int = G.GAME.last_boss_ante - math.floor(G.GAME.last_boss_ante)
+    if (
+        v.boss.showdown
+        and 2 < G.GAME.round_resets.ante
+        and (0 <= ante_modu and ante_modu < 1)
+        and ante_int ~= last_boss_ante_int -- Fight showdown once per ante integer
+    ) then
+        eligible_bosses[k] = res and true or nil
+    end
+'''
+match_indent = true
