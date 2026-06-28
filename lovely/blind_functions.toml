@@ -42,8 +42,8 @@ position = "after"
 payload = '''
 else
     local ante_modu = (G.GAME.round_resets.ante)%G.GAME.win_ante
-    local ante_int = G.GAME.round_resets.ante - math.floor(G.GAME.round_resets.ante)
-    local last_boss_ante_int = G.GAME.last_boss_ante - math.floor(G.GAME.last_boss_ante)
+    local ante_int = math.floor(G.GAME.round_resets.ante or 1)
+    local last_boss_ante_int = math.floor(G.GAME.last_boss_ante or 1)
     if (
         v.boss.showdown
         and 2 < G.GAME.round_resets.ante
