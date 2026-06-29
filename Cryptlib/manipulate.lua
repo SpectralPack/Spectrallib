@@ -256,7 +256,7 @@ local manipulate_types = {
 	end,
 	["X"] = function (tbl_value, args, is_big, value_key)
 		if not Spectrallib.is_number(args.value) then return end
-		if tbl_value ~= 0 and (tbl_value ~= 1 or (value_key ~= "x_chips" and value_key ~= "xmult")) then
+		if tbl_value ~= 0 and (tbl_value ~= 1 or (value_key ~= "x_chips" and value_key ~= "x_mult")) then
 			return tbl_value * args.value
 		end
 	end,
@@ -296,10 +296,16 @@ function Spectrallib.manipulate_value(tbl_value, args, is_big, value_key)
 			local seed = pseudoseed(args.seed or ("cry_misprint" .. G.GAME.round_resets.ante))
 			local big_min = to_big(args.min)
 			local big_max = to_big(args.max)
-			local operand = Spectrallib.log_random(seed, big_min, big_max)
+			local value = Spectrallib.log_random(seed, big_min, big_max)
+			local operand
+			if args.type == "hyper" and type(args.value) == "table" and args.value.arrows then
+				operand = {arrows = args.value.arrows, height = value}
+			else
+				operand = value
+			end
 			new_num = (
 				manipulate_types[args.type]
-				and manipulate_types[args.type](tbl_value, operand, value_key)
+				and manipulate_types[args.type](tbl_value, {value=operand}, is_big, value_key)
 				or nil
 			)
 		elseif args.value then
