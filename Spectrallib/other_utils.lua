@@ -332,3 +332,19 @@ end
 function Spectrallib.negative_ante_value(ante)
     return 100*0.95^(-ante)
 end
+
+---Returns the colour to use in text or message colours for a given card's type.<br>
+---By default, this is used for the number in the multiuse text and popup for multiuse ticking down.<br>
+---Can be hooked if a card type's text/message colour should be different from its badge/type colour
+---@param card Card
+---@return [number, number, number, number]
+function Spectrallib.get_text_colour(card)
+    if not card then return G.C.UI.TEXT_DARK end
+    if card.config.center.set == "Joker" then
+        return G.C.FILTER
+    end
+    if card.config.center.set == "Code" then --back compat thingy
+        return G.C.SET.Code
+    end
+    return get_type_colour(card.config.center, card) or G.C.UI.TEXT_DARK
+end

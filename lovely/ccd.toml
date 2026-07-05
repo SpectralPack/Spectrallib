@@ -415,7 +415,7 @@ position = "before"
 payload = '''
 if cfg and cfg.cry_multiuse then
 	local loc = {}
-	localize{type = 'other', key = 'slib_multiuse', nodes = loc, vars = {cfg.cry_multiuse, colours = { get_type_colour(_c, card) } }}
+	localize{type = 'other', key = 'slib_multiuse', nodes = loc, vars = {cfg.cry_multiuse, colours = { Spectrallib.get_text_colour(card) } }}
 	desc_nodes[#desc_nodes+1] = loc[1]
 end
 '''
@@ -462,7 +462,7 @@ if G.cry_muse then
 		scale = 1.1,
 		hold = 0.6,
 		major = card,
-		backdrop_colour = get_type_colour(card.config.center, card),
+		backdrop_colour = Spectrallib.get_text_colour(card),
 		align = 'bm',
 		offset = {x = 0, y = 0.2}
 	})
