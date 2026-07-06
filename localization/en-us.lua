@@ -138,6 +138,9 @@ return {
 			cry_balanced_q = "Balanced...?",
 			slib_forcetrigger_ex = "Forcetrigger!",
 			slib_plus_consumable = "+1 Consumable",
+			slib_plus_voucher = "+1 Voucher",
+			slib_plus_back = "+1 Deck",
+			slib_plus_sleeve = "+1 Sleeve",
 
 			k_level_chips = "Chips per level",
 			k_level_mult = "Mult per level",
