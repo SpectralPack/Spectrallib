@@ -141,6 +141,7 @@ return {
 			slib_plus_voucher = "+1 Voucher",
 			slib_plus_back = "+1 Deck",
 			slib_plus_sleeve = "+1 Sleeve",
+			slib_plus_booster = "+1 Booster",
 
 			k_level_chips = "Chips per level",
 			k_level_mult = "Mult per level",
