@@ -13,7 +13,7 @@
 	"dependencies": [
 	],
 	"conflicts": [
-		
+		"Talisman (<=2.7)"
 	],
 	"provides": [
 		"Cryptlib"
