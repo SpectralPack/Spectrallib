@@ -185,7 +185,7 @@ function Spectrallib.flip_then(cardlist, func, before, after)
         func = { {func = func, delay = 0.5} }
     end
 
-    for _,card in Spectrallib.iter.areacards(cardlist) do
+    for card in Spectrallib.iter.areacards(cardlist) do
         Spectrallib.event {
             function ()
                 if before then before(card) end
@@ -196,7 +196,7 @@ function Spectrallib.flip_then(cardlist, func, before, after)
             instant = skip_animations
         }
     end
-    for _,card in Spectrallib.iter.areacards(cardlist) do
+    for card in Spectrallib.iter.areacards(cardlist) do
         for i, func_def in ipairs(func) do
             Spectrallib.event {
                 function ()
@@ -207,7 +207,7 @@ function Spectrallib.flip_then(cardlist, func, before, after)
             }
         end
     end
-    for _,card in Spectrallib.iter.areacards(cardlist) do
+    for card in Spectrallib.iter.areacards(cardlist) do
         Spectrallib.event {
             function ()
                 if not skip_animations then card:flip() end
@@ -282,7 +282,7 @@ function Spectrallib.get_dummy(center, area, from_card, silent)
     abil.extra_slots_used = abil.extra_slots_used or 0
 
     local eligible_editionless_jokers = {}
-    for _,joker in Spectrallib.iter.areacards(G.jokers) do
+    for joker in Spectrallib.iter.areacards(G.jokers) do
         if not joker.edition then
             eligible_editionless_jokers[#eligible_editionless_jokers + 1] = joker
         end
