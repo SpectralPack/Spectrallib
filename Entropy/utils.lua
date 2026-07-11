@@ -1501,7 +1501,7 @@ end
 function Spectrallib.get_pooled_center(_type, twisted, _rarity, _noparakmi, soulable, key_append)
     return SMODS.poll_object({
         type = _type,
-        rarities = {_rarity},
+        rarities = _rarity and {_rarity} or nil,
         append = key_append
         -- "TODO: how do soul objects fit into this system?" from weights.lua
     })
