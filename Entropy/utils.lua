@@ -1499,12 +1499,13 @@ end
 -- Deprecated; please use SMODS.poll_object instead.
 ---@deprecated
 function Spectrallib.get_pooled_center(_type, twisted, _rarity, _noparakmi, soulable, key_append)
-    return SMODS.poll_object({
+    local key = SMODS.poll_object({
         type = _type,
         rarities = _rarity and {_rarity} or nil,
         append = key_append
         -- "TODO: how do soul objects fit into this system?" from weights.lua
     })
+    return G.P_CENTERS[key]
     -- todo: hook SMODS.poll_object to account _noparakmi
 end
 
