@@ -150,7 +150,7 @@ function Card:redeem_deck()
         G.GAME.pack_choices = G.GAME.pack_choices - 1
         if G.GAME.pack_choices <= 0 then
             G.CONTROLLER.interrupt.focus = true
-            if prev_state == G.STATES.SMODS.BOOSTER_OPENED then
+            if prev_state == G.STATES.SMODS_BOOSTER_OPENED then
                 if booster_obj.name:find('Arcana') then
                     inc_career_stat('c_tarot_reading_used', 1)
                 elseif booster_obj.name:find('Celestial') then
