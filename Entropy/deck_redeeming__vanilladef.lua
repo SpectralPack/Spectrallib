@@ -55,6 +55,7 @@ Spectrallib.deck_config_apply_effects = {
                     key_append = 'deck'
                 }
             end
+            return true
         end)
     end,
     vouchers = function (deck_center, value)
