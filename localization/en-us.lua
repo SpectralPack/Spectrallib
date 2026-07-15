@@ -145,6 +145,7 @@ return {
 
 			k_level_chips = "Chips per level",
 			k_level_mult = "Mult per level",
+			slib_asc_hands = "Ascended Hands", --for leveling up ascended hands
 
 			ph_no_decks = "No decks bought this run",
 			ph_decks_bought = "Decks bought this run",

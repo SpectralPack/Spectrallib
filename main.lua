@@ -37,6 +37,9 @@ function Game:init_game_object()
         ret.RankBuffs[k] = { level = 1, chips = 0, mult = 0, l_chips = obj.l_chips or 10, l_mult = obj.l_mult or 0 }
     end
     ret.RankBuffs.rankless = { level = 1, chips = 0, mult = 0 }
+    --ascended hand level stuff
+    ret.asc_factor_bonus = 0
+    ret.sunlevel = 1
     return ret
 end
 --[[
