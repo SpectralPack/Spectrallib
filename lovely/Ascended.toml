@@ -214,3 +214,19 @@ G.E_MANAGER:add_event(Event{
 })
 '''
 match_indent = true
+
+#run info ui for ascended hands
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+local t = {
+    n = G.UIT.O,
+'''
+position = 'before'
+payload = '''
+if not in_collection and ((G.GAME.cry_asc_played or 0) > 0 or Spectrallib.get_ascension_factor(1.25) ~= 1.25) then
+    table.insert(object.nodes[1].nodes, Spectrallib.create_UIBox_asc_hands())
+end
+'''
+match_indent = true

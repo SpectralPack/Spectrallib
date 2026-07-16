@@ -186,6 +186,13 @@ return {
 		},
 		ranks = {
 			rankless = "Rankless"
+		},
+		poker_hand_descriptions = {
+			slib_asc_hands = {
+				"Poker hands formed with more cards than usual",
+				"gain Ascension Power, increasing Chips and Mult",
+				"(e.x. a 7-card Straight for 2 Ascension Power)"
+			}
 		}
     }
 }
