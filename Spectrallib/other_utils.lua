@@ -289,6 +289,115 @@ function Game:start_run(args)
     start_run_ref(self, args)
     G.consumeables.config.highlighted_limit = 99
     G.jokers.config.highlighted_limit = 99
+    if G.GAME.selected_back_key.use then
+        G.GAME.selected_usable_deck = G.GAME.selected_back_key.key
+        local cfg = Spectrallib.gather_button_config(G.P_CENTERS[G.GAME.selected_usable_deck] or G.GAME.selected_back_key)
+        G.slib_active_deck_button = UIBox {
+            definition = Spectrallib.create_UIBox_use_deck(cfg),
+            config = { major = G.deck, align = 'tm', offset = { x = 0, y = -0.35 }, bond = 'Weak' }
+        }
+    end
+end
+
+Spectrallib.create_UIBox_use_deck = function (cfg)
+    return { n = G.UIT.ROOT, config = { align = 'cm', colour = G.C.CLEAR, minw = G.deck.T.w, minh = 0.5 }, nodes = {
+        { n = G.UIT.R, nodes = {
+            {
+                n = G.UIT.C,
+                config = {
+                    align = "tm",
+                    minw = 2,
+                    padding = 0.1,
+                    r = 0.1,
+                    hover = true,
+                    colour = G.C.UI.BACKGROUND_DARK,
+                    shadow = true,
+                    button = "slib_use_deck",
+                    func = "slib_can_use_deck",
+                },
+                nodes = {
+                    {
+                        n = G.UIT.R,
+                        config = { align = "bcm", padding = 0 },
+                        nodes = {
+                            {
+                                n = G.UIT.T,
+                                config = {
+                                    text = localize(cfg.key),
+                                    scale = 0.35,
+                                    colour = G.C.UI.TEXT_LIGHT,
+                                    id = "slib_use_deck_text"
+                                }
+                            }
+                        }
+                    },
+                }
+            }
+        } }
+    } }
+end
+G.FUNCS.slib_can_use_deck = function (e) --checks if the currently selected usable deck can be used.
+    local center = G.P_CENTERS[G.GAME.selected_usable_deck] or G.GAME.selected_back_key
+    local cfg = Spectrallib.gather_button_config(center)
+    if
+        center.can_use and center:can_use(e.config.ref_table) --and not e.config.ref_table.debuff --Decks can't be debuffed
+        and G.STATE ~= G.STATES.HAND_PLAYED and G.STATE ~= G.STATES.DRAW_TO_HAND and G.STATE ~= G.STATES.PLAY_TAROT
+        and not (((G.play and #G.play.cards > 0) or (G.CONTROLLER.locked) or (G.GAME.STOP_USE and G.GAME.STOP_USE > 0)))
+    then
+        e.config.colour = cfg.colour
+        e.config.button = "slib_use_deck"
+    else
+        e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+        e.config.button = nil
+    end
+end
+G.FUNCS.slib_use_deck = function (e) --uses the currently selected usable deck.
+    local int = G.TAROT_INTERRUPT
+    G.TAROT_INTERRUPT = true
+    local center = G.P_CENTERS[G.GAME.selected_usable_deck] or G.GAME.selected_back_key
+    if center.use then
+        center:use()
+    end
+    G.TAROT_INTERRUPT = int
+end
+
+-- Allow clicking the deck or any usable deck in the redeemed deck menu to change the deck that will be used + update the ui accordingly
+local card_click = Card.click
+function Card:click()
+    card_click(self)
+    if Spectrallib.safe_get(self, "area", "config", "slib_run_info_redeemed_decks") and self.config.center.use then
+        self:juice_up()
+        G.GAME.selected_usable_deck = self.config.center_key
+        Spectrallib.update_deck_use_button()
+    elseif G.deck and G.deck.cards and self == G.deck.cards[1] and G.GAME.selected_back_key.use then
+        self:juice_up()
+        G.GAME.selected_usable_deck = G.GAME.selected_back_key.key
+        Spectrallib.update_deck_use_button()
+    end
+end
+local cardarea_click = CardArea.click
+function CardArea:click()
+    cardarea_click(self)
+    if self == G.deck and G.GAME.selected_back_key.use then
+        self:juice_up()
+        G.GAME.selected_usable_deck = G.GAME.selected_back_key.key
+        Spectrallib.update_deck_use_button()
+    end
+end
+function Spectrallib.update_deck_use_button()
+    local cfg = Spectrallib.gather_button_config(G.P_CENTERS[G.GAME.selected_usable_deck] or G.GAME.selected_back_key)
+    if G.GAME.selected_usable_deck and not G.slib_active_deck_button then
+        G.slib_active_deck_button = UIBox {
+            definition = Spectrallib.create_UIBox_use_deck(cfg),
+            config = { major = G.deck, align = 'tm', offset = { x = 0, y = -0.35 }, bond = 'Weak' }
+        }
+    end
+    local ui = G.slib_active_deck_button:get_UIE_by_ID("slib_use_deck_text")
+    if ui then
+        ui.config.text = localize(cfg.key)
+        ui.config.text_drawable = nil
+        ui.UIBox:recalculate()
+    end
 end
 
 -- Fractional/negative ante support

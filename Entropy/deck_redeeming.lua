@@ -166,6 +166,11 @@ function Card:redeem_deck()
         offset_move(G.blind_select, 39)
         offset_move(G.round_eval, 29)
     end
+
+    if not G.GAME.selected_usable_deck and self.config.center.use then
+        G.GAME.selected_usable_deck = self.config.center_key
+        Spectrallib.update_deck_use_button()
+    end
 end
 
 -- Generate the UI For redeemed decks.
@@ -201,7 +206,8 @@ function G.UIDEF.bought_decks()
                 { -- config
                     card_limit = 1,
                     type = 'voucher',
-                    highlight_limit = 0
+                    highlight_limit = 0,
+                    slib_run_info_redeemed_decks = true, --identifier flag
                 }
             ))
             local latest_cardarea = deck_areas[#deck_areas]
