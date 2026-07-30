@@ -536,3 +536,13 @@ function Spectrallib.create_UIBox_asc_hands_tip()
         }}
     }}
 end
+
+---Utility function that runs a get_id check for the given rank keys
+---@param card Card card object to check the rank of
+---@param rank_key string|Rank rank key to check the card against
+---@return boolean
+function Spectrallib.is_rank(card, rank_key)
+    assert(SMODS.Ranks[rank_key], "Invalid rank key for Spectrallib.is_rank: "..rank_key)
+    local id = SMODS.Ranks[rank_key].id
+    return card:get_id() == id
+end
