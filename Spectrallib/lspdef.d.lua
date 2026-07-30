@@ -57,6 +57,8 @@
 -- Calculate the amount of interest the player should earn.
 -- The return number is the final interest value assuming no other sources will affect interest.
 ---@field calculate_interest? fun(self: SMODS.Center|table, card: Card|table, interest: number): number
+-- Atlas key to use for extra floating sprite if this is different from the main `atlas`
+---@field soul_extra_atlas? string
 
 ---@class SMODS.Joker
 -- If true, Joker is forcetriggerable.
