@@ -129,7 +129,7 @@ if not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
 		self.children.floating_sprite2 = Sprite(
 			self.T.x, self.T.y,
 			self.T.w, self.T.h,
-			G.ASSET_ATLAS[_center.atlas or _center.set],
+			G.ASSET_ATLAS[_center.soul_extra_atlas or _center.atlas or _center.set],
 			_center.soul_pos.extra
 		)
 		local floating_sprite2 = self.children.floating_sprite2
