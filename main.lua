@@ -40,6 +40,8 @@ function Game:init_game_object()
     --ascended hand level stuff
     ret.asc_factor_bonus = 0
     ret.sunlevel = 1
+    --identical behaviour to cry_banished_keys in cryptid
+    ret.slib_banished_keys = {}
     return ret
 end
 --[[
@@ -49,6 +51,7 @@ end
 local files = {
 
     {path = "Spectrallib/other_utils"},
+    {path = "Spectrallib/misc_ui"},
     {path = "Spectrallib/blind_functions"},
     {path = "Spectrallib/modpage_ui"},
     {path = "Spectrallib/attributes"},

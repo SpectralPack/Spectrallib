@@ -1,0 +1,19 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+#Stuff can go in this file if there isnt anywhere better for it (yet)
+
+#Adds additional tooltip to banned cards in the collection
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = "for _, v in ipairs(info_queue) do"
+position = 'before'
+target = 'functions/common_events.lua'
+payload = '''
+if card and card.config and G.GAME.slib_banished_keys[card.config.center_key] and card.area and card.area.config.collection then
+    info_queue[#info_queue+1] = { set = "Other", key = "slib_banned_card", }
+end
+'''

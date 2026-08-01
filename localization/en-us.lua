@@ -103,6 +103,13 @@ return {
 				text = {
 					"Multiuse: {V:1}#1#{} left"
 				}
+			},
+			slib_banned_card = {
+				name = "Banished",
+				text = {
+					"This item has been",
+					"{C:red}banished",
+				},
 			}
         }
     },
