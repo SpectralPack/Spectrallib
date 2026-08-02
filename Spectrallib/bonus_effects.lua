@@ -437,6 +437,7 @@ for _, v in ipairs{"chips", "mult", "xmult"} do
                 return { [v] = eff_table.config.extra }
             end
         end,
+        attributes = { v, "hand_type" }
     }
 end
 
