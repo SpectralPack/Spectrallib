@@ -326,7 +326,7 @@ Spectrallib.BonusEffect {
         ease_hands_played(-eff_table.config.extra)
         G.GAME.round_resets.hands = G.GAME.round_resets.hands - eff_table.config.extra
     end,
-    attributes = { "hands" }
+    attributes = { "hands", "passive" }
 }
 
 Spectrallib.BonusEffect {
@@ -340,7 +340,7 @@ Spectrallib.BonusEffect {
         ease_discard(-eff_table.config.extra)
         G.GAME.round_resets.discards = G.GAME.round_resets.discards - eff_table.config.extra
     end,
-    attributes = { "discard" }
+    attributes = { "discard", "passive" }
 }
 
 Spectrallib.BonusEffect {
@@ -352,7 +352,7 @@ Spectrallib.BonusEffect {
     remove_from_deck = function (self, card, eff_table)
         G.hand:change_size(-eff_table.config.extra)
     end,
-    attributes = { "hand_size" }
+    attributes = { "hand_size", "passive" }
 }
 
 Spectrallib.BonusEffect {
@@ -364,7 +364,7 @@ Spectrallib.BonusEffect {
     remove_from_deck = function (self, card, eff_table)
         G.consumeables:change_size(-eff_table.config.extra)
     end,
-    attributes = { "consumable_slot" }
+    attributes = { "consumable_slot", "passive" }
 }
 
 Spectrallib.BonusEffect {
@@ -376,7 +376,7 @@ Spectrallib.BonusEffect {
     remove_from_deck = function (self, card, eff_table)
         G.jokers:change_size(-eff_table.config.extra)
     end,
-    attributes = { "joker_slot" }
+    attributes = { "joker_slot", "passive" }
 }
 
 Spectrallib.BonusEffect {
