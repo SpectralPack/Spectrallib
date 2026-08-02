@@ -463,3 +463,20 @@ function Spectrallib.should_display_ban(card)
         return card.config.center_key ~= "c_base" and G.GAME.slib_banished_keys[card.config.center_key]
     end
 end
+
+---Gets a random poker hand
+---@param include_hidden? boolean Wether roll should include currently non-visible hands
+---@param seed? any RNG seed to use for polling
+---@param in_pool? (fun(v: string, args: table): boolean?) in_pool function to pass into pseudorandom_element
+---@param fallback? PokerHand|string? Fallback hand if no hand could be rolled, defaults to `High Card`
+---@return PokerHand|string
+function Spectrallib.get_random_hand(include_hidden, seed, in_pool, fallback)
+    local hands = {}
+    for _,name in ipairs(G.handlist) do
+        if include_hidden or SMODS.is_poker_hand_visible(name) then
+            hands[#hands+1] = name
+        end
+    end
+    local hand = pseudorandom_element(hands, seed, {in_pool = in_pool})
+    return hand or fallback or "High Card"
+end

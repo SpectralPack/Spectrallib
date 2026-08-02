@@ -419,4 +419,24 @@ Spectrallib.BonusEffect {
     end,
 }
 
+for _, v in ipairs{"chips", "mult", "xmult"} do
+    Spectrallib.BonusEffect{
+        key = "type_"..v,
+        loc_vars = function (self, info_queue, card, eff_table)
+            local hand_loc = localize(eff_table.config.hand_type, "poker_hands")
+            return { vars = { eff_table.config.extra, hand_loc } }
+        end,
+        on_apply = function (self, card, eff_table)
+            if not eff_table.config.hand_type then
+                eff_table.config.hand_type = Spectrallib.get_random_hand(nil, "typehand_bonuseffect")
+            end
+        end,
+        calculate = function (self, card, eff_table, context)
+            if (context.joker_main or context.main_scoring and context.cardarea == G.play) and next(context.poker_hands[eff_table.config.hand_type]) or context.forcetrigger then
+                return { [v] = eff_table.config.extra }
+            end
+        end,
+    }
+end
+
 --#endregion

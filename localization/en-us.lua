@@ -253,6 +253,27 @@ return {
 					"Earn {V:1}#1#{} at end of round"
 				}
 			},
+			sbe_slib_type_chips = {
+				text = {
+                    "{C:chips}+#1#{} Chips if played",
+                    "hand contains",
+                    "a {C:attention}#2#",
+                },
+			},
+			sbe_slib_type_mult = {
+				text = {
+                    "{C:red}+#1#{} Mult if played",
+                    "hand contains",
+                    "a {C:attention}#2#",
+                },
+			},
+			sbe_slib_type_xmult = {
+				text = {
+                    "{X:mult,C:white}X#1#{} Mult if played",
+                    "hand contains",
+                    "a {C:attention}#2#",
+                },
+			}
         }
     },
     misc = {
