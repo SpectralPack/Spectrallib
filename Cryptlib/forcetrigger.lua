@@ -173,6 +173,15 @@ function Spectrallib.get_forcetrigger_results(card, context)
 		end
 		G.cry_force_use = nil
 	end
+	local demicontext = SMODS.shallow_copy(context)
+	demicontext.forcetrigger = true
+	local bonus =  Spectrallib.calculate_bonus_effects(card, demicontext)
+	if bonus and next(bonus) then
+		results.jokers = SMODS.merge_effects{ results.jokers or {}, bonus }
+	end
+	if results.jokers then
+		results.jokers.card = results.jokers.card or card
+	end
 	return results
 end
 
@@ -212,7 +221,7 @@ function Spectrallib.forcetrigger(args)
 		local results = Spectrallib.get_forcetrigger_results(args.card, args.context)
 		if results and results.jokers then
 			results.jokers.card = args.card
-			SMODS.calculate_effect(results.jokers)
+			SMODS.calculate_effect(results.jokers, args.card)
 		end
 	end
 end

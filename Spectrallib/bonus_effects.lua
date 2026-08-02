@@ -108,9 +108,6 @@ function Card:calculate_joker(context, ...)
     if bonus and next(bonus) then
         final = SMODS.merge_effects({ ret or {}, bonus })
     end
-    if final ~= nil then
-        print(final)
-    end
     return final, triggered or bonus_triggered
 end
 
@@ -241,7 +238,7 @@ for _, v in ipairs(plus_keys) do
     Spectrallib.BonusEffect {
         key = v,
         calculate = function(self, card, eff_table, context)
-            if context.joker_main or (context.main_scoring and context.cardarea == G.play) then
+            if context.joker_main or (context.main_scoring and context.cardarea == G.play) or context.forcetrigger then
                 return { [v] = eff_table.config.extra }
             end
         end,
@@ -255,7 +252,7 @@ for _, v in ipairs(calc_keys) do
     Spectrallib.BonusEffect {
         key = v,
         calculate = function(self, card, eff_table, context)
-            if context.joker_main or (context.main_scoring and context.cardarea == G.play) then
+            if context.joker_main or (context.main_scoring and context.cardarea == G.play) or context.forcetrigger then
                 return { [v] = eff_table.config.extra }
             end
         end,
@@ -267,7 +264,7 @@ for _, v in ipairs({"balance", "swap"}) do
     Spectrallib.BonusEffect {
         key = v,
         calculate = function (self, card, eff_table, context)
-            if context.joker_main or (context.main_scoring and context.cardarea == G.play) then
+            if context.joker_main or (context.main_scoring and context.cardarea == G.play) or context.forcetrigger then
                 return { [v] = true }
             end
         end
@@ -280,7 +277,7 @@ Spectrallib.BonusEffect {
         return { vars = { Spectrallib.clamp(eff_table.config.extra, 0, 1) * 100 }}
     end,
     calculate = function (self, card, eff_table, context)
-        if context.joker_main or (context.main_scoring and context.cardarea == G.play) then
+        if context.joker_main or (context.main_scoring and context.cardarea == G.play) or context.forcetrigger then
             return { cry_broken_swap = eff_table.config.extra }
         end
     end
