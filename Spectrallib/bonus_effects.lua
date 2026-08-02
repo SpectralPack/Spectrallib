@@ -261,6 +261,9 @@ local attribute_map = {
 local function generic_loc_vars(_, _, _, eff_table)
     return { vars = { eff_table.config.extra } }
 end
+local function signed_loc_vars(_, _, _, eff_table)
+    return { vars = { SMODS.signed(eff_table.config.extra) }}
+end
 
 for _, v in ipairs(plus_keys) do
     Spectrallib.BonusEffect {
@@ -317,7 +320,7 @@ Spectrallib.BonusEffect {
 
 Spectrallib.BonusEffect {
     key = "hands",
-    loc_vars = generic_loc_vars,
+    loc_vars = signed_loc_vars,
     add_to_deck = function (self, card, eff_table)
         ease_hands_played(eff_table.config.extra)
         G.GAME.round_resets.hands = G.GAME.round_resets.hands + eff_table.config.extra
@@ -331,7 +334,7 @@ Spectrallib.BonusEffect {
 
 Spectrallib.BonusEffect {
     key = "discards",
-    loc_vars = generic_loc_vars,
+    loc_vars = signed_loc_vars,
     add_to_deck = function (self, card, eff_table)
         ease_discard(eff_table.config.extra)
         G.GAME.round_resets.discards = G.GAME.round_resets.discards + eff_table.config.extra
@@ -345,7 +348,7 @@ Spectrallib.BonusEffect {
 
 Spectrallib.BonusEffect {
     key = "h_size",
-    loc_vars = generic_loc_vars,
+    loc_vars = signed_loc_vars,
     add_to_deck = function (self, card, eff_table)
         G.hand:change_size(eff_table.config.extra)
     end,
@@ -357,7 +360,7 @@ Spectrallib.BonusEffect {
 
 Spectrallib.BonusEffect {
     key = "consumable_slot",
-    loc_vars = generic_loc_vars,
+    loc_vars = signed_loc_vars,
     add_to_deck = function (self, card, eff_table)
         G.consumeables:change_size(eff_table.config.extra)
     end,
@@ -369,7 +372,7 @@ Spectrallib.BonusEffect {
 
 Spectrallib.BonusEffect {
     key = "joker_slot",
-    loc_vars = generic_loc_vars,
+    loc_vars = signed_loc_vars,
     add_to_deck = function (self, card, eff_table)
         G.jokers:change_size(eff_table.config.extra)
     end,

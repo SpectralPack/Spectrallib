@@ -225,27 +225,27 @@ return {
 			},
 			sbe_slib_hands = {
 				text = {
-					"{C:blue}+#1#{} Hands"
+					"{C:blue}#1#{} Hands"
 				}
 			},
 			sbe_slib_discards = {
 				text = {
-					"{C:red}+#1#{} Discards"
+					"{C:red}#1#{} Discards"
 				}
 			},
 			sbe_slib_h_size = {
 				text = {
-					"{C:attention}+#1#{} Hand Size"
+					"{C:attention}#1#{} Hand Size"
 				}
 			},
 			sbe_slib_consumable_slot = {
 				text = {
-					"{C:attention}+#1#{} Consumable Slots"
+					"{C:attention}#1#{} Consumable Slots"
 				}
 			},
 			sbe_slib_joker_slot = {
 				text = {
-					"{C:dark_edition}+#1#{} Joker Slots"
+					"{C:dark_edition}#1#{} Joker Slots"
 				}
 			},
 			sbe_slib_cashout = {
