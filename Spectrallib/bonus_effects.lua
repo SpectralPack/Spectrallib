@@ -353,6 +353,18 @@ Spectrallib.BonusEffect {
                 modify = eff_table.config.extra
             }
         end
+        if context.forcetrigger then
+            G.GAME.dollar_buffer = G.GAME.dollar_buffer + eff_table.config.extra
+            return {
+                dollars = eff_table.config.extra,
+                func = function ()
+                    Spectrallib.Event(function ()
+                        G.GAME.dollar_buffer = 0
+                        return true
+                    end)
+                end
+            }
+        end
     end
 }
 
