@@ -54,7 +54,7 @@ Spectrallib.BonusEffect = SMODS.GameObject:extend{
 ---Adds a given Spectrallib.BonusEffect to a given card
 ---@param card Card|balatro.Card the card object to add the effect to
 ---@param key string the key of the BonusEffect to add to the card. class prefix may be omitted
----@param config table the config table for the BonusEffect to recieve
+---@param config table the config table for the BonusEffect to recieve. At least an `extra` field is typically expected
 ---@param forced_index integer? index to insert the effect at. ignored if greater than the total number of effects on the card
 function Spectrallib.add_bonus_effect(card, key, config, forced_index)
     if key:sub(0, 4) ~= "sbe_" then --allow omitting class prefix
@@ -382,8 +382,11 @@ Spectrallib.BonusEffect {
 Spectrallib.BonusEffect {
     key = "cashout",
     loc_vars = function (self, info_queue, card, eff_table)
-        local colour = eff_table.config.extra < 0 and G.C.RED or G.C.MONEY
-        return { vars = { SMODS.signed_dollars(eff_table.config.extra), colours = { colour } } }
+        local key = self.key
+        if eff_table.config.extra < 0 then
+            key = key.."_loss"
+        end
+        return { vars = { eff_table.config.extra }, key = key }
     end,
     calculate = function (self, card, eff_table, context)
         if context.modify_final_cashout and not card.playing_card then
@@ -440,5 +443,54 @@ for _, v in ipairs{"chips", "mult", "xmult"} do
         attributes = { v, "hand_type" }
     }
 end
+
+Spectrallib.BonusEffect{
+    key = "sell_value",
+    loc_vars = function (self, info_queue, card, eff_table)
+        local key = self.key
+        if eff_table.config.extra < 0 then
+            key = key.."_loss"
+        end
+        return { vars = { eff_table.config.extra }, key = key }
+    end,
+    calculate = function (self, card, eff_table, context)
+        if ((context.end_of_round and context.main_eval and context.game_over == false) or context.forcetrigger) and not context.blueprint then
+            card.ability.extra_value = card.ability.extra_value + eff_table.config.extra
+            card:set_cost()
+            return {
+                message = localize('k_val_up'),
+                colour = G.C.MONEY
+            }
+        end
+    end,
+    attributes = { "sell_value" }
+}
+
+Spectrallib.BonusEffect{
+    key = "s_mult",
+    loc_vars = function (self, info_queue, card, eff_table)
+        local suit = eff_table.config.suit
+        local suit_loc = localize(suit, "suits_singular")
+        return { vars = { SMODS.signed(eff_table.config.extra), suit_loc, colours = { G.C.SUITS[suit] } }}
+    end,
+    on_apply = function (self, card, eff_table)
+        if not eff_table.config.suit then
+            eff_table.config.suit = (pseudorandom_element(SMODS.Suits, "s_mult_bonuseffect") or {}).key or "Spades"
+        end
+    end,
+    calculate = function (self, card, eff_table, context)
+        if context.individual and context.cardarea == G.play and context.other_card:is_suit(eff_table.config.suit) then
+            return {
+                mult = eff_table.config.extra
+            }
+        end
+    end,
+    has_attribute = function (self, card, eff_table, attribute)
+        if attribute == eff_table.config.suit:lower() then
+            return true
+        end
+    end,
+    attributes = { "mult" }
+}
 
 --#endregion

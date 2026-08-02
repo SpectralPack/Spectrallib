@@ -250,7 +250,14 @@ return {
 			},
 			sbe_slib_cashout = {
 				text = {
-					"Earn {V:1}#1#{} at end of round"
+					"Earn {C:money}$#1#{} at",
+					"end of round"
+				}
+			},
+			sbe_slib_cashout_loss = {
+				text = {
+					"Lose {C:red}$#1#{} at",
+					"end of round",
 				}
 			},
 			sbe_slib_type_chips = {
@@ -273,6 +280,27 @@ return {
                     "hand contains",
                     "a {C:attention}#2#",
                 },
+			},
+			sbe_slib_sell_value = {
+				text = {
+					"Gains {C:money}$#1#{} of",
+					"{C:attention}sell value{} at",
+					"end of round"
+				}
+			},
+			sbe_slib_sell_value_loss = {
+				text = {
+					"Loses {C:red}$#1#{} of",
+					"{C:attention}sell value{} at",
+					"end of round"
+				}
+			},
+			sbe_slib_s_mult = {
+				text = {
+					"Played cards with",
+                    "{V:1}#2#{} suit give",
+                    "{C:mult}#1#{} Mult when scored",
+				}
 			}
         }
     },
