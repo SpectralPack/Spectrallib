@@ -102,24 +102,30 @@ end
 
 local calc_joker_ref = Card.calculate_joker
 function Card:calculate_joker(context, ...)
-    local ret, triggered = calc_joker_ref(context, ...)
-    local bonus = Spectrallib.calculate_bonus_effects(self, context)
-    if ret == true then
-        ret = { remove = true }
+    local ret, triggered = calc_joker_ref(self, context, ...)
+    local bonus, bonus_triggered = Spectrallib.calculate_bonus_effects(self, context)
+    local final = ret
+    if bonus and next(bonus) then
+        final = SMODS.merge_effects({ ret or {}, bonus })
     end
-    local final = SMODS.merge_effects(ret or {}, bonus)
-    return final, triggered
+    if final ~= nil then
+        print(final)
+    end
+    return final, triggered or bonus_triggered
 end
 
 function Spectrallib.calculate_bonus_effects(card, context)
     local bonus_ret = {}
+    local triggered = false
     for _, eff_table in ipairs(card.ability.slib_bonus_effects) do
         local obj = Spectrallib.BonusEffects[eff_table.key]
         if type(obj.calculate) == "function" then
-            bonus_ret[#bonus_ret+1] = obj:calculate(card, eff_table, context)
+            local new_triggered = false
+            bonus_ret[#bonus_ret+1], new_triggered = obj:calculate(card, eff_table, context)
+            triggered = triggered or new_triggered
         end
     end
-    return SMODS.merge_effects(bonus_ret)
+    return SMODS.merge_effects(bonus_ret), triggered
 end
 
 function Spectrallib.add_bonus_effect_boxes(_c, info_queue, card, desc_nodes, specific_vars, full_UI_table, ability)
