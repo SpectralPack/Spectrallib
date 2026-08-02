@@ -402,7 +402,7 @@ Spectrallib.BonusEffect {
             return {
                 dollars = eff_table.config.extra,
                 func = function ()
-                    Spectrallib.Event(function ()
+                    Spectrallib.event(function ()
                         G.GAME.dollar_buffer = 0
                         return true
                     end)
