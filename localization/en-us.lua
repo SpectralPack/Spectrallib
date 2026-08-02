@@ -255,14 +255,14 @@ return {
 			},
 			sbe_slib_type_chips = {
 				text = {
-                    "{C:chips}+#1#{} Chips if played",
+                    "{C:chips}#1#{} Chips if played",
                     "hand contains",
                     "a {C:attention}#2#",
                 },
 			},
 			sbe_slib_type_mult = {
 				text = {
-                    "{C:red}+#1#{} Mult if played",
+                    "{C:red}#1#{} Mult if played",
                     "hand contains",
                     "a {C:attention}#2#",
                 },

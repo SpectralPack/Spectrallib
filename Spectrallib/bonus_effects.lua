@@ -420,11 +420,12 @@ Spectrallib.BonusEffect {
 }
 
 for _, v in ipairs{"chips", "mult", "xmult"} do
+    local x = v == "xmult"
     Spectrallib.BonusEffect{
         key = "type_"..v,
         loc_vars = function (self, info_queue, card, eff_table)
             local hand_loc = localize(eff_table.config.hand_type, "poker_hands")
-            return { vars = { eff_table.config.extra, hand_loc } }
+            return { vars = { x and eff_table.config.extra or SMODS.signed(eff_table.config.extra), hand_loc } }
         end,
         on_apply = function (self, card, eff_table)
             if not eff_table.config.hand_type then
