@@ -1,0 +1,39 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = -1
+
+# based on more fluff stuff
+# just didnt work correctly if i did it before the return for some reason
+[[patches]]
+[patches.pattern]
+target = '''functions/common_events.lua'''
+pattern = '''--Fill all remaining info if this is the main desc'''
+position = "before"
+payload = '''
+Spectrallib.add_bonus_effect_boxes(_c, card, info_queue, desc_nodes, specific_vars, full_UI_table, cfg)
+'''
+match_indent = true
+
+# Playing cards bonus calc
+[[patches]]
+[patches.pattern]
+target = '''functions/common_events.lua'''
+pattern = '''for _,v in ipairs(areas) do area_set[v] = true end'''
+position = "after"
+payload = '''
+if card.area and not area_set[card.area]
+    ret.bonus_effects = Spectrallib.calculate_bonus_effects(card, context)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = '''=[SMODS _ "src/utils.lua"]'''
+pattern = "-- todo: might want to move these keys to a customizable list/lists"
+position = "before"
+payload = '''
+SMODS.calculate_effect_table_key(effect_table, 'bonus_effects', card, ret)
+'''
+match_indent = true

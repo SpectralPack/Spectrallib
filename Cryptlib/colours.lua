@@ -44,3 +44,12 @@ function loc_colour(_c, _default, ...)
     if _c == "echips" then _c = "slib_echips" end
 	return lc(_c, _default, ...)
 end
+
+
+local new_colours = {
+    slib_eqmult = HEX("cb7f7f"),
+    slib_eqchips = HEX("5b89a6"),
+}
+for k, v in pairs(new_colours) do
+    G.ARGS.LOC_COLOURS[k] = v
+end

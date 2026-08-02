@@ -233,6 +233,7 @@ slib_perma_e_chips = self.ability and self.ability.slib_perma_e_chips or 0,
 slib_perma_h_e_chips = self.ability and self.ability.slib_perma_h_e_chips or 0,
 slib_perma_e_mult = self.ability and self.ability.slib_perma_e_mult or 0,
 slib_perma_h_e_mult = self.ability and self.ability.slib_perma_h_e_mult or 0,
+slib_bonus_effects = self.ability and self.ability.slib_bonus_effects or {}, --TODO: decide if this should persist through set_ability or not, needs special logic if not
 """
 match_indent = true
 

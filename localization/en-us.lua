@@ -110,7 +110,149 @@ return {
 					"This item has been",
 					"{C:red}banished",
 				},
-			}
+			},
+			-- BONUS EFFECT LOCS
+			sbe_slib_chips = {
+				text = {
+					"{C:chips}#1#{} Chips"
+				}
+			},
+			sbe_slib_xchips = {
+				text = {
+					"{X:chips,C:white}X#1#{} Chips"
+				}
+			},
+			sbe_slib_echips = {
+				text = {
+					"{X:slib_echips,C:white}^#1#{} Chips"
+				}
+			},
+			sbe_slib_eq_chips = {
+				text = {
+					"{X:slib_eqchips,C:white}=#1#{} Chips"
+				}
+			},
+			sbe_slib_xlog_chips = {
+				text = {
+					"{X:chips,C:white}Xlog_#1#(Chips){} Chips"
+				}
+			},
+			sbe_slib_mult = {
+				text = {
+					"{C:mult}#1#{} Mult"
+				}
+			},
+			sbe_slib_xmult = {
+				text = {
+					"{X:mult,C:white}X#1#{} Mult"
+				}
+			},
+			sbe_slib_emult = {
+				text = {
+					"{X:slib_emult,C:white}^#1#{} Mult"
+				}
+			},
+			sbe_slib_eq_mult = {
+				text = {
+					"{X:slib_eqmult,C:white}=#1#{} Mult"
+				}
+			},
+			sbe_slib_xlog_mult = {
+				text = {
+					"{X:mult,C:white}Xlog_#1#(Mult){} Mult"
+				}
+			},
+			sbe_slib_asc = {
+				text = {
+					"{C:gold}#1#{} Ascension Power"
+				}
+			},
+			sbe_slib_x_asc = {
+				text = {
+					"{X:gold,C:white}X#1#{} Ascension Power"
+				}
+			},
+			sbe_slib_exp_asc = {
+				text = {
+					"{X:gold,C:white}^#1#{} Ascension Power"
+				}
+			},
+			sbe_slib_score = {
+				text = {
+					"{C:purple}#1#{} Score"
+				}
+			},
+			sbe_slib_xscore = {
+				text = {
+					"{X:purple,C:white}X#1#{} Score"
+				}
+			},
+			sbe_slib_escore = {
+				text = {
+					"{X:purple,C:white}^#1#{} Score"
+				}
+			},
+			sbe_slib_blindsize = {
+				text = {
+					"{C:blind}#1#{} Blind Size"
+				}
+			},
+			sbe_slib_xblindsize = {
+				text = {
+					"{X:blind,C:white}X#1#{} Blind Size"
+				}
+			},
+			sbe_slib_eblindsize = {
+				text = {
+					"{X:blind,C:white}^#1#{} Blind Size"
+				}
+			},
+			sbe_slib_swap = {
+				text = {
+					"Swaps {C:chips}Chips{} and {C:mult}Mult"
+				}
+			},
+			sbe_slib_balance = {
+				text = {
+					"{C:purple}Balances {C:chips}Chips{} and {C:mult}Mult"
+				}
+			},
+			sbe_slib_partial_swap = {
+				text = {
+					"Swaps {C:attention}#1#%{} of",
+					"{C:chips}Chips{} and {C:mult}Mult"
+				}
+			},
+			sbe_slib_hands = {
+				text = {
+					"{C:blue}+#1#{} Hands"
+				}
+			},
+			sbe_slib_discards = {
+				text = {
+					"{C:red}+#1#{} Discards"
+				}
+			},
+			sbe_slib_h_size = {
+				text = {
+					"{C:attention}+#1#{} Hand Size"
+				}
+			},
+			sbe_slib_consumable_slot = {
+				text = {
+					"{C:attention}+#1#{} Consumable Slots"
+				}
+			},
+			sbe_slib_joker_slot = {
+				text = {
+					"{C:dark_edition}+#1#{} Joker Slots"
+				}
+			},
+			sbe_slib_cashout = {
+				text = {
+					"Earn {C:money}$#1#{} at end of round"
+				}
+			},
         }
     },
     misc = {

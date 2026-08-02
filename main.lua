@@ -55,6 +55,7 @@ local files = {
     {path = "Spectrallib/blind_functions"},
     {path = "Spectrallib/modpage_ui"},
     {path = "Spectrallib/attributes"},
+    {path = "Spectrallib/bonus_effects"},
 
     {path = "Cryptlib/main", redirect = "Cryptid"},
     {path = "Cryptlib/utilities", redirect = "Cryptid"},
