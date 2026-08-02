@@ -3,6 +3,7 @@ if not SMODS.Attribute then return end
 local attributes = {
     "echips", "emult", "hyperchips", "hypermult",
     "eqchips", "eqmult", "asc", "xasc", "easc", "hyperasc",
+    "escore", "eblindsize", "hyperscore", "hyperblindsize",
     "forcetrigger", "value_manip",
     "multiuse", "ccd",
     "escore", "eblindsize", "hyperscore", "hyperblindsize",

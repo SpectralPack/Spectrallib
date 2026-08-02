@@ -250,7 +250,7 @@ return {
 			},
 			sbe_slib_cashout = {
 				text = {
-					"Earn {C:money}$#1#{} at end of round"
+					"Earn {V:1}#1#{} at end of round"
 				}
 			},
         }

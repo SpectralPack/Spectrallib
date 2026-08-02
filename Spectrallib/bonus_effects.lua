@@ -16,7 +16,13 @@ Spectrallib.BonusEffect = SMODS.GameObject:extend{
         self.name = self.name or self.key
         Spectrallib.BonusEffect.super.register(self)
     end,
-    inject = function () end,
+    inject = function (self)
+        if self.attributes then
+            for _, v in ipairs(self.attributes) do
+                self.attributes[v] = true
+            end
+        end
+    end,
     process_loc_text = function(self)
         SMODS.process_loc_text(G.localization.descriptions.Other, self.key, self.loc_txt)
     end,
@@ -109,6 +115,20 @@ function Card:calculate_joker(context, ...)
         final = SMODS.merge_effects({ ret or {}, bonus })
     end
     return final, triggered or bonus_triggered
+end
+
+local attrib_ref = Card.has_attribute
+function Card:has_attribute(attribute)
+    local ret = attrib_ref(self, attribute)
+    if ret then return ret end
+    for _, eff_table in ipairs(self.ability.slib_bonus_effects) do
+        local obj = Spectrallib.BonusEffects[eff_table.key]
+        if type(obj.has_attribute) == "function" and obj:has_attribute(self, eff_table, attribute) then --allows for dynamic stuff based on config values
+            return true
+        elseif SMODS.has_attribute(obj, attribute) then
+            return true
+        end
+    end
 end
 
 function Spectrallib.calculate_bonus_effects(card, context)
@@ -230,6 +250,14 @@ local calc_keys = {
 local plus_keys = {
     "chips", "mult", "asc", "score", "blindsize"
 }
+local attribute_map = {
+    eq_chips = "eqchips",
+    eq_mult = "eqmult",
+    xlog_chips = "xchips",
+    xlog_mult = "xmult",
+    x_asc = "xasc",
+    exp_asc = "easc"
+}
 local function generic_loc_vars(_, _, _, eff_table)
     return { vars = { eff_table.config.extra } }
 end
@@ -244,7 +272,8 @@ for _, v in ipairs(plus_keys) do
         end,
         loc_vars = function(self, info_queue, card, eff_table)
             return { vars = { SMODS.signed(eff_table.config.extra) } }
-        end
+        end,
+        attributes = { attribute_map[v] or v }
     }
 end
 
@@ -256,7 +285,8 @@ for _, v in ipairs(calc_keys) do
                 return { [v] = eff_table.config.extra }
             end
         end,
-        loc_vars = generic_loc_vars
+        loc_vars = generic_loc_vars,
+        attributes = { attribute_map[v] or v }
     }
 end
 
@@ -267,7 +297,8 @@ for _, v in ipairs({"balance", "swap"}) do
             if context.joker_main or (context.main_scoring and context.cardarea == G.play) or context.forcetrigger then
                 return { [v] = true }
             end
-        end
+        end,
+        attributes = { v }
     }
 end
 
@@ -280,7 +311,8 @@ Spectrallib.BonusEffect {
         if context.joker_main or (context.main_scoring and context.cardarea == G.play) or context.forcetrigger then
             return { cry_broken_swap = eff_table.config.extra }
         end
-    end
+    end,
+    attributes = { "swap" }
 }
 
 Spectrallib.BonusEffect {
@@ -293,7 +325,8 @@ Spectrallib.BonusEffect {
     remove_from_deck = function (self, card, eff_table)
         ease_hands_played(-eff_table.config.extra)
         G.GAME.round_resets.hands = G.GAME.round_resets.hands - eff_table.config.extra
-    end
+    end,
+    attributes = { "hands" }
 }
 
 Spectrallib.BonusEffect {
@@ -306,7 +339,8 @@ Spectrallib.BonusEffect {
     remove_from_deck = function (self, card, eff_table)
         ease_discard(-eff_table.config.extra)
         G.GAME.round_resets.discards = G.GAME.round_resets.discards - eff_table.config.extra
-    end
+    end,
+    attributes = { "discard" }
 }
 
 Spectrallib.BonusEffect {
@@ -318,6 +352,7 @@ Spectrallib.BonusEffect {
     remove_from_deck = function (self, card, eff_table)
         G.hand:change_size(-eff_table.config.extra)
     end,
+    attributes = { "hand_size" }
 }
 
 Spectrallib.BonusEffect {
@@ -329,6 +364,7 @@ Spectrallib.BonusEffect {
     remove_from_deck = function (self, card, eff_table)
         G.consumeables:change_size(-eff_table.config.extra)
     end,
+    attributes = { "consumable_slot" }
 }
 
 Spectrallib.BonusEffect {
@@ -340,12 +376,14 @@ Spectrallib.BonusEffect {
     remove_from_deck = function (self, card, eff_table)
         G.jokers:change_size(-eff_table.config.extra)
     end,
+    attributes = { "joker_slot" }
 }
 
 Spectrallib.BonusEffect {
     key = "cashout",
     loc_vars = function (self, info_queue, card, eff_table)
-        return { vars = { eff_table.config.extra } }
+        local colour = eff_table.config.extra < 0 and G.C.RED or G.C.MONEY
+        return { vars = { SMODS.signed_dollars(eff_table.config.extra), colours = { colour } } }
     end,
     calculate = function (self, card, eff_table, context)
         if context.modify_final_cashout and not card.playing_card then
@@ -365,7 +403,20 @@ Spectrallib.BonusEffect {
                 end
             }
         end
-    end
+    end,
+    has_attribute = function (self, card, eff_table, attribute)
+        if eff_table.config.extra >= 0 then
+            if attribute == "economy" then return true end
+            if Spectrallib.in_table(SMODS.Attributes.economy.alias or {}, attribute) then
+                return true
+            end
+        else
+            if attribute == "lose_economy" then return true end
+            if Spectrallib.in_table(SMODS.Attributes.lose_economy.alias or {}, attribute) then
+                return true
+            end
+        end
+    end,
 }
 
 --#endregion
