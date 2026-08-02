@@ -434,7 +434,7 @@ for _, v in ipairs{"chips", "mult", "xmult"} do
             return { vars = { x and eff_table.config.extra or SMODS.signed(eff_table.config.extra), hand_loc } }
         end,
         on_apply = function (self, card, eff_table)
-            if not eff_table.config.hand_type then
+            if not G.GAME.hands[eff_table.config.hand_type] then
                 eff_table.config.hand_type = Spectrallib.get_random_hand(nil, "typehand_bonuseffect")
             end
         end,
@@ -477,7 +477,7 @@ Spectrallib.BonusEffect{
         return { vars = { SMODS.signed(eff_table.config.extra), suit_loc, colours = { G.C.SUITS[suit] } }}
     end,
     on_apply = function (self, card, eff_table)
-        if not eff_table.config.suit then
+        if not SMODS.Suits[eff_table.config.suit] then
             eff_table.config.suit = (pseudorandom_element(SMODS.Suits, "s_mult_bonuseffect") or {}).key or "Spades"
         end
     end,
