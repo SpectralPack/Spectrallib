@@ -239,13 +239,10 @@ local function tether_check(x)
         return Spectrallib.has_tether() and x or nil
     end
 end
-local function straight_flush()
-	return (
-		next(SMODS.find_card("j_four_fingers"))
-		and Spectrallib.gameset() ~= "modest"
-		and 4
-		or 5
-	)
+local function fingers(type)
+	return function ()
+		return Spectrallib.gameset() ~= "modest" and SMODS.four_fingers(type) or 5
+	end
 end
 ---@type { [string]: integer | fun():(integer|nil) }
 Spectrallib.ascension_numbers = {
@@ -253,13 +250,20 @@ Spectrallib.ascension_numbers = {
 	["Pair"]            = tether_check(2),
 	["Three of a Kind"] = tether_check(3),
 	["Four of a Kind"]  = tether_check(4),
-	["Straight"]        = straight_flush,
-	["Flush"]           = straight_flush,
+	["Straight"]        = fingers("straight"),
+	["Flush"]           = fingers("flush"),
 	["Two Pair"]        = 4,
 	["Full House"]      = 5,
 	["Five of a Kind"]  = 5,
 	["Flush House"]     = 5,
 	["Flush Five"]      = 5,
+	["Straight Flush"] = function ()
+		return (
+			Spectrallib.gameset() ~= "modest"
+			and math.max(SMODS.four_fingers("straight"), SMODS.four_fingers("flush"))
+			or 5
+		)
+	end
 }
 
 --#endregion
