@@ -449,10 +449,10 @@ function Spectrallib.get_highlighted_cards(areas, ignore, min, max, blacklist, s
 	max = max or 1
 	-- Convert blacklist tables to function
 	if type(blacklist) == "table" then
+		local t = SMODS.shallow_copy(blacklist)
 		blacklist = function (card)
 			local center_key = card.config.center.key
-			-- blacklist is (formerly) table; its reference saved by this new function
-			return not blacklist[center_key]
+			return not t[center_key]
 		end
 	else -- function or nil
 		blacklist = blacklist or function()
