@@ -45,6 +45,7 @@ function loc_colour(_c, _default, ...)
 	return lc(_c, _default, ...)
 end
 
+loc_colour() --rahhhhh
 
 local new_colours = {
     slib_eqmult = HEX("cb7f7f"),
