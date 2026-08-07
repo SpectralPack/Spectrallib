@@ -424,7 +424,7 @@ end
 ---@param x any
 ---@return boolean
 function Spectrallib.is_big(x)
-	return (type(x) == "table" and is_number(x)) or (is_big and is_big(x))
+	return (type(x) == "cdata" and is_number(x)) or (is_big and is_big(x))
 end
 
 --#endregion
