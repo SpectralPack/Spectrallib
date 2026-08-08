@@ -414,9 +414,9 @@ target = '''functions/common_events.lua'''
 pattern = '''if main_end then'''
 position = "before"
 payload = '''
-if cfg and cfg.cry_multiuse then
+if cfg and cfg.cry_multiuse and (not card or (card.bypass_discovery_center or card.config.center.discovered)) and card_type ~= "Locked" then --bit hacky but it works
 	local loc = {}
-	localize{type = 'other', key = 'slib_multiuse', nodes = loc, vars = {cfg.cry_multiuse, colours = { Spectrallib.get_text_colour(card) } }}
+	localize{type = 'other', key = 'slib_multiuse', nodes = loc, vars = {cfg.cry_multiuse, colours = { Spectrallib.get_text_colour(card, _c) } }}
 	desc_nodes[#desc_nodes+1] = loc[1]
 end
 '''

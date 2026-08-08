@@ -410,15 +410,15 @@ end
 ---Can be hooked if a card type's text/message colour should be different from its badge/type colour
 ---@param card Card
 ---@return [number, number, number, number]
-function Spectrallib.get_text_colour(card)
-    if not card then return G.C.UI.TEXT_DARK end
-    if card.config.center.set == "Joker" then
+function Spectrallib.get_text_colour(card, _c)
+    local set = card and card.ability.set or _c.set
+    if set == "Joker" then
         return G.C.FILTER
     end
-    if card.config.center.set == "Code" then --back compat thingy
+    if set == "Code" then --back compat thingy
         return G.C.SET.Code
     end
-    return get_type_colour(card.config.center, card) or G.C.UI.TEXT_DARK
+    return get_type_colour(_c, card) or G.C.UI.TEXT_DARK
 end
 
 ---Hookable function to modify the factor for ascension power. `base` is the base factor.<br>
