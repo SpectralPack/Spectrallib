@@ -28,8 +28,7 @@ end
 ---@return nil
 function Spectrallib.mod_score(amt) --good version
     G.SCORE_DISPLAY_QUEUE = G.SCORE_DISPLAY_QUEUE or {}
-    local old = G.GAME.chips
-    table.insert(G.SCORE_DISPLAY_QUEUE, old)
+    table.insert(G.SCORE_DISPLAY_QUEUE,G.GAME.chips)
     G.GAME.chips = amt
 end
 
@@ -37,7 +36,7 @@ end
 ---@return nil
 function Spectrallib.mod_blindsize(amt) --good version
     G.BLIND_SIZE_DISPLAY_QUEUE = G.BLIND_SIZE_DISPLAY_QUEUE or {}
-    table.insert(G.BLIND_SIZE_DISPLAY_QUEUE,amt)
+    table.insert(G.BLIND_SIZE_DISPLAY_QUEUE,G.GAME.blind.chips)
     G.GAME.blind.chips = amt
 end
 

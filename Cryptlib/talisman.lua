@@ -14,6 +14,15 @@ SMODS.Sound {
 	key = "eechips",
 	path = "TetrationalChips.wav",
 }
+--Sounds by VMan_2002
+SMODS.Sound {
+	key = "eblindsize",
+	path = "eblindsize.ogg"
+}
+SMODS.Sound {
+	key = "eeblindsize",
+	path = "eeblindsize.ogg"
+}
 
 local add_exponentials = not (SMODS.Mods.Talisman or SMODS.Mods.cdataman or {}).can_load
 
@@ -200,7 +209,7 @@ if add_exponentials then
 					nil,
 					percent,
 					nil,
-					{ message = effect.eblindsize_message or localize{key="a_eblindsize",vars={amount},type="variable"}, colour = effect.colour or from_edition and G.C.EDITION or G.C.DYN_UI.DARK, update_blind_size = true, sound = "xblindsize", edition = from_edition }) --needs sound
+					{ message = effect.eblindsize_message or localize{key="a_eblindsize",vars={amount},type="variable"}, colour = effect.colour or from_edition and G.C.EDITION or G.C.DYN_UI.DARK, update_blind_size = true, sound = "slib_eblindsize", edition = from_edition }) --needs sound
 			else
 				effect.update_blind_size = true
 			end
@@ -210,14 +219,14 @@ if add_exponentials then
 				juice_card(effect.card)
 			end
 			Spectrallib.mod_blindsize(Spectrallib.tetrate(G.GAME.blind.chips, amount))
-			if not effect.remove_default_message or effect.eblindsize_message then
+			if not effect.remove_default_message or effect.eeblindsize_message then
 				card_eval_status_text(
 					scored_card or effect.card or effect.focus,
 					from_edition and "jokers" or "extra",
 					nil,
 					percent,
 					nil,
-					{ message = effect.eblindsize_message or localize{key="a_eeblindsize",vars={amount},type="variable"}, colour = effect.colour or from_edition and G.C.EDITION or G.C.DYN_UI.DARK, update_blind_size = true, sound = "xblindsize", edition = from_edition }) --needs sound
+					{ message = effect.eeblindsize_message or localize{key="a_eeblindsize",vars={amount},type="variable"}, colour = effect.colour or from_edition and G.C.EDITION or G.C.DYN_UI.DARK, update_blind_size = true, sound = "slib_eeblindsize", edition = from_edition }) --needs sound
 			else
 				effect.update_blind_size = true
 			end
