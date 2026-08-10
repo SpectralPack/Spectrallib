@@ -56,13 +56,10 @@ function Spectrallib.tetrate(base, height)
         return base == 1 and 1 or (0 < base and base < 1 and 0) or (base < 0 and NaN) or math.huge
     end
     local frac = height - math.floor(height)
-    local tower = {}
+    local tot = base
+    tot = tot ^ (base ^ frac)
     for i = 2, math.floor(height) do
-        tower[#tower+1] = base
-    end
-    local tot = tower[#tower] ^ (base ^ frac)
-    for i = #tower, 1, -1 do
-        tot = tower[i] ^ tot
+        tot = base ^ tot
     end
     return tot
 end
