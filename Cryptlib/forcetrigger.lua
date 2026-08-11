@@ -37,9 +37,9 @@ Spectrallib.demicolonGetTriggerable = Spectrallib.card_is_forcetriggerable
 
 local calc_ref = Card.calculate_joker
 function Card:calculate_joker(...)
-	local ret =  calc_ref(self, ...)
+	local ret, triggered =  calc_ref(self, ...)
 	G.slib_copied_stack = nil
-	return ret
+	return ret, triggered
 end
 
 ---@param card Card
