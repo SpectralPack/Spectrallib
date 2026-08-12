@@ -38,6 +38,28 @@ Spectrallib.emult = SMODS.Gradient {
     update = update_exp_colour,
 }
 
+--Still subject to change
+Spectrallib.escore = SMODS.Gradient {
+    key = "escore",
+    colours = {
+        HEX("c96bff"),
+        HEX("a10de0"),
+    },
+    cycle = 4,
+    --update = update_exp_colour, --needed or no?
+}
+
+Spectrallib.eblindsize = SMODS.Gradient {
+    key = "eblindsize",
+    colours = {
+        HEX("4f6569"),
+        G.C.DYN_UI.MAIN, --Main is brighter than dark, also changes more often
+        HEX("4d5354")
+    },
+    cycle = 4,
+    --update = update_exp_colour, --needed or no?
+}
+
 local lc = loc_colour
 function loc_colour(_c, _default, ...)
 	if _c == "emult" then _c = "slib_emult" end
