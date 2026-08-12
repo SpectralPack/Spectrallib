@@ -30,12 +30,12 @@ return {
 			},
 			slib_perma_exp_asc = {
 				text = {
-					"{X:money,C:white}^#1#{} Ascension Power" --i have no idea what colour this should be, just guessing
+					"{X:slib_exp_asc,C:white}^#1#{} Ascension Power" --i have no idea what colour this should be, just guessing
 				}
 			},
 			slib_perma_h_exp_asc = {
 				text = {
-					"{X:money,C:white}^#1#{} Ascension Power while held"
+					"{X:slib_exp_asc,C:white}^#1#{} Ascension Power while held"
 				}
 			},
 			slib_perma_xlog_chips = {
@@ -174,7 +174,7 @@ return {
 			},
 			sbe_slib_exp_asc = {
 				text = {
-					"{X:gold,C:white}^#1#{} Ascension Power"
+					"{X:slib_exp_asc,C:white}^#1#{} Ascension Power"
 				}
 			},
 			sbe_slib_score = {
@@ -189,7 +189,7 @@ return {
 			},
 			sbe_slib_escore = {
 				text = {
-					"{X:purple,C:white}^#1#{} Score"
+					"{X:slib_escore,C:white}^#1#{} Score"
 				}
 			},
 			sbe_slib_blindsize = {
@@ -204,7 +204,7 @@ return {
 			},
 			sbe_slib_eblindsize = {
 				text = {
-					"{X:blind,C:white}^#1#{} Blind Size"
+					"{X:slib_eblindsize,C:white}^#1#{} Blind Size"
 				}
 			},
 			sbe_slib_swap = {

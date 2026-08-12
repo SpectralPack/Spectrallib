@@ -174,7 +174,7 @@ if add_exponentials then
 					nil,
 					percent,
 					nil,
-					{ message = effect.escore_message or localize{key="a_escore",vars={amount},type="variable"}, colour = effect.colour or from_edition and G.C.EDITION or G.C.PURPLE, update_score = true, sound = "xscore", edition = from_edition }) --needs sound
+					{ message = effect.escore_message or localize{key="a_escore",vars={amount},type="variable"}, colour = effect.colour or from_edition and G.C.EDITION or Spectrallib.escore, update_score = true, sound = "xscore", edition = from_edition }) --needs sound
 			else
 				effect.update_score = true
 			end
@@ -191,7 +191,7 @@ if add_exponentials then
 					nil,
 					percent,
 					nil,
-					{ message = effect.eescore_message or localize{key="a_eescore",vars={amount},type="variable"}, colour = effect.colour or from_edition and G.C.EDITION or G.C.PURPLE, update_score = true, sound = "xscore", edition = from_edition }) --needs sound
+					{ message = effect.eescore_message or localize{key="a_eescore",vars={amount},type="variable"}, colour = effect.colour or from_edition and G.C.EDITION or Spectrallib.escore, update_score = true, sound = "xscore", edition = from_edition }) --needs sound
 			else
 				effect.update_score = true
 			end
@@ -209,7 +209,7 @@ if add_exponentials then
 					nil,
 					percent,
 					nil,
-					{ message = effect.eblindsize_message or localize{key="a_eblindsize",vars={amount},type="variable"}, colour = effect.colour or from_edition and G.C.EDITION or G.C.DYN_UI.DARK, update_blind_size = true, sound = "slib_eblindsize", edition = from_edition }) --needs sound
+					{ message = effect.eblindsize_message or localize{key="a_eblindsize",vars={amount},type="variable"}, colour = effect.colour or from_edition and G.C.EDITION or Spectrallib.eblindsize, update_blind_size = true, sound = "slib_eblindsize", edition = from_edition }) --needs sound
 			else
 				effect.update_blind_size = true
 			end
@@ -226,7 +226,7 @@ if add_exponentials then
 					nil,
 					percent,
 					nil,
-					{ message = effect.eeblindsize_message or localize{key="a_eeblindsize",vars={amount},type="variable"}, colour = effect.colour or from_edition and G.C.EDITION or G.C.DYN_UI.DARK, update_blind_size = true, sound = "slib_eeblindsize", edition = from_edition }) --needs sound
+					{ message = effect.eeblindsize_message or localize{key="a_eeblindsize",vars={amount},type="variable"}, colour = effect.colour or from_edition and G.C.EDITION or Spectrallib.eblindsize, update_blind_size = true, sound = "slib_eeblindsize", edition = from_edition }) --needs sound
 			else
 				effect.update_blind_size = true
 			end

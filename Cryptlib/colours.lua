@@ -60,6 +60,16 @@ Spectrallib.eblindsize = SMODS.Gradient {
     --update = update_exp_colour, --needed or no?
 }
 
+Spectrallib.exp_asc = SMODS.Gradient { --todo: idk how to handle message colours with this since it uses Spectrallib.get_asc_colour
+    key = "exp_asc",
+    colours = {
+        HEX("c23a1f"),
+        HEX("f7c743"),
+    },
+    cycle = 4,
+    --Maybe make configurable to use G.C.GOLD again?
+}
+
 local lc = loc_colour
 function loc_colour(_c, _default, ...)
 	if _c == "emult" then _c = "slib_emult" end
