@@ -126,7 +126,7 @@ SMODS.Scoring_Parameter:take_ownership('mult', {
         if key == "xlog_mult" then
             if effect.card and effect.card ~= scored_card then juice_card(effect.card) end
             local log = math.log(self.current < 0 and 1 or self.current, amount)
-            self:modify(self.current*log - self.current)
+            self:modify(math.max(self.current*log - self.current, 0))
             if not Spectrallib.should_skip_animations() then
                 Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'chips', 1, percent, nil, nil, "Mult Xlog(Mult)", G.C.RED, "multhit2", 0.6)
             end
@@ -150,7 +150,7 @@ SMODS.Scoring_Parameter:take_ownership('chips', {
         if key == "xlog_chips" then
             if effect.card and effect.card ~= scored_card then juice_card(effect.card) end
             local log = math.log(self.current < 0 and 1 or self.current, amount)
-            self:modify(self.current*log - self.current)
+            self:modify(math.max(self.current*log - self.current, 0))
             if not Spectrallib.should_skip_animations() then
                 Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'chips', 1, percent, nil, nil, "Chips Xlog(Chips)", G.C.BLUE, "slib_xlog_chips", 0.6) --janky compat hack
             end
