@@ -25,7 +25,7 @@ Spectrallib.deck_config_apply_effects = {
     jokers = function (deck_center, value)
         Spectrallib.event(0.4)
         Spectrallib.event(function ()
-            for _, joker_key in pairs(deck_center.jokers) do
+            for _, joker_key in ipairs(value) do
                 SMODS.add_card{
                     set = 'Joker',
                     area = G.jokers,
