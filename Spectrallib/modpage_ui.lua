@@ -15,9 +15,29 @@ Spectrallib.config_opts.exponential_colours = function()
     })
 end
 
+Spectrallib.config_opts.credits_style = function()
+    local styles = {}
+    local ind = 1
+    for i, v in pairs(Spectrallib.get_credits_list()) do
+        styles[#styles+1] = localize{set = "CreditsStyle", key = v, type = "name_text"}
+        if v == (Spectrallib_config.credits_style or "creditsstyle_slib_badge_cycle") then  
+            ind = #styles
+        end
+    end
+    return create_option_cycle({
+        label = localize("k_slib_credits_styling"),
+        scale = 0.8,
+        w = 6,
+        options = styles,
+        opt_callback = "slib_update_credits_style",
+        current_option = ind,
+    })
+end
+
 SMODS.current_mod.config_tab = function()
     local nodes = {}
     nodes[#nodes+1] = Spectrallib.config_opts.exponential_colours()
+    nodes[#nodes+1] = Spectrallib.config_opts.credits_style()
     return {
 		n = G.UIT.ROOT,
 		config = {
@@ -37,4 +57,10 @@ end
 
 function G.FUNCS.slib_update_exp_colours(e)
     Spectrallib_config.exp_colours = e.to_key
+end
+
+
+function G.FUNCS.slib_update_credits_style(e)
+    local styles = Spectrallib.get_credits_list()
+    Spectrallib_config.credits_style = styles[e.to_key]
 end

@@ -1,6 +1,18 @@
 return {
     descriptions = {
         Other = {
+			slib_infoqueue_credit_art = {
+                name = "Art Credit",
+                text = {"Art By: {C:purple}#1#{}"}
+            },
+            slib_infoqueue_credit_code = {
+                name = "Code Credit",
+                text = {"Code By: {C:green}#1#{}"}
+            },
+            slib_infoqueue_credit_idea = {
+                name = "Idea Credit",
+                text = {"Idea By: {C:attention}#1#{}"}
+            },
             disabled = {
 				name = "Disabled",
 				text = {
@@ -302,7 +314,13 @@ return {
                     "{C:mult}#1#{} Mult when scored",
 				}
 			}
-        }
+        },
+		CreditsStyle = {
+			creditsstyle_slib_none = { name = "None" },
+			creditsstyle_slib_below_badge = { name = "Below Badge"},
+			creditsstyle_slib_badge_cycle = { name = "Cycle On Badge"},
+			creditsstyle_slib_info_queue = { name = "In Info-Queue"},
+		}
     },
     misc = {
         dictionary = {
@@ -347,6 +365,12 @@ return {
 
 			ph_no_decks = "No decks bought this run",
 			ph_decks_bought = "Decks bought this run",
+
+			slib_art = "Art: ",
+            slib_code = "Code: ",
+            slib_idea = "Idea: ",
+            k_slib_and = " & ", -- keep the extra spaces
+            k_slib_credits_styling = "Position to display card credits",
         },
         v_dictionary = {
         	a_xchips = "X#1# Chips",
@@ -374,7 +398,11 @@ return {
 			a_escore = "^#1# Score",
 			a_eescore = "^^#1# Score",
 			a_eblindsize = "^#1# Blind Size",
-			a_eeblindsize = "^^#1# Blind Size"
+			a_eeblindsize = "^^#1# Blind Size",
+
+			slib_art = "Art: #1#",
+			slib_code = "Code: #1#",
+			slib_idea = "Idea: #1#",
 		},
 		suits_singular = {
 			suitless = "Suitless"
