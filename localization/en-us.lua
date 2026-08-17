@@ -320,6 +320,7 @@ return {
 			creditsstyle_slib_below_badge = { name = "Below Badge"},
 			creditsstyle_slib_badge_cycle = { name = "Cycle On Badge"},
 			creditsstyle_slib_info_queue = { name = "In Info-Queue"},
+			creditsstyle_slib_below_popup = {name = "Below Popup"}
 		}
     },
     misc = {
