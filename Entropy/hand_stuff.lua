@@ -349,7 +349,7 @@ end
 
 -- Add ascension power info to hands
 local hand_row_ref = create_UIBox_current_hand_row
-function create_UIBox_current_hand_row(handname, simple)
+function create_UIBox_current_hand_row(handname, simple, in_collection)
     G.GAME.badarg = G.GAME.badarg or {}
     if G.GAME.hands[handname].operator then
       return (G.GAME.hands[handname].visible) and
@@ -388,7 +388,7 @@ function create_UIBox_current_hand_row(handname, simple)
       }})
       or nil
     elseif G.GAME.hands[handname] and not G.GAME.hands[handname].AscensionPower then
-        return hand_row_ref(handname, simple)
+        return hand_row_ref(handname, simple, in_collection)
     else
         if not (G.GAME.hands[handname]) then return {} end
         if not G.GAME.badarg then G.GAME.badarg = {} end
