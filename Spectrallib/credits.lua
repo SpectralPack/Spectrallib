@@ -203,3 +203,86 @@ function Spectrallib.get_credits_list(name)
     cred[#cred+1] = name and localize{set = "CreditsStyle", key = "creditsstyle_slib_none", type = "name_text"} or "creditsstyle_slib_none"
     return cred
 end
+
+SMODS.Atlas {
+    key = "credits_icons",
+    path = "credits_icons.png",
+    px = 22, py = 22
+}
+
+Spectrallib.CreditsStyle {
+    key = "below_popup",
+    card_h_popup = function(self, card, ret_val)
+        if not Spectrallib.credits_sprites then
+            Spectrallib.credits_sprites = {
+                art = SMODS.create_sprite(0, 0, 0.5, 0.5, "slib_credits_icons", { x = 0, y = 0 }),
+                code = SMODS.create_sprite(0, 0, 0.5, 0.5, "slib_credits_icons", { x = 1, y = 0 }),
+                idea = SMODS.create_sprite(0, 0, 0.5, 0.5, "slib_credits_icons", { x = 2, y = 0 })
+            }
+        end
+        local target = ret_val.nodes[1].nodes
+        local credits = card.slib_credits
+        local colours = {
+            idea = G.C.ORANGE,
+            code = G.C.GREEN,
+            art = G.C.PURPLE
+        }
+        if credits then
+            for _, v in ipairs({ "idea", "art", "code" }) do
+                if credits and credits[v] then
+                    if type(credits[v]) == "string" then credits[v] = {credits[v]} end
+                    for i = 1, #credits[v] do
+                        local dev = credits[v][i]
+                        local str = {
+                            n = G.UIT.R,
+                            config = { colour = G.C.CLEAR, align = "cm", w = 0, padding = 0.02 },
+                            nodes = {
+                                {n=G.UIT.R, config={align = "cm", minh = 0.3, r = 0.12, padding = 0.05, colour = colours[v], emboss = 0.07}, nodes={
+                                    {n=G.UIT.R, config={align = "cm", minh = 0.3, r = 0.1, minw = 2.5, padding = 0.04, colour = darken(colours[v], 0.4)}, nodes={
+                                        {
+                                            n = G.UIT.R,
+                                            config = { colour = G.C.CLEAR, align = "cm", w = 0, padding = 0.08 },
+                                            nodes = {
+                                                {
+                                                    n = G.UIT.O,
+                                                    config = {
+                                                        object = Spectrallib.credits_sprites[v],
+                                                    },
+                                                },
+                                                {
+                                                    n = G.UIT.C,
+                                                    config = { align = "cl" },
+                                                    nodes = {
+                                                        {n=G.UIT.R, config={align = "cl"}, nodes={{
+                                                            n = G.UIT.T,
+                                                            config = { text = localize("slib_by_"..v), shadow = true, colour = G.C.UI.BACKGROUND_WHITE, scale = 0.27 },
+                                                        }}},
+                                                        {n=G.UIT.R, config={align = "cl"}, nodes={{
+                                                            n = G.UIT.O,
+                                                            config = {
+                                                                object = DynaText({
+                                                                    string = dev or "",
+                                                                    colours = { G.C.UI.BACKGROUND_WHITE },
+                                                                    scale = 0.27,
+                                                                    silent = true,
+                                                                    shadow = true,
+                                                                }),
+                                                            },
+                                                        }}},
+                                                    }
+                                                },
+                                            }
+                                        },
+                                    }},
+                                }}
+                            }
+                        }
+                        if str then
+                            table.insert(target, str)
+                        end
+                    end
+                end
+            end
+        end
+    end
+}

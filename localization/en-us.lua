@@ -369,6 +369,9 @@ return {
 			slib_art = "Art: ",
             slib_code = "Code: ",
             slib_idea = "Idea: ",
+			slib_by_art = "Art by",
+            slib_by_code = "Code by",
+            slib_by_idea = "Idea by",
             k_slib_and = " & ", -- keep the extra spaces
             k_slib_credits_styling = "Position to display card credits",
         },
