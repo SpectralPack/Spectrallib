@@ -134,7 +134,7 @@ end
 function Spectrallib.calculate_bonus_effects(card, context)
     local bonus_ret = {}
     local triggered = false
-    for _, eff_table in ipairs(card.ability.slib_bonus_effects) do
+    for _, eff_table in ipairs(card.ability.slib_bonus_effects or {}) do
         local obj = Spectrallib.BonusEffects[eff_table.key]
         if type(obj.calculate) == "function" then
             local new_triggered = false
