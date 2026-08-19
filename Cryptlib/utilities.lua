@@ -459,7 +459,9 @@ function Spectrallib.get_highlighted_cards(areas, ignore, min, max, blacklist, s
 			return true
 		end
 	end
-
+	for i, v in pairs(areas) do
+		if v.cards then areas[i] = v.cards end
+	end
 	local highlighted_cards = {}
 	for card in Spectrallib.iter.areacards(areas) do
 		if (

@@ -213,13 +213,6 @@ SMODS.Atlas {
 Spectrallib.CreditsStyle {
     key = "below_popup",
     card_h_popup = function(self, card, ret_val)
-        if not Spectrallib.credits_sprites then
-            Spectrallib.credits_sprites = {
-                art = SMODS.create_sprite(0, 0, 0.5, 0.5, "slib_credits_icons", { x = 0, y = 0 }),
-                code = SMODS.create_sprite(0, 0, 0.5, 0.5, "slib_credits_icons", { x = 1, y = 0 }),
-                idea = SMODS.create_sprite(0, 0, 0.5, 0.5, "slib_credits_icons", { x = 2, y = 0 })
-            }
-        end
         local target = ret_val.nodes[1].nodes
         local credits = card.slib_credits
         local colours = {
@@ -230,11 +223,18 @@ Spectrallib.CreditsStyle {
         if credits then
             for _, v in ipairs({ "idea", "art", "code" }) do
                 if credits and credits[v] then
+                    local full = {
+                        n = G.UIT.R,
+                        config = { colour = G.C.CLEAR, align = "cm", w = 0, padding = 0.02 },
+                        nodes = {
+
+                        }
+                    }
                     if type(credits[v]) == "string" then credits[v] = {credits[v]} end
                     for i = 1, #credits[v] do
                         local dev = credits[v][i]
                         local str = {
-                            n = G.UIT.R,
+                            n = G.UIT.C,
                             config = { colour = G.C.CLEAR, align = "cm", w = 0, padding = 0.02 },
                             nodes = {
                                 {n=G.UIT.R, config={align = "cm", minh = 0.3, r = 0.12, padding = 0.05, colour = colours[v], emboss = 0.07}, nodes={
@@ -246,7 +246,7 @@ Spectrallib.CreditsStyle {
                                                 {
                                                     n = G.UIT.O,
                                                     config = {
-                                                        object = Spectrallib.credits_sprites[v],
+                                                        object = SMODS.create_sprite(0, 0, 0.5, 0.5, "slib_credits_icons", { x = ({art = 0, idea = 2, code = 1})[v], y = 0 }),
                                                     },
                                                 },
                                                 {
@@ -277,10 +277,9 @@ Spectrallib.CreditsStyle {
                                 }}
                             }
                         }
-                        if str then
-                            table.insert(target, str)
-                        end
+                        full.nodes[#full.nodes+1] = str
                     end
+                    table.insert(target, full)
                 end
             end
         end
