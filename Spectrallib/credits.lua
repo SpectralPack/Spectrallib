@@ -79,7 +79,7 @@ Spectrallib.CreditsStyle {
                             localize({ type = "variable", key = "slib_" .. v, vars = { obj.slib_credits[v][i] } })
                 end
             end
-        end        
+        end
         for i = 1, #strings do
             scale_fac[i] = calc_scale_fac(strings[i])
             min_scale_fac = math.min(min_scale_fac, scale_fac[i])
@@ -95,14 +95,14 @@ Spectrallib.CreditsStyle {
         end
         local max_text_width = (width or 1.732)
         return DynaText({
-            string = ct, 
-            colours = {mod.badge_text_colour or G.C.WHITE}, 
-            maxw = mod.no_marquee and max_text_width, 
-            float = true, 
-            shadow = true, 
-            offset_y = -0.05, 
-            silent = true, 
-            spacing = 1*min_scale_fac, 
+            string = ct,
+            colours = {mod.badge_text_colour or G.C.WHITE},
+            maxw = mod.no_marquee and max_text_width,
+            float = true,
+            shadow = true,
+            offset_y = -0.05,
+            silent = true,
+            spacing = 1*min_scale_fac,
             scale = text_height or 0.297
         })
     end
@@ -214,6 +214,12 @@ Spectrallib.CreditsStyle {
     key = "below_popup",
     card_h_popup = function(self, card, ret_val)
         local target = ret_val.nodes[1].nodes
+        local wrapper = {
+            n = G.UIT.R,
+            config = { align = "cm", },
+            nodes = { ret_val.nodes[1].nodes[1] }
+        }
+        ret_val.nodes[1].nodes[1] = wrapper
         local credits = card.slib_credits
         local colours = {
             idea = G.C.ORANGE,
@@ -223,17 +229,35 @@ Spectrallib.CreditsStyle {
         if credits then
             for _, v in ipairs({ "idea", "art", "code" }) do
                 if credits and credits[v] then
-                    local full = {
-                        n = G.UIT.R,
-                        config = { colour = G.C.CLEAR, align = "cm", w = 0, padding = 0.02 },
-                        nodes = {
-
-                        }
-                    }
+                    local str = {n=G.UIT.R, config={align = "cl"}, nodes={}}
                     if type(credits[v]) == "string" then credits[v] = {credits[v]} end
                     for i = 1, #credits[v] do
                         local dev = credits[v][i]
-                        local str = {
+                        if i ~= 1 then
+                            local comma = {
+                                n = G.UIT.T,
+                                config = { text = ", ", shadow = true, colour = G.C.UI.TEXT_LIGHT, scale = 0.27 },
+                            }
+                            str.nodes[#str.nodes+1] = comma
+                        end
+                        local name = {
+                            n = G.UIT.O,
+                            config = {
+                                object = DynaText({
+                                    string = dev or "",
+                                    colours = { G.C.UI.BACKGROUND_WHITE },
+                                    scale = 0.27,
+                                    silent = true,
+                                    shadow = true,
+                                }),
+                            },
+                        }
+                        str.nodes[#str.nodes+1] = name
+                    end
+                    local full = {
+                        n = G.UIT.R,
+                        config = { colour = G.C.CLEAR, align = "cm", w = 0, padding = 0.02 },
+                        nodes = {{
                             n = G.UIT.C,
                             config = { colour = G.C.CLEAR, align = "cm", w = 0, padding = 0.02 },
                             nodes = {
@@ -255,20 +279,9 @@ Spectrallib.CreditsStyle {
                                                     nodes = {
                                                         {n=G.UIT.R, config={align = "cl"}, nodes={{
                                                             n = G.UIT.T,
-                                                            config = { text = localize("slib_by_"..v), shadow = true, colour = G.C.UI.BACKGROUND_WHITE, scale = 0.27 },
+                                                            config = { text = localize("slib_by_"..v), shadow = true, colour = G.C.UI.TEXT_LIGHT, scale = 0.27 },
                                                         }}},
-                                                        {n=G.UIT.R, config={align = "cl"}, nodes={{
-                                                            n = G.UIT.O,
-                                                            config = {
-                                                                object = DynaText({
-                                                                    string = dev or "",
-                                                                    colours = { G.C.UI.BACKGROUND_WHITE },
-                                                                    scale = 0.27,
-                                                                    silent = true,
-                                                                    shadow = true,
-                                                                }),
-                                                            },
-                                                        }}},
+                                                        str,
                                                     }
                                                 },
                                             }
@@ -276,9 +289,8 @@ Spectrallib.CreditsStyle {
                                     }},
                                 }}
                             }
-                        }
-                        full.nodes[#full.nodes+1] = str
-                    end
+                        }}
+                    }
                     table.insert(target, full)
                 end
             end
