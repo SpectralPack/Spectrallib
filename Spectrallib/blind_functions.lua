@@ -14,7 +14,7 @@ end
 ---@param blind_key string
 ---@return { name: string, loc_name: string, loc_debuff_text: string, loc_debuff_lines: string[] }
 function Spectrallib.get_blind_text(blind_key)
-    local blind_proto = G.P_BLINDS[blind_key]
+    local blind_proto = G.P_BLINDS[blind_key] or G.P_BLINDS.bl_small
     local loc_vars = blind_proto.vars
     if blind_key == 'bl_ox' then
         loc_vars = { localize(G.GAME.current_round.most_played_poker_hand, 'poker_hands') }
@@ -70,7 +70,7 @@ end
 ---@param active_blind Blind The currently active blind.
 ---@return string
 function Spectrallib.get_debuff_text(blind_key, active_blind)
-    local blind_proto = G.P_BLINDS[blind_key]
+    local blind_proto = G.P_BLINDS[blind_key] or G.P_BLINDS.bl_small
     if type(blind_proto.get_loc_debuff_text) == 'function' then
         return blind_proto:get_loc_debuff_text()
     end
@@ -504,7 +504,7 @@ function Spectrallib.debuff_hand_copied_blinds(blind_keys, copying_blind, cards,
             local function debuff_occurred()
                 G.GAME.blind.triggered = true
                 G.GAME.blind.debuff_boss = blind_proto
-                SMODS.debuff_text = Spectrallib.get_debuff_text(blind_key, copying_blind)
+                SMODS.debuff_text = Spectrallib.get_debuff_text(blind_proto.key, copying_blind)
                 return true
             end
             if blind_proto.debuff.hand and next(hand[blind_proto.debuff.hand]) then
