@@ -720,10 +720,11 @@ Spectrallib.scoring_window_pulse_targets = {
 	{G.C.UI_CHIPS, G.C.BLUE},
 }
 
--- Resets the Poker Hand information to be for nothing (not None).
+-- Resets the Poker Hand information to show nothing (i.e. after using a Planet Card).
+---@param sound_config table
 ---@return nil
-function Spectrallib.reset_to_none()
-	update_hand_text({delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+function Spectrallib.reset_to_none(sound_config)
+	update_hand_text(sound_config or {delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
 end
 
 --#endregion
