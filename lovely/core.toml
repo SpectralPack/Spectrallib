@@ -136,7 +136,7 @@ match_indent = true
 target = "functions/common_events.lua"
 pattern = "elseif _c.set == 'Tag' then"
 position = "before"
-payload = "elseif _c.set == 'Back' or _c.set == 'Blind' then localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = specific_vars or {}}"
+payload = "elseif _c.set == 'Back' then localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = specific_vars or {}}"
 match_indent = true
 
 # Draw midground layer
