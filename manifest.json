@@ -1,0 +1,9 @@
+{
+	"name": "Spectrallib",
+	"description": "A library mod designed to conglomerate widely used functions from various mods",
+	"version": "1.3.0",
+	"dependencies": ["Steamodded-Steamodded-1.1814.0"],
+	"provides": [
+		"Cryptlib"
+	]
+}

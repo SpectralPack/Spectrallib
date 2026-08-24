@@ -201,7 +201,8 @@ end
 ---@param ref_value string|any
 ---@param args table|Spectrallib.manipulate.args
 ---@return nil
-function Spectrallib.manipulate_table(card, ref_table, ref_value, args)
+function Spectrallib.manipulate_table(card, ref_table, ref_value, args, full_path)
+	full_path = full_path or ""
 	if ref_value == "consumeable" then return end
 
 	local base_values = Spectrallib.base_values[card.config.center.key]
@@ -225,16 +226,16 @@ function Spectrallib.manipulate_table(card, ref_table, ref_value, args)
 
 			-- Proceed to manipulation
 			if args.big ~= nil then
-				ref_table[ref_value][tbl_key] = Spectrallib.manipulate_value(tbl_value, args, args.big, tbl_key)
+				ref_table[ref_value][tbl_key] = Spectrallib.manipulate_value(tbl_value, args, args.big, tbl_key, full_path.."."..tbl_key)
 			else
-				ref_table[ref_value][tbl_key] = Spectrallib.manipulate_value(tbl_value, args, Spectrallib.is_card_big(card), tbl_key)
+				ref_table[ref_value][tbl_key] = Spectrallib.manipulate_value(tbl_value, args, Spectrallib.is_card_big(card), tbl_key, full_path.."."..tbl_key)
 			end
 		elseif (
 			tbl_key ~= "immutable"
 			and type(tbl_value) == "table"
 			and Spectrallib.misprintize_value_blacklist[tbl_key] ~= false
 		) then
-			Spectrallib.manipulate_table(card, ref_table[ref_value], tbl_key, args)
+			Spectrallib.manipulate_table(card, ref_table[ref_value], tbl_key, args, full_path.."."..tbl_key)
 		end
 	end
 end
@@ -284,12 +285,12 @@ local manipulate_types = {
 ---@param is_big boolean
 ---@param value_key string
 ---@return number|nil
-function Spectrallib.manipulate_value(tbl_value, args, is_big, value_key)
+function Spectrallib.manipulate_value(tbl_value, args, is_big, value_key, full_path)
 	if not Spectrallib.is_number(tbl_value) then return end
 
 	-- Calculate new value
 	if args.func then
-		tbl_value = args.func(tbl_value, args, is_big, value_key)
+		tbl_value = args.func(tbl_value, args, is_big, value_key, full_path)
 	else
 		local new_num
 		if args.min and args.max then

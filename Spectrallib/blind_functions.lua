@@ -391,11 +391,13 @@ function Spectrallib.press_play_copied_blinds(blind_keys, copying_blind)
                 end
                 for i = 1, 2 do
                     if G.hand.cards[i] then
-                        local selected_card, card_key = pseudorandom_element(_cards, pseudoseed("ObsidianOrb"))
-                        G.hand:add_to_highlighted(selected_card, true)
-                        table.remove(_cards, card_key --[[@as integer]])
-                        any_selected = true
-                        play_sound("card1", 1)
+                        local selected_card, card_key = pseudorandom_element(_cards, pseudoseed("hook_discard"))
+                        if not selected_card.highlighted then
+                            G.hand:add_to_highlighted(selected_card, true)
+                            table.remove(_cards, card_key --[[@as integer]])
+                            any_selected = true
+                            play_sound("card1", 1)
+                        end
                     end
                 end
                 if any_selected then
@@ -876,7 +878,7 @@ function _G.create_UIBox_blind_info_queue(blind)
     }}
 end
 
-Spectrallib.max_blind_infoqueues = 5
+Spectrallib.max_blind_infoqueues = 6
 local blind_hoverref = Blind.hover
 function Blind:hover()
     local copied_blinds = Spectrallib.get_copied_blinds(self)

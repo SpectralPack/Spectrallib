@@ -2,7 +2,7 @@
 	"id": "Spectrallib",
 	"name": "Spectrallib",
 	"display_name": "Spectrallib",
-	"author": ["lord.ruby", "InvalidOS"],
+	"author": ["Spectralpack Dev Team"],
 	"description": "A library mod designed to conglomerate widely used functions from various mods",
 	"prefix": "slib",
 	"main_file": "main.lua",
