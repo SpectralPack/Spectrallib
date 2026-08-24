@@ -99,4 +99,34 @@ Spectrallib.deck_config_apply_effects = {
             Spectrallib.randomize_rank_suit(card, true, true, "erratic_midgame")
         end
     end,
+    reroll_discount = function (deck_center, value)
+        G.E_MANAGER:add_event(Event({
+            func = function()
+                G.GAME.round_resets.reroll_cost = G.GAME.round_resets.reroll_cost - value
+                G.GAME.current_round.reroll_cost = math.max(0,
+                    G.GAME.current_round.reroll_cost - value)
+                return true
+            end
+        }))
+    end,
+    edition = function (deck_center, value)
+        local count = deck_center.config.edition_count
+        local editionless_cards = {}
+        for _,c in ipairs(G.playing_cards) do
+            if not c.edition then
+                editionless_cards[#editionless_cards+1] = c
+            end
+        end
+        pseudoshuffle(editionless_cards, "edition_deck_midgame")
+        G.E_MANAGER:add_event(Event{
+            func = function (n)
+                for i = 1, count do
+                    if editionless_cards[i] then
+                        editionless_cards[i]:set_edition({[value] = true}, nil, true) --this method sucks but vanilla uses it
+                    end
+                end
+                return true
+            end
+        })
+    end
 }
