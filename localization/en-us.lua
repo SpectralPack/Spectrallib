@@ -403,6 +403,8 @@ return {
 			a_eescore = "^^#1# Score",
 			a_eblindsize = "^#1# Blind Size",
 			a_eeblindsize = "^^#1# Blind Size",
+			op_base = "Base#1##2#",
+			op_base_alt = "#1##2#Base",
 
 			slib_art = "Art: #1#",
 			slib_code = "Code: #1#",
