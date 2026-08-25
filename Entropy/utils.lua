@@ -90,7 +90,7 @@ function Spectrallib.format_arrow_mult(arrows, mult)
         operator = "+"
     elseif arrows == 0 then
         operator = "X"
-    elseif 1 <= arrows or arrows <= 6 then
+    elseif arrows >= 1 and arrows <= 6 then
         operator = ("^"):rep(arrows)
     end
 
