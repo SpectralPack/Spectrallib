@@ -420,12 +420,12 @@ function Spectrallib.get_text_colour(card, _c)
     return get_type_colour(_c, card) or G.C.UI.TEXT_DARK
 end
 
----Hookable function to modify the factor for ascension power. `base` is the base factor.<br>
+---Hookable function that calculates the chips/mult factor for Ascension Power.<br>
 ---By default, takes into account the effect of Sol from Cryptid.<br>
 ---Note that this may be called outside of a run.
----@param base number
+---@param run_info? boolean Wether the function is being called for displaying the factor in run info.
 ---@return number
-function Spectrallib.get_ascension_factor(base)
+function Spectrallib.get_ascension_factor(run_info)
     -- Sun number fallback (thing that Sol (Cryptid) increases)
 	G.GAME.sunnumber = G.GAME.sunnumber or {not_modest = 0, modest = 0}
     local sun_number
@@ -434,7 +434,7 @@ function Spectrallib.get_ascension_factor(base)
     else
 		sun_number = G.GAME.sunnumber
 	end
-    return base + sun_number + G.GAME.asc_factor_bonus
+    return G.GAME.ascension_factor + sun_number
 end
 
 ---Utility function that runs a get_id check for the given rank keys
