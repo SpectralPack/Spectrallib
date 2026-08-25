@@ -50,6 +50,10 @@
 ---@field round_base_mod? fun(self: SMODS.Blind|table, dt: number): number TODO document this
 ---@field modify_score? fun(self: SMODS.Blind|table, score: number): number TODO document this
 ---@field cap_score? fun(self: SMODS.Blind|table, score: number): number TODO document this
+-- Returns a string, number or UI element to display for the collection blind size
+---@field get_blind_size_text? fun(self: SMODS.Blind|table): string|table|number
+-- Returns the blind size this blind should have with the given `base` blind size
+---@field get_blind_amount? fun(self: SMODS.Blind|table, base: number, blind?: Blind|nil): number
 -- The returned list of keys are of blinds whose effects are copied by the main blind.
 ---@field get_copied_blinds? fun(self: SMODS.Blind|table, blind: Blind): string[]
 
