@@ -147,6 +147,8 @@ if not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
 				and (center.discovered or self.bypass_discovery_center)
 			) then return end
 
+			if not self.children.floating_sprite2 then return end
+
 			local scale_mod = 0.07
 			local rotate_mod = 0
 			local floating_sprite2 = self.children.floating_sprite2
