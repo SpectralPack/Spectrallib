@@ -202,7 +202,7 @@ function Spectrallib.iter.blinds(...)
     end
 end
 
----@alias IterableCardList Card[]|CardArea Can be iterated by Spectrallib.iter.areacards
+---@alias IterableCardList Card[]|CardArea|CardArea[] Can be iterated by Spectrallib.iter.areacards
 
 -- Iterator function: Iterate through each card in each collection of cards.
 -- Can either input keys as separate args, or in a table in one single arg.
