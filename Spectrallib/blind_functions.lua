@@ -123,6 +123,7 @@ function Spectrallib.get_blind_amount(blind_proto, blind, base)
     else
         amt = base*(blind_proto.mult or 1) --this is always defined when blinds are visible but is just randomly nil during load idk why
     end
+    amt = to_big(amt)
     if blind then
         for obj in Spectrallib.iter.blinds(Spectrallib.get_copied_blinds(blind)) do
             if type(obj.get_blind_amount) == "function" then
@@ -130,9 +131,10 @@ function Spectrallib.get_blind_amount(blind_proto, blind, base)
             else
                 amt = amt * (obj.mult or 2)/2
             end
+            amt = to_big(amt)
         end
     end
-    return amt
+    return to_big(amt)
 end
 
 --#endregion
