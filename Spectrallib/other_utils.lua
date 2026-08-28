@@ -11,6 +11,16 @@ function Spectrallib.can_mods_load(...)
     end
 end
 
+---@return boolean
+function Spectrallib.has_ongoing_run()
+    return (G.STAGE == G.STAGES.RUN)
+        or not not (
+            G.SETTINGS
+            and G.SETTINGS.profile
+            and love.filesystem.getInfo(G.SETTINGS.profile .. "/" .. "save.jkr")
+        )
+end
+
 -- Check if an optional feature is enabled by *any* enabled mod.
 ---@param key string
 ---@return true|nil

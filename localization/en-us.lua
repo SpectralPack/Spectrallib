@@ -341,6 +341,7 @@ return {
 			b_content_sets = "Thematic Sets",
 			cry_view_set_contents = "View Items in Set",
 			cry_set_enable_features = "Use this section to enable or disable entire Thematic Sets.",
+			cry_gameset_ongoing_warning = "(Gameset config options cannot be toggled while you have an ongoing game)",
 			cry_family = "Family Friendly Mode",
 
 			slib_exp_colours = "Exponential Chips and Mult colours",

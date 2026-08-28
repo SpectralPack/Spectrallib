@@ -116,6 +116,9 @@ function Card:click()
 		card_in_collection(self) and G.ACTIVE_MOD_UI
 		and (Spectrallib.mod_gameset_whitelist[G.ACTIVE_MOD_UI.id] or G.ACTIVE_MOD_UI.id == "Spectrallib")
 	) then
+		if Spectrallib.has_ongoing_run() then
+			return
+		end
 		if not self.config.center or self.config.center and self.config.center.set == "Default" then
 			--make a fake center
 			local old_force_gameset = self.config.center and self.config.center.force_gameset
@@ -147,6 +150,9 @@ end
 ---@param center table
 ---@return nil
 function Spectrallib.gameset_config_UI(center)
+	if Spectrallib.has_ongoing_run() then
+		return
+	end
 	center = center or G.viewedContentSet
 	local content_set_selected = center.set == "Content Set"
 
@@ -268,6 +274,9 @@ end
 ---@param gameset "modest"|"mainline"|"madness"
 ---@return nil
 function Card:cry_set_gameset(center, gameset)
+	if Spectrallib.has_ongoing_run() then
+		return
+	end
 	local current_save = G.PROFILES[G.SETTINGS.profile]
 	local gameset_already_set = current_save.cry_gameset == gameset
 
@@ -293,6 +302,9 @@ end
 
 ---@return nil
 function G.FUNCS.reset_gameset_config()
+	if Spectrallib.has_ongoing_run() then
+		return
+	end
 	G.PROFILES[G.SETTINGS.profile].cry_gameset_overrides = nil
 	Spectrallib.update_obj_registry()
 	G:save_progress()
@@ -658,6 +670,9 @@ G.P_CENTER_POOLS["Content Set"] = {}
 
 -- these are mostly copy/paste from vanilla code
 G.FUNCS.your_collection_content_sets = function(e)
+	if Spectrallib.has_ongoing_run() then
+		return
+	end
 	G.cry_prev_collec = "your_collection_content_sets"
 	G.SETTINGS.paused = true
 	G.FUNCS.overlay_menu({
@@ -1204,6 +1219,47 @@ SMODS.Atlas.inject = function(self)
 	if self.atlas_table ~= "ASSET_ATLAS" then
 		G.ASSET_ATLAS[self.key_noloc or self.key] = G[self.atlas_table][self.key_noloc or self.key]
 	end
+end
+
+-- Hook to display ongoing game warning on mod additions tab
+local bat = buildAdditionsTab
+function buildAdditionsTab(mod)
+	local tab = bat(mod)
+	if
+		tab
+		and mod
+		and (Spectrallib.mod_gameset_whitelist[mod.id] or mod.id == "Spectrallib")
+		and Spectrallib.has_ongoing_run()
+	then
+		local old_tab_def = tab.tab_definition_function
+		tab.tab_definition_function = function(...)
+			local res = old_tab_def(...)
+			local warning_node = {
+				n = G.UIT.R,
+				config = { align = "cm" },
+				nodes = {
+					{
+						n = G.UIT.O,
+						config = {
+							object = DynaText({
+								string = localize("cry_gameset_ongoing_warning"),
+								colours = { G.C.RED },
+								shadow = true,
+								scale = 0.32,
+							}),
+						},
+					},
+				},
+			}
+			local new_nodes = { warning_node }
+			for _, node in ipairs(res.nodes) do
+				new_nodes[#new_nodes + 1] = node
+			end
+			res.nodes = new_nodes
+			return res
+		end
+	end
+	return tab
 end
 
 -- add second back button to create_UIBox_generic_options
