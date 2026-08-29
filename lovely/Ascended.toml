@@ -225,7 +225,7 @@ local t = {
 '''
 position = 'before'
 payload = '''
-if not in_collection and ((G.GAME.cry_asc_played or 0) > 0 or Spectrallib.get_ascension_factor(1.25) ~= 1.25) then
+if not in_collection and ((G.GAME.cry_asc_played or 0) > 0) then
     table.insert(object.nodes[1].nodes, Spectrallib.create_UIBox_asc_hands())
 end
 '''

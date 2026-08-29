@@ -4,7 +4,7 @@
 --Creates the UIBox for Ascended Hands in run info
 function Spectrallib.create_UIBox_asc_hands()
     local times_leveled = G.GAME.sunlevel
-    local multiplier = Spectrallib.get_ascension_factor(1.25)
+    local multiplier = Spectrallib.get_ascension_factor(true)
     return {n=G.UIT.R, config={align = "cm", padding = 0.05, r = 0.1, colour = lighten(G.C.GOLD, 0.2), emboss = 0.05, hover = true, force_focus = true, 
         on_demand_tooltip = {text = localize("slib_asc_hands", 'poker_hand_descriptions'), filler = {func = Spectrallib.create_UIBox_asc_hands_tip, --[[args = "Junk Hands"]] }}
         },
@@ -19,7 +19,7 @@ function Spectrallib.create_UIBox_asc_hands()
             }},
             {n=G.UIT.C, config={align = "cr", padding = 0.05, colour = G.C.BLACK,r = 0.1}, nodes={
                 {n=G.UIT.C, config={align = "cm", padding = 0.01, r = 0.1, colour = G.C.GOLD , minw = 2.5}, nodes={
-                    {n=G.UIT.T, config={text = "X"..number_format(multiplier, 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}},
+                    {n=G.UIT.T, config={text = "X"..number_format(multiplier, 1e6), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}},
                     {n=G.UIT.B, config={w = 0.08, h = 0.01}}
                 }},
             }},

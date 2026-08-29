@@ -90,6 +90,53 @@ function Spectrallib.get_debuff_text(blind_key, active_blind)
     return disp_text
 end
 
+--These are not methods of `Blind` because they need to be called without access to an actual Blind object
+
+---Gets a ui element for the blind's collection blind size text
+---@param blind_proto SMODS.Blind The blind prototype the text is being generated for
+---@return table; UI element for blind size text
+function Spectrallib.get_blind_size_text(blind_proto)
+    if blind_proto and type(blind_proto.get_blind_size_text) == "function" then
+        local text = blind_proto:get_blind_size_text()
+        if type(text) == "number" then
+            text = number_format(text)
+        end
+        if type(text) == "table" then
+            return text
+        else
+            return {n=G.UIT.T, config={text = text, scale = 0.4, colour = G.C.RED}}
+        end
+    else
+        return {n=G.UIT.T, config={text = blind_proto.mult..localize('k_x_base'), scale = 0.4, colour = G.C.RED}}
+    end
+end
+
+---Gets the blind size for a given blind with the given base
+---@param blind_proto SMODS.Blind; The blind prototype to get blind size for
+---@param blind? Blind The blind relevant blind object, if it exists
+---@param base number; The base blind size to calculate with
+---@return number;
+function Spectrallib.get_blind_amount(blind_proto, blind, base)
+    local amt
+    if blind_proto and type(blind_proto.get_blind_amount) == "function" then
+        amt = blind_proto:get_blind_amount(base, blind)
+    else
+        amt = base*(blind_proto.mult or 1) --this is always defined when blinds are visible but is just randomly nil during load idk why
+    end
+    amt = to_big(amt)
+    if blind then
+        for obj in Spectrallib.iter.blinds(Spectrallib.get_copied_blinds(blind)) do
+            if type(obj.get_blind_amount) == "function" then
+                amt = obj:get_blind_amount(amt)
+            else
+                amt = amt * (obj.mult or 2)/2
+            end
+            amt = to_big(amt)
+        end
+    end
+    return to_big(amt)
+end
+
 --#endregion
 ------------------------------------
 

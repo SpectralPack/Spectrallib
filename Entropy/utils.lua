@@ -80,17 +80,17 @@ function Spectrallib.format_arrow_mult(arrows, mult)
     if arrows == "addition" then arrows = -1 end
     if arrows == "multiply" then arrows = 0 end
     if arrows == "exponent" then arrows = 1 end
-    if type(arrows) == "string" then arrows = 0 end
-    mult = type(mult) ~= "string" and number_format(mult) or mult
+    assert(type(arrows) == "number", "'arrows' passed to Spectrallib.format_arrow_mult was not a number or valid string")
+    mult = type(mult) == "number" and number_format(mult) or mult or ""
 
-    local operator = ("{%s}"):format(arrows)
+    local operator = ("{%s}"):format(number_format(arrows, 1e5)) --relatively low e_switch_point for hopefully obvious reasons
     if arrows == -2 then
         operator = "="
     elseif arrows == -1 then
         operator = "+"
     elseif arrows == 0 then
         operator = "X"
-    elseif 1 <= arrows or arrows <= 6 then
+    elseif arrows >= 1 and arrows <= 6 then
         operator = ("^"):rep(arrows)
     end
 

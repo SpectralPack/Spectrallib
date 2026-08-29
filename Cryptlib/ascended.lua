@@ -102,7 +102,7 @@ function Spectrallib.ascend(value, asc_power) -- edit this function at your leis
     asc_power = num2
 
 	-- The formula
-    return value * (to_big(Spectrallib.get_ascension_factor(1.25)) ^ to_big(asc_power))
+    return value * (to_big(Spectrallib.get_ascension_factor()) ^ to_big(asc_power))
 end
 
 -- Get the ascension threshold for a hand.
@@ -171,9 +171,9 @@ end
 ---@param level_up number The amount of levels to increase ascended hand level by
 ---@param message? boolean Wether to display a localized level up message in the animation
 function Spectrallib.asc_level_up(card, number, level_up, message)
-	local old_factor = Spectrallib.get_ascension_factor(1.25)
+	local old_factor = Spectrallib.get_ascension_factor()
 	local old_lv = to_big(G.GAME.sunlevel)
-	G.GAME.asc_factor_bonus = to_big(G.GAME.asc_factor_bonus) + number*level_up
+	G.GAME.ascension_factor = to_big(G.GAME.ascension_factor) + number*level_up
 	G.GAME.sunlevel = to_big(G.GAME.sunlevel) + level_up
 
 	if message then
@@ -214,7 +214,7 @@ function Spectrallib.asc_level_up(card, number, level_up, message)
 				return true
 			end,
 		}))
-		local new_factor = Spectrallib.get_ascension_factor(1.25)
+		local new_factor = Spectrallib.get_ascension_factor()
 		update_hand_text(
 			{ sound = "button", volume = 0.7, pitch = 0.9, delay = 0 },
 			{ level = number_format(to_big(G.GAME.sunlevel)), chips = "X"..number_format(new_factor), mult = "X"..number_format(new_factor)  }

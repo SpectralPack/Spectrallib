@@ -147,6 +147,8 @@ if not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
 				and (center.discovered or self.bypass_discovery_center)
 			) then return end
 
+			if not self.children.floating_sprite2 then return end
+
 			local scale_mod = 0.07
 			local rotate_mod = 0
 			local floating_sprite2 = self.children.floating_sprite2
@@ -434,74 +436,102 @@ end
 --#region GAMEPLAY OBJECT RETRIEVAL --
 --------------------------------------
 
+---@class Spectrallib.get_highlighted_cards.args
+---@field min? number The minimum number of cards to be selected
+---@field max? number The maximum number of cards to be selected
+---@field ignore_func? string[]|(fun(card: Card): boolean?) Check wether a card should be excluded from card list entirely. return `false` to exclude a card. Can also be a list of card keys to exclude
+---@field use_condition? (fun(card: Card): boolean?) Check wether a card should be able to be targeted. If this returns `false` outside of a forcetrigger, and empty table will be returned
+---@field seed? string The seed to be used for random card selection in forcetriggering
+---@field source? Object|table The card calling the function. It will be ignored when creating the card table
+---@field areas IterableCardList|table A list of areas to check for cards in.
+
 -- Get all highlighted cards in the specified list of card areas.
----@param areas CardArea[]
----@param ignore Card|table A card to exclude from the highlighted list.
----@param min number
----@param max number If the count of highlighted cards exceeds this value, returned table will be a max-sized list of randomly selected highlighted cards.
----@param blacklist? string[]|(fun(card: Card): boolean) If function returns true, card is included into the highlighted list. Table entries are keys of centers to exclude.
----@param seed? string|any Can be used alongside the `max` parameter.
+---@param args table|Spectrallib.get_highlighted_cards.args
+---@param ignore? Card|table (BACK COMPAT) A card to exclude from the highlighted list.
+---@param min? number (BACK COMPAT)
+---@param max? number (BACK COMPAT) If the count of highlighted cards exceeds this value, returned table will be a max-sized list of randomly selected highlighted cards.
+---@param blacklist? string[]|(fun(card: Card): boolean) (BACK COMPAT) If function returns true, card is included into the highlighted list. Table entries are keys of centers to exclude.
+---@param seed? string|any (BACK COMPAT) Can be used alongside the `max` parameter.
 ---@return Card[]
-function Spectrallib.get_highlighted_cards(areas, ignore, min, max, blacklist, seed)
-	ignore = ignore or {}
-	ignore.checked = true
-	min = min or 1
-	max = max or 1
+function Spectrallib.get_highlighted_cards(args, ignore, min, max, blacklist, seed)
+	if ignore or min or max or blacklist or seed then
+		args = {
+			areas = args,
+			min = min,
+			max = max,
+			ignore_func = blacklist,
+			seed = seed,
+			source = ignore
+		}
+	end
+	args.min = args.min or 1
+	args.max = args.max or 1
 	-- Convert blacklist tables to function
-	if type(blacklist) == "table" then
-		local t = SMODS.shallow_copy(blacklist)
-		blacklist = function (card)
+	if type(args.ignore_func) == "table" then
+		local t = SMODS.shallow_copy(args.ignore_func)
+		args.ignore_func = function (card)
 			local center_key = card.config.center.key
 			return not t[center_key]
 		end
 	else -- function or nil
-		blacklist = blacklist or function()
+		args.ignore_func = args.ignore_func or function()
 			return true
 		end
 	end
-	for i, v in pairs(areas) do
-		if v.cards then areas[i] = v.cards end
-	end
+	args.use_condition = args.use_condition or function() return true end
 	local highlighted_cards = {}
-	for card in Spectrallib.iter.areacards(areas) do
-		if (
-			card ~= ignore
-			and blacklist(card)
-			and (card.highlighted or G.cry_force_use)
-			and not card.checked
-		) then
-			table.insert(highlighted_cards, card)
-			card.checked = true
-		end
-	end
-	for _, card in ipairs(highlighted_cards) do
-		card.checked = nil
-	end
 
-	if (min <= #highlighted_cards and #highlighted_cards <= max) or not G.cry_force_use then
-		ignore.checked = nil
-		return highlighted_cards
-	else -- Pick a random set of highlighted cards
-		for i, card in pairs(highlighted_cards) do
-			card.f_use_order = i
-		end
-
-		pseudoshuffle(highlighted_cards, pseudoseed("forcehighlight" or seed))
-		local ret_cards = {}
-		for i = 1, max do
-			if highlighted_cards[i] and not highlighted_cards[i].checked then
-				table.insert(ret_cards, highlighted_cards[i])
+	if G.cry_force_use then
+		local eligible_cards = {}
+		for card in Spectrallib.iter.areacards(args.areas) do
+			if card ~= args.source and args.ignore_func(card) and args.use_condition(card) and not card.checked then
+				if card.highlighted then
+					highlighted_cards[#highlighted_cards+1] = card
+				end
+				eligible_cards[#eligible_cards+1] = card
+				card.checked = true
 			end
 		end
-		table.sort(ret_cards, function(a, b)
-			return a.f_use_order < b.f_use_order
-		end)
-
-		for _, card in pairs(highlighted_cards) do
-			card.f_use_order = nil
+		for _,c in ipairs(eligible_cards) do
+			c.checked = nil
 		end
-		ignore.checked = nil
-		return ret_cards
+		local ret_cards = {}
+		if next(highlighted_cards) then
+			if #highlighted_cards <= args.max then
+				return highlighted_cards
+			else
+				pseudoshuffle(highlighted_cards, seed or "forcehighlight")
+				for i = 1, args.max do
+					ret_cards[#ret_cards+1] = highlighted_cards[i]
+				end
+				return ret_cards
+			end
+		else
+			pseudoshuffle(eligible_cards, seed or "forcehighlight")
+			for i = 1, args.max do
+				ret_cards[#ret_cards+1] = eligible_cards[i]
+			end
+			return ret_cards
+		end
+	else
+		for card in Spectrallib.iter.areacards(args.areas) do
+			if card.highlighted and card ~= args.source then
+				local can_use = args.use_condition(card)
+				if not can_use then return {} end
+				if args.ignore_func(card) and not card.checked then
+					highlighted_cards[#highlighted_cards+1] = card
+					card.checked = true
+				end
+			end
+		end
+		for _,c in ipairs(highlighted_cards) do
+			c.checked = nil
+		end
+		if #highlighted_cards < args.min or #highlighted_cards > args.max then
+			return {}
+		else
+			return highlighted_cards
+		end
 	end
 end
 

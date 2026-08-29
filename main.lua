@@ -38,7 +38,7 @@ function Game:init_game_object()
     end
     ret.RankBuffs.rankless = { level = 1, chips = 0, mult = 0 }
     --ascended hand level stuff
-    ret.asc_factor_bonus = 0
+    ret.ascension_factor = 1.25 --default factor
     ret.sunlevel = 1
     --identical behaviour to cry_banished_keys in cryptid
     ret.slib_banished_keys = {}
