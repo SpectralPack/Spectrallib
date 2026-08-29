@@ -57,7 +57,6 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-<<<<<<< HEAD
 target = 'game.lua'
 position = 'at'
 pattern = '''
@@ -70,17 +69,17 @@ payload = '''
     {n=G.UIT.O, config={func = "update_blind_debuff_text", object = DynaText({scale = 0.6, font = Spectrallib.get_blind_font(G.GAME.blind), string = SMODS.debuff_text or G.GAME.blind:get_loc_debuff_text(), maxw = 9, colours = {G.C.WHITE},float = true, shadow = true, silent = true, pop_in = 0, pop_in_rate = 6})}},
 }}
 '''
-=======
+
+[[patches]]
+[patches.pattern]
 target = "functions/UI_definitions.lua"
 pattern = "{n=G.UIT.T, config={text = blind.mult..localize('k_x_base'), scale = 0.4, colour = G.C.RED}},"
 position = "at"
 payload = "Spectrallib.get_blind_size_text(blind),"
->>>>>>> 3e4bc8e4b42f614017d1f512d4396332d789d484
 match_indent = true
 
 [[patches]]
 [patches.pattern]
-<<<<<<< HEAD
 target = 'functions/UI_definitions.lua'
 position = 'at'
 pattern = '''
@@ -89,17 +88,17 @@ ability_text[#ability_text + 1] = {n=G.UIT.R, config={align = "cm"}, nodes={{n=G
 payload = '''
 ability_text[#ability_text + 1] = {n=G.UIT.R, config={align = "cm"}, nodes={{n=G.UIT.T, config={text = v, font = Spectrallib.get_blind_font(blind), scale = 0.35, shadow = true, colour = G.C.WHITE}}}}
 '''
-=======
+
+[[patches]]
+[patches.pattern]
 target = "functions/UI_definitions.lua"
 pattern = "local blind_amt = get_blind_amount(G.GAME.round_resets.blind_ante)*blind_choice.config.mult*G.GAME.starting_params.ante_scaling"
 position = "at"
 payload = "local blind_amt = Spectrallib.get_blind_amount(blind_choice.config, nil, get_blind_amount(G.GAME.round_resets.blind_ante))*G.GAME.starting_params.ante_scaling"
->>>>>>> 3e4bc8e4b42f614017d1f512d4396332d789d484
 match_indent = true
 
 [[patches]]
 [patches.pattern]
-<<<<<<< HEAD
 target = 'functions/UI_definitions.lua'
 position = 'at'
 pattern = '''
