@@ -467,8 +467,8 @@ end
 ---@param include_hidden? boolean Wether roll should include currently non-visible hands
 ---@param seed? any RNG seed to use for polling
 ---@param in_pool? (fun(v: string, args: table): boolean?) in_pool function to pass into pseudorandom_element
----@param fallback? PokerHand|string? Fallback hand if no hand could be rolled, defaults to `High Card`
----@return PokerHand|string
+---@param fallback? string? Fallback hand if no hand could be rolled, defaults to `High Card`
+---@return string
 function Spectrallib.get_random_hand(include_hidden, seed, in_pool, fallback)
     local hands = {}
     for _,name in ipairs(G.handlist) do
