@@ -215,7 +215,7 @@ function Spectrallib.calculate_ascension_modification(args)
         function ()
             local text = number_format(G.GAME.asc_power_hand)
             local text_format = "(%s%s)"
-            local optional_plus = G.GAME.asc_power_hand >= 0 and "+" or ""
+            local optional_plus = (G.GAME.asc_power_hand or 0) >= 0 and "+" or ""
             G.GAME.current_round.current_hand.cry_asc_num_text = text_format:format(optional_plus, text)
             return true
         end,

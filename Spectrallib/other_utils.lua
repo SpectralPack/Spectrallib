@@ -479,3 +479,10 @@ function Spectrallib.get_random_hand(include_hidden, seed, in_pool, fallback)
     local hand = pseudorandom_element(hands, seed, {in_pool = in_pool})
     return hand or fallback or "High Card"
 end
+
+function Spectrallib.get_blind_font(blind)
+    local bl = blind and G.P_BLINDS[blind.name or blind.config and blind.config.name]
+    if bl then
+        return bl.font
+    end
+end

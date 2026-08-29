@@ -4,7 +4,4 @@
 	"version_number": "1.3.0",
 	"website_url": "https://github.com/SpectralPack/Spectrallib",
 	"dependencies": ["Steamodded-Steamodded-1.1814.0"],
-	"provides": [
-		"Cryptlib"
-	]
 }
