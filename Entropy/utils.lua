@@ -100,7 +100,7 @@ end
 Spectrallib.format_arrow_value = Spectrallib.format_arrow_mult
 
 -- Split a string into its characters.
----@param s string
+---@param str string
 ---@return string[]
 function Spectrallib.stringsplit(str)
     local tbl = {}
