@@ -69,6 +69,7 @@ payload = '''
     {n=G.UIT.O, config={func = "update_blind_debuff_text", object = DynaText({scale = 0.6, font = Spectrallib.get_blind_font(G.GAME.blind), string = SMODS.debuff_text or G.GAME.blind:get_loc_debuff_text(), maxw = 9, colours = {G.C.WHITE},float = true, shadow = true, silent = true, pop_in = 0, pop_in_rate = 6})}},
 }}
 '''
+match_indent = true
 
 [[patches]]
 [patches.pattern]
@@ -88,6 +89,7 @@ ability_text[#ability_text + 1] = {n=G.UIT.R, config={align = "cm"}, nodes={{n=G
 payload = '''
 ability_text[#ability_text + 1] = {n=G.UIT.R, config={align = "cm"}, nodes={{n=G.UIT.T, config={text = v, font = Spectrallib.get_blind_font(blind), scale = 0.35, shadow = true, colour = G.C.WHITE}}}}
 '''
+match_indent = true
 
 [[patches]]
 [patches.pattern]
