@@ -418,7 +418,7 @@ function create_UIBox_current_hand_row(handname, simple, in_collection)
                     }},
                     {n=G.UIT.T, config={text = to_big(G.GAME.hands[handname].AscensionPower) >= to_big(0) and "+" or "-", scale = 0.45, colour = color}},
                     {n=G.UIT.C, config={align = "cm", padding = 0.01, r = 0.1, colour = color, minw = 0.7}, nodes={
-                      {n=G.UIT.T, config={text = ""..number_format(math.abs(to_big(G.GAME.hands[handname].AscensionPower) ^ to_big(G.GAME.hands[handname].TranscensionPower or 1)), 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}}
+                      {n=G.UIT.T, config={text = ""..number_format(math.abs(to_big(G.GAME.hands[handname].AscensionPower)), 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}}
                     }}
                   }},
               {n=G.UIT.C, config={align = "cm", minw = 3.8, maxw = 3.8}, nodes={
