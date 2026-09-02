@@ -454,6 +454,7 @@ end
 
 --TODO: clean up later to merge with cryptid stuff
 --todo: figure this out
+--[[ done :3 but only commented out so people can check if anything is missing also marked stuff shouldnt be needed i think since entropy handles that??
 local pokerhandinforef = G.FUNCS.get_poker_hand_info
 function G.FUNCS.get_poker_hand_info(_cards)
 	local text, loc_disp_text, poker_hands, scoring_hand, disp_text = pokerhandinforef(_cards)
@@ -521,3 +522,4 @@ function G.FUNCS.get_poker_hand_info(_cards)
     end
 	return text, loc_disp_text, poker_hands, scoring_hand, disp_text
 end
+]]

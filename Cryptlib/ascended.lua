@@ -40,12 +40,16 @@ function G.FUNCS.get_poker_hand_info(_cards)
 
 	-- UI displaying ascension power
 	G.GAME.current_round.current_hand.cry_asc_num = asc_power
-	if asc_power > 0 and not hidden then
+	if G.GAME.badarg and G.GAME.badarg[text] and not hidden then
+		-- Change chips and mult colors for badarg
+		ease_colour(G.C.UI_CHIPS, copy_table(HEX("FF0000")), 0.3)
+        ease_colour(G.C.UI_MULT, copy_table(HEX("FF0000")), 0.3)
+	elseif asc_power ~= 0 and not hidden then
 		-- Change mult and chips colors if hand is ascended
-		ease_colour(G.C.UI_CHIPS, copy_table(G.C.GOLD), 0.3)
-		ease_colour(G.C.UI_MULT, copy_table(G.C.GOLD), 0.3)
-		G.GAME.current_round.current_hand.cry_asc_num_text =
-			("(+%s)"):format(number_format(asc_power))
+		local col = Spectrallib.get_asc_colour(asc_power, text)
+		ease_colour(G.C.UI_CHIPS, copy_table(col), 0.3)
+		ease_colour(G.C.UI_MULT, copy_table(col), 0.3)
+		G.GAME.current_round.current_hand.cry_asc_num_text = "("..SMODS.signed(asc_power)..")"
 	else
 		ease_colour(G.C.UI_CHIPS, G.C.BLUE, 0.3)
 		ease_colour(G.C.UI_MULT, G.C.RED, 0.3)
@@ -133,6 +137,9 @@ function Spectrallib.calculate_starting_asc_power(hand_name, hand_cards, hand_sc
 			starting_power = card_count - asc_threshold
 		end
 	end
+	if G.GAME.hands[hand_name] and G.GAME.hands[hand_name].AscensionPower then
+		starting_power = starting_power + G.GAME.hands[hand_name].AscensionPower
+	end
 	return starting_power
 end
 
@@ -146,6 +153,7 @@ function Spectrallib.calculate_bonus_asc_power(hand_name, hand_cards, hand_scori
 	return 0
 end
 
+-- TODO: figure out why negative ascension power is just ignored entirely for no reason
 -- Get the ascension power of the current hand.
 ---@param hand_name string
 ---@param hand_cards Card[]

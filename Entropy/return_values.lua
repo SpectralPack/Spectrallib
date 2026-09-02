@@ -7,6 +7,9 @@ for _, v in ipairs({'asc', 'asc_mod', 'plus_asc', 'plusasc_mod', 'exp_asc', 'exp
 end
 
 function Spectrallib.get_asc_colour(amount, text)
+    if amount and amount < 0 then --descension power real????
+        return HEX("6a7895")
+    end
     return G.C.GOLD
 end
 
@@ -213,10 +216,7 @@ function Spectrallib.calculate_ascension_modification(args)
     -- Set the text in the ascension power window
     Spectrallib.event{
         function ()
-            local text = number_format(G.GAME.asc_power_hand)
-            local text_format = "(%s%s)"
-            local optional_plus = (G.GAME.asc_power_hand or 0) >= 0 and "+" or ""
-            G.GAME.current_round.current_hand.cry_asc_num_text = text_format:format(optional_plus, text)
+            G.GAME.current_round.current_hand.cry_asc_num_text = "("..SMODS.signed(G.GAME.asc_power_hand)..")"
             return true
         end,
         instant = Spectrallib.should_skip_animations()
