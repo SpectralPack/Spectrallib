@@ -134,7 +134,7 @@ function Spectrallib.calculate_starting_asc_power(hand_name, hand_cards, hand_sc
 		local asc_threshold = Spectrallib.hand_ascension_numbers(hand_name)
 		if asc_threshold then
 			local card_count = Spectrallib.has_tether() and #hand_cards or #hand_scoring_cards
-			starting_power = card_count - asc_threshold
+			starting_power = math.max(card_count - asc_threshold, 0)
 		end
 	end
 	if G.GAME.hands[hand_name] and G.GAME.hands[hand_name].AscensionPower then
@@ -165,7 +165,7 @@ function Spectrallib.calculate_ascension_power(hand_name, hand_cards, hand_scori
 	local starting_power = Spectrallib.calculate_starting_asc_power(hand_name, hand_cards, hand_scoring_cards)
 	local bonus_power = (G.GAME.bonus_asc_power or 0) + Spectrallib.calculate_bonus_asc_power(hand_name, hand_cards, hand_scoring_cards)
 
-	local final_power = math.max(0, starting_power + bonus_power)
+	local final_power = starting_power + bonus_power
 	-- Needed to avoid awkwardness from raising to power of <1
 	if 0 < final_power and final_power < 1 then
 		final_power = 1
