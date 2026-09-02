@@ -166,10 +166,10 @@ function Spectrallib.calculate_ascension_power(hand_name, hand_cards, hand_scori
 	local bonus_power = (G.GAME.bonus_asc_power or 0) + Spectrallib.calculate_bonus_asc_power(hand_name, hand_cards, hand_scoring_cards)
 
 	local final_power = starting_power + bonus_power
-	-- Needed to avoid awkwardness from raising to power of <1
+	--[[ Needed to avoid awkwardness from raising to power of <1 (no its not)
 	if 0 < final_power and final_power < 1 then
 		final_power = 1
-	end
+	end]]
 	return final_power
 end
 
