@@ -418,7 +418,7 @@ function create_UIBox_current_hand_row(handname, simple, in_collection)
                     }},
                     {n=G.UIT.T, config={text = to_big(G.GAME.hands[handname].AscensionPower) >= to_big(0) and "+" or "-", scale = 0.45, colour = color}},
                     {n=G.UIT.C, config={align = "cm", padding = 0.01, r = 0.1, colour = color, minw = 0.7}, nodes={
-                      {n=G.UIT.T, config={text = ""..number_format(math.abs(to_big(G.GAME.hands[handname].AscensionPower) ^ to_big(G.GAME.hands[handname].TranscensionPower or 1)), 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}}
+                      {n=G.UIT.T, config={text = ""..number_format(math.abs(to_big(G.GAME.hands[handname].AscensionPower)), 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}}
                     }}
                   }},
               {n=G.UIT.C, config={align = "cm", minw = 3.8, maxw = 3.8}, nodes={
@@ -454,6 +454,7 @@ end
 
 --TODO: clean up later to merge with cryptid stuff
 --todo: figure this out
+--[[ done :3 but only commented out so people can check if anything is missing also marked stuff shouldnt be needed i think since entropy handles that??
 local pokerhandinforef = G.FUNCS.get_poker_hand_info
 function G.FUNCS.get_poker_hand_info(_cards)
 	local text, loc_disp_text, poker_hands, scoring_hand, disp_text = pokerhandinforef(_cards)
@@ -521,3 +522,4 @@ function G.FUNCS.get_poker_hand_info(_cards)
     end
 	return text, loc_disp_text, poker_hands, scoring_hand, disp_text
 end
+]]
