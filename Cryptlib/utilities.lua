@@ -319,7 +319,7 @@ function Spectrallib.pluralize(str, vars)
 			return current_check.affix
 		end
 	end
-	return plural_affix
+	return plural_affix:gsub("%%var", number_format(vars[var_index]))
 end
 
 -- Restricts the input within the range `[min,max]`.

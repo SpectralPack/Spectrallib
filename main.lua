@@ -64,7 +64,6 @@ local files = {
     {path = "Cryptlib/manipulate", redirect = "Cryptid"},
     {path = "Cryptlib/forcetrigger", redirect = "Cryptid"},
     {path = "Cryptlib/forcetrigger__vanilladef", redirect = "Cryptid"},
-    {path = "Cryptlib/content_sets", redirect = "Cryptid"},
     {path = "Cryptlib/ascended", redirect = "Cryptid"},
     {path = "Cryptlib/unredeem", redirect = "Cryptid"},
     {path = "Cryptlib/unredeem__vanilladef", redirect = "Cryptid"},
