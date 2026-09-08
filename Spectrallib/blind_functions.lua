@@ -1,11 +1,18 @@
-------------------------------------
---#region SUPPLEMENTARY FUNCTIONS --
-------------------------------------
+--------------------------------
+--#region BLIND CUSTOMIZATION --
+--------------------------------
+--These are not methods of `Blind` because they need to be called without access to an actual Blind object
 
+-- Returns true if cards should return to deck instead of into the discard area.\
+-- Intended to be hooked for conditional activation.
+---@return boolean
 function Spectrallib.return_to_deck()
-
+    return false
 end
 
+-- The returned colour determines the background colour during a Small or Big Blind.\
+-- Indended to be hooked for conditional results.
+---@return [number, number, number, number]
 function Spectrallib.get_bg_colour()
     return G.C.BLIND['Small']
 end
@@ -90,7 +97,13 @@ function Spectrallib.get_debuff_text(blind_key, active_blind)
     return disp_text
 end
 
---These are not methods of `Blind` because they need to be called without access to an actual Blind object
+-- Get the debuff text font of a given blind.
+---@param blind Blind
+---@return SMODS.Font|nil
+function Spectrallib.get_blind_font(blind)
+    local blind_proto = blind and G.P_BLINDS[blind.name or (blind.config and blind.config.name)]
+    return blind_proto and blind_proto.font
+end
 
 ---Gets a ui element for the blind's collection blind size text
 ---@param blind_proto SMODS.Blind The blind prototype the text is being generated for
@@ -138,7 +151,7 @@ function Spectrallib.get_blind_amount(blind_proto, blind, base)
 end
 
 --#endregion
-------------------------------------
+--------------------------------
 
 ------------------------------
 --#region NEW BLIND METHODS --
