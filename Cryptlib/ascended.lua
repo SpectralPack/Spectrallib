@@ -248,9 +248,7 @@ local function tether_check(x)
     end
 end
 local function fingers(type)
-	return function ()
-		return Spectrallib.gameset() ~= "modest" and SMODS.four_fingers(type) or 5
-	end
+	return function () return SMODS.four_fingers(type) end
 end
 ---@type { [string]: integer | fun():(integer|nil) }
 Spectrallib.ascension_numbers = {
@@ -266,10 +264,9 @@ Spectrallib.ascension_numbers = {
 	["Flush House"]     = 5,
 	["Flush Five"]      = 5,
 	["Straight Flush"] = function ()
-		return (
-			Spectrallib.gameset() ~= "modest"
-			and math.max(SMODS.four_fingers("straight"), SMODS.four_fingers("flush"))
-			or 5
+		return math.max(
+			SMODS.four_fingers("straight"),
+			SMODS.four_fingers("flush")
 		)
 	end
 }
