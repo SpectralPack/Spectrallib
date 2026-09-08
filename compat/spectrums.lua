@@ -10,9 +10,7 @@ local function spectrum_num()
     return  (
         SpectrumAPI
         and SpectrumAPI.configuration.misc.four_fingers_spectrums
-        and next(SMODS.find_card("j_four_fingers"))
-        and Spectrallib.gameset() ~= "modest"
-        and 4
+        and SMODS.four_fingers(type)
         or 5
     )
 end
