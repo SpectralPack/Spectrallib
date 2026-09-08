@@ -3,34 +3,10 @@ version = "1.0.0"
 dump_lua = true
 priority = 0
 
-# gonna use a separate file for this because it'll be a lot
-# golden text
-[[patches]]
-[patches.pattern]
-target = '''=[SMODS _ "src/ui.lua"]'''
-pattern = '''
-{n=G.UIT.T, config={ref_table = G.GAME.current_round.current_hand, ref_value='hand_level', scale = scale, colour = G.C.UI.TEXT_LIGHT, id = 'hand_level', shadow = true}},
-'''
-position = "after"
-payload = '''
-not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) and {n=G.UIT.O, config={id = 'cry_asc', func = 'cry_asc_UI_set',object = DynaText({string = {{ref_table = G.GAME.current_round.current_hand, ref_value = "cry_asc_num_text"}}, colours = {G.C.GOLD}, shadow = true, float = true, scale = scale*1})}} or nil,
-'''
-match_indent = true
+#### SCORING LOOP CHANGES ####
+# Until the next section, all following patches affect function G.FUNCS.evaluate_play
 
-# state events moment
-[[patches]]
-[patches.pattern]
-target = "functions/state_events.lua"
-pattern = '''
-                delay = G.GAME.current_round.current_hand.handname ~= disp_text and 0.4 or 0}, {handname=disp_text, level=G.GAME.hands[text].level, mult = G.GAME.hands[text].mult, chips = G.GAME.hands[text].chips})
-'''
-position = "at"
-payload = '''
-                delay = G.GAME.current_round.current_hand.handname ~= disp_text and 0.4 or 0}, {handname=disp_text, level=G.GAME.hands[text].level, mult = Spectrallib.ascend(G.GAME.hands[text].mult), chips = Spectrallib.ascend(G.GAME.hands[text].chips)})
-'''
-match_indent = true
-
-# increment
+# When playing an ascended hand, increase G.GAME.cry_asc_played
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
@@ -39,81 +15,118 @@ G.GAME.hands[text].played_this_round = G.GAME.hands[text].played_this_round + 1
 '''
 position = "before"
 payload = '''
-if G.GAME.current_round.current_hand.cry_asc_num and (((Spectrallib.is_big(G.GAME.current_round.current_hand.cry_asc_num) and G.GAME.current_round.current_hand.cry_asc_num:gt(to_big(G.GAME.cry_exploit_override and 1 or 0)) or G.GAME.current_round.current_hand.cry_asc_num > (G.GAME.cry_exploit_override and 1 or 0)))) then
-	G.GAME.cry_asc_played = G.GAME.cry_asc_played and G.GAME.cry_asc_played+1 or 1
+if (G.GAME.current_round.current_hand.cry_asc_num or -2) > (G.GAME.cry_exploit_override and 1 or 0) then
+    G.GAME.cry_asc_played = G.GAME.cry_asc_played and G.GAME.cry_asc_played+1 or 1
 end
 '''
 match_indent = true
 
-# even worse
+# Scoring loop ascends mult and chips
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
 pattern = '''
-        mult = mod_mult(G.GAME.hands[text].mult)
+delay = G.GAME.current_round.current_hand.handname ~= disp_text and 0.4 or 0}, {handname=disp_text, level=G.GAME.hands[text].level, mult = G.GAME.hands[text].mult, chips = G.GAME.hands[text].chips})
 '''
 position = "at"
 payload = '''
-        mult = mod_mult(Spectrallib.ascend(G.GAME.hands[text].mult))
+delay = G.GAME.current_round.current_hand.handname ~= disp_text and 0.4 or 0}, {handname=disp_text, level=G.GAME.hands[text].level, mult = Spectrallib.ascend(G.GAME.hands[text].mult), chips = Spectrallib.ascend(G.GAME.hands[text].chips)})
 '''
 match_indent = true
 
-# again
+# (TARGETS MULTIPLE)
+# Mult is ascended
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
 pattern = '''
-        hand_chips = mod_chips(G.GAME.hands[text].chips)
+mult = mod_mult(G.GAME.hands[text].mult)
 '''
 position = "at"
 payload = '''
-        hand_chips = mod_chips(Spectrallib.ascend(G.GAME.hands[text].chips))
+mult = mod_mult(Spectrallib.ascend(G.GAME.hands[text].mult))
 '''
 match_indent = true
 
-# b
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = '''
-        update_hand_text({delay = 0}, {chips = G.GAME.hands[hand].chips, StatusText = true})
-'''
-position = "at"
-payload = '''
-update_hand_text({delay = 0}, {chips = Spectrallib.ascend(G.GAME.hands[hand].chips), StatusText = true})
-'''
-match_indent = true
-
-# same old
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = '''
-        update_hand_text({delay = 0}, {mult = G.GAME.hands[hand].mult, StatusText = true})
-'''
-position = "at"
-payload = '''
-update_hand_text({delay = 0}, {mult = Spectrallib.ascend(G.GAME.hands[hand].mult), StatusText = true})
-'''
-match_indent = true
-
-# the removal (this is slightly invasive, should switch to regex)
+# (TARGETS MULTIPLE)
+# Chips are ascended
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
 pattern = '''
-check_and_set_high_score('hand', hand_chips*mult)
+hand_chips = mod_chips(G.GAME.hands[text].chips)
+'''
+position = "at"
+payload = '''
+hand_chips = mod_chips(Spectrallib.ascend(G.GAME.hands[text].chips))
+'''
+match_indent = true
+
+# After scoring loop ends, clear ascension power text for now
+# apparently - (this is slightly invasive, should switch to regex)
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = '''
+check_and_set_high_score('hand', SMODS.calculate_round_score())
 '''
 position = "before"
 payload = '''
-    G.E_MANAGER:add_event(Event({
-      trigger = 'immediate',
-      func = (function() G.GAME.current_round.current_hand.cry_asc_num = 0;G.GAME.current_round.current_hand.cry_asc_num_text = '';return true end)
-    }))
+G.E_MANAGER:add_event(Event({
+    trigger = 'immediate',
+    func = function()
+        G.GAME.current_round.current_hand.cry_asc_num = 0
+        G.GAME.current_round.current_hand.cry_asc_num_text = ''
+        return true
+    end
+}))
 '''
 match_indent = true
 
-# the rare cardarea inject
+# After scoring loop ends, clear ascension power for now
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''
+-- context.final_scoring_step calculations
+SMODS.calculate_context({full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, final_scoring_step = true})
+'''
+position = 'before'
+payload = '''
+G.E_MANAGER:add_event(Event{
+    trigger = "after",
+    blocking = false,
+    func = function()
+        G.GAME.asc_power_hand = nil
+        return true
+    end
+})
+'''
+match_indent = true
+
+#### MISCELLANEOUS ####
+
+# In Steamodded:
+# function SMODS.upgrade_poker_hands
+# Display ascended values when upgrading hands (I think like during Space Joker)
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''
+update_hand_text({delay = 0}, {[parameter] = G.GAME.hands[hand][parameter], StatusText = StatusText})
+'''
+position = "at"
+payload = '''
+if parameter == "chips" or parameter == "mult" then
+    update_hand_text({delay = 0}, {[parameter] = Spectrallib.ascend(G.GAME.hands[hand][parameter]), StatusText = StatusText})
+else
+    update_hand_text({delay = 0}, {[parameter] = G.GAME.hands[hand][parameter], StatusText = StatusText})
+end
+'''
+match_indent = true
+
+# function CardArea:parse_highlighted
+# Ascend mult and chips when cards are selected
 [[patches]]
 [patches.pattern]
 target = "cardarea.lua"
@@ -126,96 +139,9 @@ update_hand_text({immediate = true, nopulse = nil, delay = 0}, {handname=disp_te
 '''
 match_indent = true
 
-# hyperspace splasher
-[[patches]]
-[patches.pattern]
-target = "state_events.lua"
-pattern = '''
-if next(find_joker('Splash')) then
-'''
-position = "at"
-payload = '''
-if next(find_joker('Splash')) or G.GAME.used_vouchers.v_cry_hyperspacetether then
-'''
-match_indent = true
-
-# initialise variables
-[[patches]]
-[patches.pattern]
-target = "game.lua"
-pattern = '''
-                chip_total_text = '',
-'''
-position = "after"
-payload = '''
-                cry_asc_num = 0,
-                cry_asc_num_text = '',
-'''
-match_indent = true
-
-# i hope this is worth it
-[[patches]]
-[patches.pattern]
-target = "functions/misc_functions.lua"
-pattern = '''
-G.ARGS.score_intensity.required_score = G.GAME.blind and G.GAME.blind.chips or 0
-'''
-position = "after"
-payload = '''
-if G.cry_flame_override and G.cry_flame_override['duration'] > 0 then
-	G.cry_flame_override['duration'] = math.max(0, G.cry_flame_override['duration'] - dt)
-end
-'''
-match_indent = true
-
-# overwrite the value for better pulsing
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = '''
-_F.real_intensity = math.max(0, _F.real_intensity + _F.intensity_vel)
-'''
-position = "after"
-payload = '''
-
-_F.real_intensity = (G.cry_flame_override and G.cry_flame_override['duration'] > 0) and ((_F.real_intensity + G.cry_flame_override['intensity'])/2) or _F.real_intensity
-'''
-match_indent = true
-
-# again (this is messy, don't really know how these lines even work)
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = '''
-_F.change = (_F.change or 0)*(1 - 4.*G.real_dt) + ( 4.*G.real_dt)*(_F.real_intensity < _F.intensity - 0.0 and 1 or 0)*_F.real_intensity
-'''
-position = "after"
-payload = '''
-_F.change = (G.cry_flame_override and G.cry_flame_override['duration'] > 0) and ((_F.change + G.cry_flame_override['intensity'])/2) or _F.change
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/state_events.lua'
-pattern = '''
--- context.final_scoring_step calculations
-SMODS.calculate_context({full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, final_scoring_step = true})
-'''
-position = 'before'
-payload = '''
-G.E_MANAGER:add_event(Event{
-        trigger = "after",
-        blocking = false,
-        func = function()
-                G.GAME.asc_power_hand = nil
-                return true
-        end
-})
-'''
-match_indent = true
-
-#run info ui for ascended hands
+# In Steamodded:
+# function create_UIBox_current_hands
+# Add ascension power information to poker hand menu
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'

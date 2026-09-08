@@ -14,6 +14,8 @@ SMODS.current_mod.reset_game_globals = function (run_start)
         ---@type string[] List of deck keys. 
         G.GAME.entr_bought_decks = {}
         G.GAME.last_boss_ante = 0
+        G.GAME.current_round.current_hand.cry_asc_num = 0
+        G.GAME.current_round.current_hand.cry_asc_num_text = ''
     end
 end
 

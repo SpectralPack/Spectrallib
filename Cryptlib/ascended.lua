@@ -59,6 +59,27 @@ function G.FUNCS.get_poker_hand_info(_cards)
 	return text, loc_disp_text, poker_hands, scoring_hand, disp_text
 end
 
+-- Add ascension power text to hand UI
+local smodsgui_currenthandui_ref = SMODS.GUI.current_hand_ui
+function SMODS.GUI.current_hand_ui(scale)
+    local ret = smodsgui_currenthandui_ref(scale)
+	if Spectrallib.can_mods_load{"Cryptid", "Cryptlib"} then return ret end
+
+	local dynatext_cfg = {
+		string = {{
+			ref_table = G.GAME.current_round.current_hand,
+			ref_value = "cry_asc_num_text"
+		}},
+		colours = {G.C.GOLD},
+		shadow = true, float = true,
+		scale = scale*1
+	}
+	table.insert(ret.nodes,
+		{n=G.UIT.O, config={ id='cry_asc', func='cry_asc_UI_set', object=DynaText(dynatext_cfg)}}
+	)
+	return ret
+end
+
 --#endregion
 ------------------
 

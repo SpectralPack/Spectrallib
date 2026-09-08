@@ -1,0 +1,51 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# All following patches implement G.cry_flame_override
+
+# function modulate_sound
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = '''
+G.ARGS.score_intensity.required_score = G.GAME.blind and G.GAME.blind.chips or 0
+'''
+position = "after"
+payload = '''
+if G.cry_flame_override and G.cry_flame_override['duration'] > 0 then
+    G.cry_flame_override['duration'] = math.max(0, G.cry_flame_override['duration'] - dt)
+end
+'''
+match_indent = true
+
+# function G.FUNCS.flame_handler
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''
+_F.real_intensity = math.max(0, _F.real_intensity + _F.intensity_vel)
+'''
+position = "after"
+payload = '''
+if G.cry_flame_override and G.cry_flame_override['duration'] > 0 then
+    _F.real_intensity = (_F.real_intensity + G.cry_flame_override['intensity']) / 2
+end
+'''
+match_indent = true
+
+# function G.FUNCS.flame_handler
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''
+_F.change = (_F.change or 0)*(1 - 4.*G.real_dt) + ( 4.*G.real_dt)*(_F.real_intensity < _F.intensity - 0.0 and 1 or 0)*_F.real_intensity
+'''
+position = "after"
+payload = '''
+if G.cry_flame_override and G.cry_flame_override['duration'] > 0 then
+    _F.change = (_F.change + G.cry_flame_override['intensity']) / 2
+end
+'''
+match_indent = true
