@@ -10,8 +10,9 @@ local evaluateroundref = G.FUNCS.evaluate_round
 function G.FUNCS.evaluate_round()
 	evaluateroundref()
 	-- This is just the easiest way to check if its gold because lua is annoying
-	if G.C.UI_CHIPS[1] == G.C.GOLD[1] then
-		ease_colour(G.C.UI_CHIPS, G.C.BLUE, 0.3)
+	if SMODS.Scoring_Parameters.chips.colour[1] == G.C.GOLD[1] then
+		ease_colour(SMODS.Scoring_Parameters.chips.colour, G.C.CHIPS or G.C.BLUE, 0.3)
+		ease_colour(SMODS.Scoring_Parameters.mult.colour, G.C.MULT or G.C.RED, 0.3)
 		ease_colour(G.C.UI_MULT, G.C.RED, 0.3)
 	end
 end
@@ -42,17 +43,20 @@ function G.FUNCS.get_poker_hand_info(_cards)
 	G.GAME.current_round.current_hand.cry_asc_num = asc_power
 	if G.GAME.badarg and G.GAME.badarg[text] and not hidden then
 		-- Change chips and mult colors for badarg
-		ease_colour(G.C.UI_CHIPS, copy_table(HEX("FF0000")), 0.3)
+		ease_colour(SMODS.Scoring_Parameters.chips.colour, copy_table(HEX("FF0000")), 0.3)
+		ease_colour(SMODS.Scoring_Parameters.mult.colour, copy_table(HEX("FF0000")), 0.3)
         ease_colour(G.C.UI_MULT, copy_table(HEX("FF0000")), 0.3)
 	elseif asc_power ~= 0 and not hidden then
 		-- Change mult and chips colors if hand is ascended
 		local col = Spectrallib.get_asc_colour(asc_power, text)
-		ease_colour(G.C.UI_CHIPS, copy_table(col), 0.3)
+		ease_colour(SMODS.Scoring_Parameters.chips.colour, copy_table(col), 0.3)
+		ease_colour(SMODS.Scoring_Parameters.mult.colour, copy_table(col), 0.3)
 		ease_colour(G.C.UI_MULT, copy_table(col), 0.3)
-		G.GAME.current_round.current_hand.cry_asc_num_text = "("..SMODS.signed(asc_power)..")"
+		G.GAME.current_round.current_hand.cry_asc_num_text = " ("..SMODS.signed(asc_power)..")"
 	else
-		ease_colour(G.C.UI_CHIPS, G.C.BLUE, 0.3)
-		ease_colour(G.C.UI_MULT, G.C.RED, 0.3)
+		ease_colour(SMODS.Scoring_Parameters.chips.colour, G.C.CHIPS or G.C.BLUE, 0.3)
+		ease_colour(SMODS.Scoring_Parameters.mult.colour, G.C.MULT or G.C.RED, 0.3)
+		ease_colour(G.C.UI_MULT, G.C.MULT or G.C.RED, 0.3)
 		G.GAME.current_round.current_hand.cry_asc_num_text = ""
 	end
 
@@ -181,7 +185,7 @@ end
 ---@param hand_scoring_cards Card[]
 ---@return number
 function Spectrallib.calculate_ascension_power(hand_name, hand_cards, hand_scoring_cards)
-	if not Spectrallib.ascension_power_enabled() then return 0 end
+	if not Spectrallib.ascension_power_enabled() then return G.GAME.hands[hand_name] and G.GAME.hands[hand_name].AscensionPower or 0 end
 
 	local starting_power = Spectrallib.calculate_starting_asc_power(hand_name, hand_cards, hand_scoring_cards)
 	local bonus_power = (G.GAME.bonus_asc_power or 0) + Spectrallib.calculate_bonus_asc_power(hand_name, hand_cards, hand_scoring_cards)

@@ -1,10 +1,3 @@
-SMODS.Atlas {
-    key = "modicon",
-    path = "crylib_icon.png",
-    px = 34,
-    py = 34,
-}:register()
-
 Spectrallib = {}
 
 SMODS.current_mod.reset_game_globals = function (run_start)
