@@ -321,6 +321,18 @@ return {
 			creditsstyle_slib_badge_cycle = { name = "Cycle On Badge"},
 			creditsstyle_slib_info_queue = { name = "In Info-Queue"},
 			creditsstyle_slib_below_popup = {name = "Below Popup"}
+		},
+		HandBonus = {
+			handbonus_slib_xmult = {
+				name = "",
+				text = {
+					"Mult after hand is played"
+				}
+			},
+			handbonus_slib_xmult_per  = {
+				name = "",
+				text = {"Mult per scored card"}
+			}
 		}
     },
     misc = {
@@ -375,6 +387,9 @@ return {
             slib_by_idea = "Idea by",
             k_slib_and = " & ", -- keep the extra spaces
             k_slib_credits_styling = "Position to display card credits",
+
+			slib_per_level = "Per-level Stats: ",
+			slib_base_stats = "Base Stats: "
         },
         v_dictionary = {
         	a_xchips = "X#1# Chips",

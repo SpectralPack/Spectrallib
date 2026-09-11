@@ -38,4 +38,20 @@ match_indent = true
 target = "card.lua"
 pattern = "return 10*self.base.nominal*rank_mult + self.base.suit_nominal*mult + (self.base.suit_nominal_original or 0)*0.0001*mult + 10*self.base.face_nominal*rank_mult + 0.000001*self.unique_val"
 position = "at"
-payload = 'return 10*(Spectrallib.safe_get(SMODS.Ranks, self.base.value, "nominal") or 0)*rank_mult + self.base.suit_nominal*mult + (self.base.suit_nominal_original or 0)*0.0001*mult + 10*self.base.face_nominal*rank_mult + 0.000001*self.unique_val'
+payload = '''
+return 10*(type(Spectrallib.safe_get(SMODS.Ranks, self.base.value, "nominal")) ~= "table" and Spectrallib.safe_get(SMODS.Ranks, self.base.value, "nominal") or 0)*rank_mult + self.base.suit_nominal*mult + (self.base.suit_nominal_original or 0)*0.0001*mult + 10*self.base.face_nominal*rank_mult + 0.000001*self.unique_val'''
+
+# extra hover tooltips for hands
+[[patches]]
+[patches.pattern]
+match_indent = true
+target = "functions/UI_definitions.lua"
+pattern = '''
+{n=G.UIT.C, config={align = "cm", padding = 0.05, colour = G.C.BLACK,r = 0.1}, nodes={
+    {n=G.UIT.C, config={align = "cr", padding = 0.01, r = 0.1, colour = (G.GAME.badarg or {})[handname] and HEX("FF0000") or G.C.CHIPS, minw = 1.1}, nodes={
+'''
+position = "at"
+payload = '''
+{n=G.UIT.C, config={align = "cm", padding = 0.05, colour = G.C.BLACK,r = 0.1, on_demand_tooltip = {filler = {func = create_UIBox_hand_info, args = handname}}}, nodes={
+    {n=G.UIT.C, config={align = "cr", padding = 0.01, r = 0.1, colour = (G.GAME.badarg or {})[handname] and HEX("FF0000") or G.C.CHIPS, minw = 1.1}, nodes={
+'''

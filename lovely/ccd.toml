@@ -129,7 +129,8 @@ badges[1] and {n=G.UIT.R, config={align = "cm", padding = 0.03}, nodes=badges} o
 '''
 position = "at"
 payload = '''
-unpack(slib_ret_rows) -- this is completely fucking diabolical but it makes the patch cleaner so i don't give a shit
+unpack(slib_ret_rows)
+
 '''
 match_indent = true
 
@@ -140,15 +141,15 @@ pattern = '''local ret_val = {n=G.UIT.ROOT, config = {align = 'cm', colour = G.C
 position = "before"
 payload = '''
 
-local slib_ret_rows = {
-    name_from_rows(AUT.name, is_playing_card and G.C.WHITE or nil),
-    desc_from_rows(AUT.main),
-    badges[1] and {n=G.UIT.R, config={align = "cm", padding = 0.03}, nodes=badges} or nil,
-}
-
+local slib_ret_rows = {}
 if not (SMODS.Mods["Cryptid"] or {}).can_load and AUT.ccd then
-    table.insert(slib_ret_rows, 3, name_from_rows(AUT.ccd.name, G.C.WHITE))
-    table.insert(slib_ret_rows, 4, desc_from_rows(AUT.ccd.main))
+    slib_ret_rows[#slib_ret_rows+1] = name_from_rows(AUT.ccd.name, G.C.WHITE)
+    slib_ret_rows[#slib_ret_rows+1] = desc_from_rows(AUT.ccd.main)
+end
+slib_ret_rows[#slib_ret_rows+1] = name_from_rows(AUT.name, is_playing_card and G.C.WHITE or nil)
+slib_ret_rows[#slib_ret_rows+1] = desc_from_rows(AUT.main)
+if badges[1] then
+    slib_ret_rows[#slib_ret_rows+1] = {n=G.UIT.R, config={align = "cm", padding = 0.03}, nodes=badges}
 end
 
 '''

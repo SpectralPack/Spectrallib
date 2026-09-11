@@ -16,6 +16,21 @@ SMODS.current_mod.calculate = function (self, context)
     if context.ante_change and context.ante_change then
         G.GAME.last_boss_ante = G.GAME.round_resets.ante
     end
+    if context.scoring_name and G.GAME.hands[context.scoring_name] then
+        local hand = G.GAME.hands[context.scoring_name]
+        for i, v in pairs(Spectrallib.HandBonuses) do
+            if hand[v.key] and hand[v.key] ~= v.starting_value then
+                local ret = v.calculate and v:calculate(context.scoring_name, context, hand[v.key])
+                if ret and next(ret) then
+                    ret.message_card = ret.message_card or G.HUD:get_UIE_by_ID('hand_name')
+                    ret.card = ret.card or ret.message_card
+                    ret.effect_card = ret.effect_card or ret.message_card
+                    ret.scored_card = ret.scored_card or ret.message_card
+                    SMODS.calculate_effect(ret)
+                end
+            end
+        end
+    end
 end
 
 local gigo = Game.init_game_object
@@ -52,6 +67,7 @@ local files = {
     {path = "Spectrallib/attributes"},
     {path = "Spectrallib/bonus_effects"},
     {path = "Spectrallib/credits"},
+    {path = "Spectrallib/hand_stuff"},
 
     {path = "Cryptlib/main", redirect = "Cryptid"},
     {path = "Cryptlib/utilities", redirect = "Cryptid"},
