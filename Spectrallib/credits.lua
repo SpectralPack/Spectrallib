@@ -105,6 +105,9 @@ Spectrallib.CreditsStyle {
             spacing = 1*min_scale_fac,
             scale = text_height or 0.297
         })
+    end,
+    no_marquee = function(self, obj, mod)
+        return obj.slib_credits
     end
 }
 
