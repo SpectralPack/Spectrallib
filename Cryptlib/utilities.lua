@@ -773,3 +773,19 @@ function Card:set_sell_value()
 		self.sell_cost_label = self.facing == 'back' and '?' or self.sell_cost
 	end
 end
+
+-- Auto-prefix soul_extra_atlas
+local add_prefixes = SMODS.add_prefixes
+function SMODS.add_prefixes(cls, obj, from_take_ownership)
+	add_prefixes(cls, obj, from_take_ownership)
+	if rawget(obj, "soul_extra_atlas") then --SMODS uses rawget for atlas prefixes fsr
+		obj.prefix_config = SMODS.merge_defaults(obj.prefix_config, cls.prefix_config)
+		local mod = SMODS.current_mod
+		obj.prefix_config = SMODS.merge_defaults(obj.prefix_config, mod and mod.prefix_config)
+		local atlas_cfg = obj.prefix_config.atlas
+		if atlas_cfg ~= false then
+			if type(atlas_cfg) ~= 'table' then atlas_cfg = {} end
+			SMODS.modify_key(obj, mod and mod.prefix, atlas_cfg, "soul_extra_atlas")
+		end
+	end
+end
