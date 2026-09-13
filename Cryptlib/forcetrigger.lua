@@ -182,6 +182,7 @@ function Spectrallib.get_forcetrigger_results(card, context)
 	if results.jokers then
 		results.jokers.card = results.jokers.card or card
 	end
+	G.slib_copied_stack = nil
 	return results
 end
 
