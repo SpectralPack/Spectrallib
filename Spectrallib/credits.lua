@@ -31,7 +31,7 @@ function generate_card_ui(center, full_UI_table, specific_vars, card_type, badge
     full_UI_table = generate_card_ui_ref(center, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card, ...) or full_UI_table
     if center and center.slib_credits then
         local queue = {}
-        full_UI_table = Spectrallib.get_credits_style():generate_ui(center, queue, ull_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card, ...) or full_UI_table
+        full_UI_table = Spectrallib.get_credits_style():generate_ui(center, queue, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card, ...) or full_UI_table
         for i, v in pairs(queue) do
             generate_card_ui(v, full_UI_table)
         end
