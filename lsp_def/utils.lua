@@ -77,3 +77,9 @@
 ---@class CalcContext
 -- Check if `true` for forcetrigger effects.
 ---@field forcetrigger? boolean
+-- Check if `true` for effects that retrigger consumables
+---@field retrigger_consumable? boolean
+-- Wether or not used consumable is being used from Overflow's bulk_use
+---@field bulk_use? boolean
+-- The amount of the used consumable being used at a time in bulk_use
+---@field bulk_use_amount? integer
