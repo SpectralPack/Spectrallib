@@ -231,7 +231,7 @@ function Spectrallib.asc_level_up(card, number, level_up, message)
 				play_sound("tarot1")
 				ease_colour(G.C.UI_CHIPS, copy_table(G.C.GOLD), 0.1)
 				ease_colour(G.C.UI_MULT, copy_table(G.C.GOLD), 0.1)
-				Spectrallib.pulse_flame(0.01, G.GAME.sunlevel)
+				Spectrallib.pulse_flame(0.01, to_number(G.GAME.sunlevel))
 				card:juice_up(0.8, 0.5)
 				G.E_MANAGER:add_event(Event({
 					trigger = "after",
