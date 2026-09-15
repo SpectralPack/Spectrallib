@@ -143,7 +143,7 @@ local splib_ascenable_ref = Spectrallib.ascension_power_enabled
 function Spectrallib.ascension_power_enabled()
     local ret = splib_ascenable_ref()
     if not ret then
-        return Spectrallib.enabled("set_cry_poker_hand_stuff")
+        return Cryptid.enabled("set_cry_poker_hand_stuff")
     end
     return ret
 end
