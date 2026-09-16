@@ -44,7 +44,7 @@ if add_exponentials then
 						nil,
 						percent,
 						nil,
-						{ message = "^" .. amount, colour = G.C.EDITION, edition = true }
+						{ message = localize{ type = "variable", key = "a_powchips", vars = {amount} }, colour = G.C.EDITION, edition = true }
 					)
 				elseif key ~= "Echip_mod" then
 					if effect.echip_message then
@@ -77,7 +77,7 @@ if add_exponentials then
 						nil,
 						percent,
 						nil,
-						{ message = "^" .. amount .. " " .. localize("k_mult"), colour = G.C.EDITION, edition = true }
+						{ message = localize{ type = "variable", key = "a_powmult", vars = {amount} }, colour = G.C.EDITION, edition = true }
 					)
 				elseif key ~= "Emult_mod" then
 					if effect.emult_message then
