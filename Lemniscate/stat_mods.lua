@@ -236,7 +236,7 @@ function Spectrallib.x_levels(args)
                             end
                         end
                     end
-                    Spectrallib.pulse_flame(0.5, Spectrallib.clamp(0, to_number(G.GAME.hands[hand].level), 1e200))
+                    Spectrallib.pulse_flame(0.5, Spectrallib.clamp(0, math.log(to_number(G.GAME.hands[hand].level), 2), 300)) --logarithmic because it is multiplying. flames last WAY too long otherwise (upwards of 10 seconds)
                     Spectrallib.pulse_scoring_window_colors(HEX("d74ff2"), 0.1, 0.7, 2.5)
                     G.TAROT_INTERRUPT_PULSE = nil
                     return true
