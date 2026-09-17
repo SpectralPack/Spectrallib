@@ -146,6 +146,9 @@ if not (SMODS.Mods["Cryptid"] or {}).can_load and AUT.ccd then
     slib_ret_rows[#slib_ret_rows+1] = name_from_rows(AUT.ccd.name, G.C.WHITE)
     slib_ret_rows[#slib_ret_rows+1] = desc_from_rows(AUT.ccd.main)
 end
+if obj.set == "Back" and not next(AUT.name) then
+    AUT.name = localize{type = 'name', set = "Back", key = obj.key, nodes = AUT.name}
+end
 slib_ret_rows[#slib_ret_rows+1] = name_from_rows(AUT.name, is_playing_card and G.C.WHITE or nil)
 slib_ret_rows[#slib_ret_rows+1] = desc_from_rows(AUT.main)
 if badges[1] then
