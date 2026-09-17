@@ -11,7 +11,7 @@ G.FUNCS.buy_deckorsleeve = function(e)
         deck_card.area:remove_card(deck_card)
     end
 
-    local deck_apply = Spectrallib.safe_get(deck_card, "config", "center", "apply")
+    local deck_apply = Spectrallib.safe_get(deck_card, "config", "center", "redeem") or Spectrallib.safe_get(deck_card, "config", "center", "apply")
     if deck_apply then
         local old_joker_slots = G.GAME.starting_params.joker_slots
         if deck_card.config.center.set == "Sleeve" then
