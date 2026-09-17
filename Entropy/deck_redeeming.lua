@@ -17,7 +17,7 @@ G.FUNCS.buy_deckorsleeve = function(e)
         if deck_card.config.center.set == "Sleeve" then
             deck_apply(deck_card.config.center)
         else
-            deck_apply(false)
+            deck_apply(deck_card.config.center)
         end
         local joker_slots_difference = G.GAME.starting_params.joker_slots - old_joker_slots
         if joker_slots_difference > 0 then
@@ -356,4 +356,12 @@ function Back:trigger_effect(args, ...)
     end
 
     return chips, mult
+end
+
+local get_type_colour_ref = get_type_colour
+function get_type_colour(type, ...)
+    if type.set == "Back" then
+        return G.C.PERISHABLE
+    end
+    return get_type_colour_ref(type, ...)
 end

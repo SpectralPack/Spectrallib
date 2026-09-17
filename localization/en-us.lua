@@ -389,7 +389,8 @@ return {
             k_slib_credits_styling = "Position to display card credits",
 
 			slib_per_level = "Per-level Stats: ",
-			slib_base_stats = "Base Stats: "
+			slib_base_stats = "Base Stats: ",
+			k_back = "Deck"
         },
         v_dictionary = {
         	a_xchips = "X#1# Chips",

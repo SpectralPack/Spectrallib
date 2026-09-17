@@ -377,3 +377,17 @@ if aura_card and aura_card.set_edition then
 end
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''
+if _c.set == 'Other' then
+'''
+position = "at"
+payload = '''
+if _c.set == 'Back' then
+    localize{type = 'descriptions', key = key_override or _c.key, set = _c.set, nodes = desc_nodes, vars = specific_vars or {}}
+elseif _c.set == 'Other' then
+'''
+match_indent = true
