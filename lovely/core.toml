@@ -152,11 +152,11 @@ pattern = "card.T.x = self.T.x"
 position = "before"
 payload = '''
 local edi = self.edition or {}
-if edi.type and not (card.config.center and card.config.center.cry_force_edition) then
-	card:set_edition({[edi.type] = true})
+if edi.key and not (card.config.center and card.config.center.cry_force_edition) and not Spectrallib.safe_get(G.P_CENTERS, edi.key, "no_booster_inherit") then
+	card:set_edition(edi.key)
 end
 for k, v in pairs(SMODS.Stickers) do
-	if self.ability[k] then
+	if self.ability[k] and not v.no_booster_inherit then
 		card:add_sticker(k, true)
 	end
 end

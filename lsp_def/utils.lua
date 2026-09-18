@@ -83,3 +83,11 @@
 ---@field bulk_use? boolean
 -- The amount of the used consumable being used at a time in bulk_use
 ---@field bulk_use_amount? integer
+
+---@class SMODS.Edition
+-- If true, the contents of booster packs with this edition will not inherit the edition
+---@field no_booster_inherit? boolean
+
+---@class SMODS.Sticker
+-- If true, the contents of booster packs with this sticker will not inherit the sticker
+---@field no_booster_inherit? boolean
