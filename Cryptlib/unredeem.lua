@@ -1,4 +1,5 @@
 -- Unapply a voucher and play the corresponding animation.
+---@param self Card
 ---@return nil
 function Card:unredeem()
 	if self.ability.set == "Voucher" then
@@ -19,15 +20,11 @@ function Card:unredeem()
 		})
 	end
 
-	G.E_MANAGER:add_event(Event({
-		func = function()
-			Spectrallib.update_used_vouchers()
-			return true
-		end,
-	}))
+	Spectrallib.update_used_vouchers()
 end
 
 -- Remove a voucher and its effects from the run.
+---@param self Card
 ---@param center? table
 ---@return nil
 function Card:unapply_to_run(center)
@@ -51,7 +48,7 @@ end
 function Spectrallib.update_used_vouchers()
 	if not (G and G.GAME and G.vouchers) then return end
 
-	G.GAME.used_vouchers = {}
+	EMPTY(G.GAME.used_vouchers)
 	for _,voucher in ipairs(G.vouchers.cards) do
 		G.GAME.used_vouchers[voucher.config.center_key] = true
 	end
