@@ -140,7 +140,7 @@ if self.ability.consumeable or self.ability.set == 'Joker' or (self.area and sel
 '''
 position = "at"
 payload = '''
-if true then
+if Spectrallib.should_have_use_and_sell_buttons(self) then
 '''
 match_indent = true
 
