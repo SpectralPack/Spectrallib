@@ -653,7 +653,7 @@ end
 --- @param card Card Card being checked.
 --- @return boolean
 function Spectrallib.should_have_use_and_sell_buttons(card)
-    return not (card and card.ability and card.ability.set == "elle_Resident")
+    return not (card and card.ability and card.ability.set == "elle_Resident" and not (card.area and card.area == G.pack_cards))
 end
 
 local gfcfbs = G.FUNCS.check_for_buy_space
