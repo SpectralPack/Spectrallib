@@ -83,7 +83,7 @@ Spectrallib.vanilla_forcetrigger_results = {
     -- ["Four Fingers"]
     -- ["Mime"]
     -- ["Credit Card"]
-    ["Ceremonial Dagger"] = function (card, context)
+    ["Ceremonial Dagger"] = function (card, context) --TODO: What do we do with the slicing
         local my_pos = card.rank
         local sliced_card = G.jokers.cards[my_pos + 1]
         if not sliced_card then return end
@@ -98,7 +98,6 @@ Spectrallib.vanilla_forcetrigger_results = {
             G.E_MANAGER:add_event(Event({
                 func = function ()
                     G.GAME.joker_buffer = 0
-                    card.ability.mult = card.ability.mult + sliced_card.sell_cost * 2
                     card:juice_up(0.8, 0.8)
                     sliced_card:start_dissolve({ HEX("57ecab") }, nil, 1.6)
                     play_sound("slice1", 0.96 + math.random() * 0.08)
@@ -129,7 +128,7 @@ Spectrallib.vanilla_forcetrigger_results = {
     ["8 Ball"]       = add_consumable("Tarot", '8ba'),
     ["Misprint"]     = simple_return("mult", "extra", "max"),
     -- ["Dusk"]
-    ["Raised Fist"] = function (card, context)
+    ["Raised Fist"] = function (card, context) --TODO: this needs to be changed
         return { mult = 22 }
     end,
     -- ["Chaos the Clown"]
@@ -175,26 +174,21 @@ Spectrallib.vanilla_forcetrigger_results = {
     end,
     ["Ride the Bus"] = simple_return("mult", "mult"),
     ["Space Joker"] = function (card, context)
-        if #G.hand.highlighted > 0 then
+        local hand = (
+            context.other_context
+            and context.other_context.scoring_name
+            or context.scoring_name
+        )
+        if hand then
+            return { level_up = true, level_up_hand = hand }
+        elseif #G.hand.highlighted > 0 then
             local text, disp_text = G.FUNCS.get_poker_hand_info(G.hand.highlighted)
-            update_hand_text({ sound = "button", volume = 0.7, pitch = 0.8, delay = 0.3 }, {
-                handname = localize(text, "poker_hands"),
-                chips = G.GAME.hands[text].chips,
-                mult = G.GAME.hands[text].mult,
-                level = G.GAME.hands[text].level,
-            })
-            level_up_hand(card, text, nil, 1)
-            update_hand_text(
-                { sound = "button", volume = 0.7, pitch = 1.1, delay = 0 },
-                { mult = 0, chips = 0, handname = "", level = "" }
-            )
-        elseif context.scoring_name then
-            level_up_hand(card, context.scoring_name)
+            return { level_up = true, level_up_hand = text }
         end
     end,
     --#endregion
     --#region Page 4
-    ["Egg"] = function (card, context)
+    ["Egg"] = function (card, context) --TODO: should this be removed under the no scaling rule?
         card.ability.extra_value = card.ability.extra_value + card.ability.extra
         card:set_cost()
     end,
@@ -209,12 +203,15 @@ Spectrallib.vanilla_forcetrigger_results = {
     ["Runner"]     = simple_return("chips", "extra", "chips"),
     ["Ice Cream"]  = simple_return("chips", "extra", "chips"),
     ["DNA"] = function (card, context)
-        local card_copied = SMODS.copy_card(context.full_hand[1])
-        card_copied.states.visible = nil
-        Spectrallib.event(function ()
-            card_copied:start_materialize()
-            return true
-        end)
+        if context.full_hand then
+            local target = pseudorandom_element(context.full_hand, "dna_fr")
+            local card_copied = SMODS.copy_card(target, { area = G.hand })
+            card_copied.states.visible = nil
+            Spectrallib.event(function()
+                card_copied:start_materialize()
+                return true
+            end)
+        end
     end,
     -- ["Splash"]
     ["Blue Joker"]     = simple_return("chips", "extra"),
@@ -296,7 +293,7 @@ Spectrallib.vanilla_forcetrigger_results = {
         local cardlist
         if context.scoring_hand then
             cardlist = context.scoring_hand
-        elseif G and G.hand and #G.hand.highlighted > 0 then
+        elseif G.hand and #G.hand.highlighted > 0 then
             cardlist = G.hand.highlighted
         end
 
@@ -320,7 +317,7 @@ Spectrallib.vanilla_forcetrigger_results = {
         end
     end,
     ["Photograph"] = simple_return("xmult", "extra"),
-    ["Gift Card"] = function (card, context)
+    ["Gift Card"] = function (card, context) --TODO: should this be removed under the no scaling rule?
         for select_card in Spectrallib.iter.areacards{G.jokers, G.consumeables} do
             if select_card.set_cost then
                 select_card.ability.extra_value = (select_card.ability.extra_value or 0) + card.ability.extra
@@ -328,14 +325,10 @@ Spectrallib.vanilla_forcetrigger_results = {
             end
         end
     end,
-    ["Turtle Bean"] = function (card, context)
-        G.hand:change_size(-card.ability.extra.h_size)
-        card.ability.extra.h_size = card.ability.extra.h_size - card.ability.extra.h_mod
-        G.hand:change_size(card.ability.extra.h_size)
-    end,
+    -- ["Turtle Bean"] (This is scaling)
     ["Erosion"] = function (card, context)
         local mult_multiplier = G.GAME.starting_deck_size - #G.playing_cards
-        return { mult = card.ability.extra * mult_multiplier }
+        return { mult = math.max(card.ability.extra * mult_multiplier, 0) }
     end,
     ["Reserved Parking"] = simple_return("dollars", "extra", "dollars"),
     ["Mail-In Rebate"]   = simple_return("dollars", "extra"),
@@ -344,10 +337,8 @@ Spectrallib.vanilla_forcetrigger_results = {
     ["Fortune Teller"] = function (card, context)
         return { mult = G.GAME.consumeable_usage_total.tarot or 1 }
     end,
-    ["Juggler"] = function (card, context)
-        G.hand:change_size(card.ability.h_size)
-    end,
-    ["Drunkard"] = function (card, context)
+    -- ["Juggler"]
+    ["Drunkard"] = function (card, context) --TODO: Why
         ease_discard(card.ability.d_size)
     end,
     ["Stone Joker"] = function (card, context)
@@ -394,10 +385,7 @@ Spectrallib.vanilla_forcetrigger_results = {
     ["Acrobat"]       = simple_return("xmult", "extra"),
     -- ["Sock and Buskin"]
     ["Swashbuckler"]  = simple_return("mult", "mult"),
-    ["Troubadour"] = function (card, context)
-        G.hand:change_size(card.ability.extra.h_size)
-        G.GAME.round_resets.hands = G.GAME.round_resets.hands + card.ability.extra.h_plays
-    end,
+    -- ["Troubadour"]
     ["Certificate"] = function (card, context)
         local _card = SMODS.create_card({
             set = "Base",
@@ -428,21 +416,20 @@ Spectrallib.vanilla_forcetrigger_results = {
     --#region Page 9
     ["Flower Pot"] = simple_return("xmult", "extra"),
     ["Blueprint"] = function (card, context)
+        if card.area ~= G.jokers then return end
         local my_pos = card.rank
         local other_joker = G.jokers.cards[my_pos + 1]
         if other_joker then
             local results = Spectrallib.get_forcetrigger_results(other_joker, context)
             if results and results.jokers then
+                results.jokers.colour = G.C.BLUE
                 results.jokers.card = card
-                SMODS.calculate_effect(results.jokers)
+                return results.jokers
             end
         end
     end,
     ["Wee Joker"] = simple_return("chips", "extra", "chips"),
-    ["Merry Andy"] = function (card, context)
-        ease_discard(card.ability.d_size)
-        G.hand:change_size(card.ability.h_size)
-    end,
+    -- ["Merry Andy"]
     -- ["Oops! All 6s"]
     ["The Idol"]      = simple_return("xmult", "extra"),
     ["Seeing Double"] = simple_return("xmult", "extra"),
@@ -456,10 +443,9 @@ Spectrallib.vanilla_forcetrigger_results = {
     --#endregion
     --#region Page 10
     ["Stuntman"] = function (card, context)
-        G.hand:change_size(-card.ability.extra.h_size)
         return { chips = card.ability.extra.chip_mod }
     end,
-    ["Invisible Joker"] = function (card, context)
+    ["Invisible Joker"] = function (card, context) --TODO: What do we do with this
         local jokers = {}
         for other_joker in Spectrallib.iter.areacards(G.jokers) do
             if other_joker ~= card then
@@ -485,7 +471,8 @@ Spectrallib.vanilla_forcetrigger_results = {
             local results = Spectrallib.get_forcetrigger_results(other_joker, context)
             if results and results.jokers then
                 results.jokers.card = card
-                SMODS.calculate_effect(results.jokers)
+                results.jokers.colour = G.C.RED
+                return results.jokers
             end
         end
     end,
@@ -505,21 +492,16 @@ Spectrallib.vanilla_forcetrigger_results = {
     ["Driver's License"] = simple_return("xmult", "extra"),
     ["Cartomancer"]      = add_consumable("Tarot", 'car'),
     ["Burnt Joker"] = function (card, context)
-        if #G.hand.highlighted > 0 then
+        local hand = (
+            context.other_context
+            and context.other_context.scoring_name
+            or context.scoring_name
+        )
+        if hand then
+            return { level_up = true, level_up_hand = hand }
+        elseif #G.hand.highlighted > 0 then
             local text, disp_text = G.FUNCS.get_poker_hand_info(G.hand.highlighted)
-            update_hand_text({ sound = "button", volume = 0.7, pitch = 0.8, delay = 0.3 }, {
-                handname = localize(text, "poker_hands"),
-                chips = G.GAME.hands[text].chips,
-                mult  = G.GAME.hands[text].mult,
-                level = G.GAME.hands[text].level,
-            })
-            level_up_hand(card, text, nil, 1)
-            update_hand_text(
-                { sound = "button", volume = 0.7, pitch = 1.1, delay = 0 },
-                { mult = 0, chips = 0, handname = "", level = "" }
-            )
-        elseif context.scoring_name then
-            level_up_hand(card, context.scoring_name)
+            return { level_up = true, level_up_hand = text }
         end
     end,
     ["Bootstraps"] = function (card, context)
