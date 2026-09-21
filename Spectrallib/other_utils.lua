@@ -153,9 +153,9 @@ end
 -- Calculate interest given the amount of currently held dollars.
 ---@param add_rows? any Unused
 ---@return number
-function Spectrallib.get_interest(add_rows)
+function Spectrallib.get_interest(add_rows, dollars)
     local rate = Spectrallib.interest_rate()
-    local interest = math.min(math.floor(G.GAME.dollars / rate), G.GAME.interest_cap / 5)
+    local interest = math.min(math.floor(dollars or G.GAME.dollars / rate), G.GAME.interest_cap / 5)
     interest = interest * G.GAME.interest_amount
     for card in Spectrallib.iter.areacards(SMODS.get_card_areas("jokers")) do
         if card.config.center.calculate_interest then
