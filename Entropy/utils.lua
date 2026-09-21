@@ -280,6 +280,7 @@ function Spectrallib.get_dummy(center, area, from_card, silent)
     abil.h_size = abil.h_size or 0
     abil.card_limit = abil.card_limit or 1
     abil.extra_slots_used = abil.extra_slots_used or 0
+    abil.bonus = abil.bonus or 0
 
     local eligible_editionless_jokers = {}
     for joker in Spectrallib.iter.areacards(G.jokers) do
@@ -335,7 +336,8 @@ function Spectrallib.get_dummy(center, area, from_card, silent)
         T = from_card.T,
         VT = from_card.VT,
         CT = from_card.CT,
-        silent = silent
+        silent = silent,
+        ARGS = {}
     }
 
     for key, method in pairs(Card --[[@as table]]) do
@@ -363,7 +365,8 @@ function Spectrallib.get_dummy(center, area, from_card, silent)
         local ret = Card.use_consumeable(self, ...)
         self.bypass_echo = nil
     end
-
+    tbl.base = from_card.base
+    Card.quantum_set_ability(tbl, center)
     return tbl
 end
 
@@ -727,6 +730,7 @@ end
 ---@param card Card
 ---@return boolean
 function Spectrallib.true_suitless(card)
+    if not card.config then return end
     return (
         SMODS.has_no_suit(card)
         or card.config.center.key == "m_stone"

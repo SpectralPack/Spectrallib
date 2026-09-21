@@ -28,7 +28,7 @@ local function generate_suit_bonus_tbl(card, suit_key)
     local buff = G.GAME.SuitBuffs[suit_key]
     local check_suitless = suit_key == "suitless"
 
-    if (check_suitless and not Spectrallib.true_suitless(card)) or (not check_suitless and not card:is_suit(suit_key)) or (
+    if (check_suitless and not Spectrallib.true_suitless(card)) or (not check_suitless and card.is_suit and not card:is_suit(suit_key)) or (
         buff.level == 1
         and buff.chips == 0
         and buff.mult == 0
@@ -52,7 +52,7 @@ local function generate_rank_bonus_tbl(card, rank_key)
     local buff = G.GAME.RankBuffs[rank_key]
     local check_rankless = rank_key == "rankless"
 
-    if (check_rankless and not SMODS.has_no_rank(card)) or (not check_rankless and card:get_id() ~= SMODS.Ranks[rank_key].id) or (
+    if (check_rankless and not SMODS.has_no_rank(card)) or (not check_rankless and card.get_id and card:get_id() ~= SMODS.Ranks[rank_key].id) or (
         buff.level == 1
         and buff.chips == 0
         and buff.mult == 0

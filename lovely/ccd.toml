@@ -243,6 +243,30 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
+target = '''=[SMODS _ "src/overrides.lua"]'''
+pattern = "new_ability.p_dollars = center.config.p_dollars or 0"
+position = "after"
+payload = """
+new_ability.slib_perma_xlog_chips = center.config.slib_perma_xlog_chips or 0
+new_ability.slib_perma_h_xlog_chips = center.config.slib_perma_h_xlog_chips or 0
+new_ability.slib_perma_xlog_mult = center.config.slib_perma_xlog_mult or 0
+new_ability.slib_perma_h_xlog_mult = center.config.slib_perma_h_xlog_mult or 0
+new_ability.slib_perma_plus_asc = center.config.slib_perma_plus_asc or 0
+new_ability.slib_perma_h_plus_asc = center.config.slib_perma_h_plus_asc or 0
+new_ability.slib_perma_x_asc = center.config.slib_perma_x_asc or 0
+new_ability.slib_perma_h_x_asc = center.config.slib_perma_h_x_asc or 0
+new_ability.slib_perma_exp_asc = center.config.slib_perma_exp_asc or 0
+new_ability.slib_perma_h_exp_asc = center.config.slib_perma_h_exp_asc or 0
+new_ability.slib_perma_e_chips = center.config.slib_perma_e_chips or 0
+new_ability.slib_perma_h_e_chips = center.config.slib_perma_h_e_chips or 0
+new_ability.slib_perma_e_mult = center.config.slib_perma_e_mult or 0
+new_ability.slib_perma_h_e_mult = center.config.slib_perma_h_e_mult or 0
+new_ability.slib_bonus_effects = center.config.slib_bonus_effects or {} --TODO: decide if this should persist through set_ability or not, needs special logic if not
+"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
 target = "card.lua"
 pattern = "bonus_x_chips = self.ability.perma_x_chips ~= 0 and (self.ability.perma_x_chips + 1) or nil,"
 position = "after"

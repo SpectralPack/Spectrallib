@@ -162,7 +162,7 @@ function Spectrallib.add_bonus_effect_boxes(_c, info_queue, card, desc_nodes, sp
                     localized_text = desc_text,
                     loc_vars = function()
                         return loc_args
-                    end
+                    end,
                 }})(_c, info_queue, card, desc_nodes, specific_vars, full_UI_table)
             end
         end
