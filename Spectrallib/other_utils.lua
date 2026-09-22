@@ -417,7 +417,7 @@ function Spectrallib.get_text_colour(card, _c)
     if set == "Code" then --back compat thingy
         return G.C.SET.Code
     end
-    return get_type_colour(_c, card) or G.C.UI.TEXT_DARK
+    return get_type_colour(_c or card.config.center, card) or G.C.UI.TEXT_DARK
 end
 
 ---Hookable function that calculates the chips/mult factor for Ascension Power.<br>

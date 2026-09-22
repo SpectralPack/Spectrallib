@@ -360,7 +360,7 @@ end
 
 local get_type_colour_ref = get_type_colour
 function get_type_colour(type, ...)
-    if type.set == "Back" then
+    if type and type.set == "Back" then
         return G.C.PERISHABLE
     end
     return get_type_colour_ref(type, ...)
