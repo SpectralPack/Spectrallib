@@ -367,7 +367,18 @@ G.FUNCS.open_booster = function(e)
     end
     e.config.ref_table.cost = 0
     e.config.ref_table:open()
-    if c1.ability.cry_multiuse and to_big(c1.ability.cry_multiuse) > to_big(1) then
+    if c1.ability.slib_infinite_use then
+        local card = c1
+        card.ability.slib_no_sell_value = true
+        card:set_cost()
+        delay(0.4)
+
+        card:juice_up()
+        play_sound('generic1')
+        local c2 = copy_card(c1)
+        c2:add_to_deck()
+        area:emplace(c2)
+    elseif c1.ability.cry_multiuse and to_big(c1.ability.cry_multiuse) > to_big(1) then
         local card = c1
         card.ability.cry_multiuse = card.ability.cry_multiuse - 1
         card.ability.slib_no_sell_value = true
@@ -408,7 +419,18 @@ G.FUNCS.open_voucher = function(e)
     c1:redeem()
     c1:start_dissolve()
     c1:remove()
-    if c1.ability.cry_multiuse and to_big(c1.ability.cry_multiuse) > to_big(1) then
+    if c1.ability.slib_infinite_use then
+        local card = c1
+        card.ability.slib_no_sell_value = true
+        card:set_cost()
+        delay(0.4)
+
+        card:juice_up()
+        play_sound('generic1')
+        local c2 = copy_card(c1)
+        c2:add_to_deck()
+        area:emplace(c2)
+    elseif c1.ability.cry_multiuse and to_big(c1.ability.cry_multiuse) > to_big(1) then
         local card = c1
         card.ability.cry_multiuse = card.ability.cry_multiuse - 1
         card.ability.slib_no_sell_value = true
