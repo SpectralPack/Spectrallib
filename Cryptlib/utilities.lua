@@ -119,12 +119,16 @@ function SMODS.injectItems(...)
 end
 
 -- Create third card layer
-if not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
+if --[[not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"})]] true then --this should just work with added back compat in cryptid-main
 	local set_spritesref = Card.set_sprites
 	function Card:set_sprites(_center, _front)
 		set_spritesref(self, _center, _front)
 
 		if not Spectrallib.safe_get(_center, "soul_pos", "extra") then return end
+
+		if self.children.floating_sprite2 then --properly replace any old sprites
+			self.children.floating_sprite2:remove()
+		end
 
 		self.children.floating_sprite2 = SMODS.create_sprite(self.T.x, self.T.y, self.T.w, self.T.h,
 			_center.soul_extra_atlas or _center.atlas or _center.set,
