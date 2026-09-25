@@ -68,7 +68,6 @@ function Card:use_consumeable(area, copier)
             end
         end
     end
-    print(retrig_total)
     --two loops for reason mentioned above
     for _, eff in ipairs(retrig_effects) do
         if bulk_use_ref and eff.bulk_use_threshold and (eff.repetitions or 0) >= eff.bulk_use_threshold and Overflow.can_bulk_use(self) then
