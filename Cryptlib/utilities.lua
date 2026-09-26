@@ -469,7 +469,7 @@ function Spectrallib.get_highlighted_cards(args, ignore, min, max, blacklist, se
 		}
 	end
 	args.min = args.min or 1
-	args.max = args.max or 1
+	args.max = args.max or math.huge
 	-- Convert blacklist tables to function
 	if type(args.ignore_func) == "table" then
 		local t = SMODS.shallow_copy(args.ignore_func)
@@ -505,7 +505,7 @@ function Spectrallib.get_highlighted_cards(args, ignore, min, max, blacklist, se
 				return highlighted_cards
 			else
 				pseudoshuffle(highlighted_cards, seed or "forcehighlight")
-				for i = 1, args.max do
+				for i = 1, args.max do --scary but for limit should never be able to be math.huge here since the code wont be reached with math.huge
 					ret_cards[#ret_cards+1] = highlighted_cards[i]
 				end
 				return ret_cards
