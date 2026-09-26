@@ -168,6 +168,41 @@ function Spectrallib.get_interest(add_rows, dollars)
     return interest
 end
 
+-- Converts a set of separated arguments into a table with string keys, or "args" table.
+---@param initial_param_names string[],
+---@param ... any
+---@return { [string]: any }
+function Spectrallib.params_to_table(initial_param_names, ...)
+    local params = {...}
+    local possibly_args = params[1]
+    local new_args = {}
+
+    -- Please don't merge the for-loops,
+    -- one has conditional check and the other doesnt,
+    -- I wanna keep the latter case (and this function in general)
+    -- minimally disruptive to stuff
+    -- (this is based on unfounded speculation on how luajit works,
+    -- feel free to correct me -Oinite)
+    if (
+        type(possibly_args) == "table"
+        and getmetatable(possibly_args) == nil
+    ) then
+        for i,key in ipairs(initial_param_names) do
+            if possibly_args[key] then
+                return possibly_args
+            else
+                new_args[key] = params[i]
+            end
+        end
+    else
+        for i,key in ipairs(initial_param_names) do
+            new_args[key] = params[i]
+        end
+    end
+
+    return new_args
+end
+
 ---------------
 -- ITERATORS --
 ---------------

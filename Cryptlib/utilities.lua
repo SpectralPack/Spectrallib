@@ -458,16 +458,10 @@ end
 ---@param seed? string|any (BACK COMPAT) Can be used alongside the `max` parameter.
 ---@return Card[]
 function Spectrallib.get_highlighted_cards(args, ignore, min, max, blacklist, seed)
-	if ignore or min or max or blacklist or seed then
-		args = {
-			areas = args,
-			min = min,
-			max = max,
-			ignore_func = blacklist,
-			seed = seed,
-			source = ignore
-		}
-	end
+	args = Spectrallib.params_to_table({
+		"areas", "source", "min", "max", "ignore_func", "seed"
+	}, args, ignore, min, max, blacklist, seed)
+
 	args.min = args.min or 1
 	args.max = args.max or math.huge
 	-- Convert blacklist tables to function
@@ -504,14 +498,14 @@ function Spectrallib.get_highlighted_cards(args, ignore, min, max, blacklist, se
 			if #highlighted_cards <= args.max then
 				return highlighted_cards
 			else
-				pseudoshuffle(highlighted_cards, seed or "forcehighlight")
+				pseudoshuffle(highlighted_cards, args.seed or "forcehighlight")
 				for i = 1, args.max do --scary but for limit should never be able to be math.huge here since the code wont be reached with math.huge
 					ret_cards[#ret_cards+1] = highlighted_cards[i]
 				end
 				return ret_cards
 			end
 		else
-			pseudoshuffle(eligible_cards, seed or "forcehighlight")
+			pseudoshuffle(eligible_cards, args.seed or "forcehighlight")
 			for i = 1, args.max do
 				ret_cards[#ret_cards+1] = eligible_cards[i]
 			end
