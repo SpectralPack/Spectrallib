@@ -245,7 +245,7 @@ end
 
 local calc_keys = {
     "xchips", "echips", "eq_chips", "xlog_chips", "xmult", "emult", "eq_mult", "xlog_mult",
-    "x_asc", "exp_asc", "score", "xscore", "escore", "xblindsize", "eblindsize",
+    "x_asc", "exp_asc", "xscore", "escore", "xblindsize", "eblindsize",
 }
 local plus_keys = {
     "chips", "mult", "asc", "score", "blindsize"
