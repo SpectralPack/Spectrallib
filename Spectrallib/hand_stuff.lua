@@ -81,9 +81,9 @@ Spectrallib.HandBonus = SMODS.GameObject:extend{
     end,
     generate_ui = function(self, hand) 
         local colour = type(self.colour) == "function" and self:colour(hand) or self.colour
-        local desc = G.localization.descriptions.HandBonus and G.localization.descriptions.HandBonus[self.key] and G.localization.descriptions.HandBonus[self.key].text
+        local desc = Spectrallib.safe_get(G.localization.descriptions, "HandBonus", self.key, "text")
         local desc_nodes = {}
-        for i, v in pairs(desc or {}) do
+        for i, v in ipairs(desc or {}) do
             desc_nodes[#desc_nodes+1] = SMODS.localize_box(loc_parse_string(v), {scale = 1.45})[1]
         end
         local text, operator = self:format_text(hand, G.GAME.hands[hand][self.key])
