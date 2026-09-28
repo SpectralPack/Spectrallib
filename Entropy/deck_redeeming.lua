@@ -366,6 +366,17 @@ function get_type_colour(type, ...)
     return get_type_colour_ref(type, ...)
 end
 
+function Spectrallib.refresh_backs(atlas, pos)
+    for i, c in ipairs(G.playing_cards) do
+        c.children.back = Sprite(c.T.x, c.T.y, c.T.w, c.T.h, G.ASSET_ATLAS[atlas], pos or {x = 0, y = 0})
+        c.children.back.states.hover = c.states.hover
+        c.children.back.states.click = c.states.click
+        c.children.back.states.drag = c.states.drag
+        c.children.back.states.collide.can = false
+        c.children.back:set_role({major = c, role_type = 'Glued', draw_major = c})
+    end
+end
+
 
 function Spectrallib.unredeem_deck(key, replace_key)
     key = key or G.GAME.selected_back.effect and G.GAME.selected_back.effect.center and G.GAME.selected_back.effect.center.key
