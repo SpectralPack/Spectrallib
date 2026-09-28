@@ -365,3 +365,56 @@ function get_type_colour(type, ...)
     end
     return get_type_colour_ref(type, ...)
 end
+
+
+function Spectrallib.unredeem_deck(key, replace_key)
+    key = key or G.GAME.selected_back.effect and G.GAME.selected_back.effect.center and G.GAME.selected_back.effect.center.key
+    replace_key = replace_key or "b_red" --TODO probably implement a default deck that has no effect in slib (HIDDEN)
+                                         --but red deck has no effect outside of :apply stuff which G.GAME.selected_back ignores
+                                         --so this is purely visual
+    G.GAME.selected_back = Back(G.P_CENTERS[replace_key])
+    Spectrallib.refresh_backs(G.P_CENTERS[replace_key].atlas, G.P_CENTERS[replace_key].pos)
+    G.deck.cards[1]:juice_up()
+    if G.P_CENTERS[key].unredeem then
+        G.P_CENTERS[key]:unredeem()
+        return
+    end
+    if key == "b_red" then
+        G.GAME.round_resets.discards = G.GAME.round_resets.discards - 1
+        ease_discard(-1)
+    elseif key == "b_blue" then
+        G.GAME.round_resets.hands = G.GAME.round_resets.hands - 1
+        ease_hands_played(-1)
+    elseif key == "b_red" then
+        ease_dollars(-10)
+    elseif key == "b_green" then
+        G.GAME.modifiers.no_interest = nil
+        G.GAME.modifiers.money_per_discard = 0
+        G.GAME.modifiers.money_per_hand = 1
+    elseif key == "b_black" then
+        G.jokers.config.card_limit = G.jokers.config.card_limit + 1
+        G.GAME.round_resets.hands = G.GAME.round_resets.hands + 1
+        ease_hands_played(1)
+    elseif key == "b_magic" then
+        for i, v in pairs(G.vouchers.cards) do
+            if v.config.center.key == "v_crystal_ball" then v:unapply_to_run(v.config.center) end
+        end
+    elseif key == "b_nebula" then
+        for i, v in pairs(G.vouchers.cards) do
+            if v.config.center.key == "v_telescope" then v:unapply_to_run(v.config.center) end
+        end
+        G.consumeables.config.card_limit = G.consumeables.config.card_limit + 1
+    elseif key == "b_ghost" then
+        G.GAME.spectral_rate = 0
+    elseif key == "b_zodiac" then
+        for i, v in pairs(G.vouchers.cards) do
+            if v.config.center.key == "v_tarot_merchant" 
+            or v.config.center.key == "v_overstock"
+            or v.config.center.key == "v_planet_merchant"
+            then v:unapply_to_run(v.config.center) end
+        end
+    elseif key == "b_painted" then
+        G.hand.config.card_limit = G.hand.config.card_limit - 2
+        G.jokers.config.card_limit = G.jokers.config.card_limit + 1
+    end
+end
