@@ -450,17 +450,13 @@ end
 ---@field areas IterableCardList|table A list of areas to check for cards in.
 
 -- Get all highlighted cards in the specified list of card areas.
----@param args table|Spectrallib.get_highlighted_cards.args
----@param ignore? Card|table (BACK COMPAT) A card to exclude from the highlighted list.
----@param min? number (BACK COMPAT)
----@param max? number (BACK COMPAT) If the count of highlighted cards exceeds this value, returned table will be a max-sized list of randomly selected highlighted cards.
----@param blacklist? string[]|(fun(card: Card): boolean) (BACK COMPAT) If function returns true, card is included into the highlighted list. Table entries are keys of centers to exclude.
----@param seed? string|any (BACK COMPAT) Can be used alongside the `max` parameter.
+---@param args Spectrallib.get_highlighted_cards.args
+---@param ...? any (BACK COMPAT)
 ---@return Card[]
-function Spectrallib.get_highlighted_cards(args, ignore, min, max, blacklist, seed)
+function Spectrallib.get_highlighted_cards(args, ...)
 	args = Spectrallib.params_to_table({
 		"areas", "source", "min", "max", "ignore_func", "seed"
-	}, args, ignore, min, max, blacklist, seed)
+	}, args, ...) --[[@as Spectrallib.get_highlighted_cards.args]]
 
 	args.min = args.min or 1
 	args.max = args.max or math.huge
