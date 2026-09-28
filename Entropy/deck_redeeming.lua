@@ -396,7 +396,7 @@ function Spectrallib.unredeem_deck(key, replace_key)
     elseif key == "b_blue" then
         G.GAME.round_resets.hands = G.GAME.round_resets.hands - 1
         ease_hands_played(-1)
-    elseif key == "b_red" then
+    elseif key == "b_yellow" then
         ease_dollars(-10)
     elseif key == "b_green" then
         G.GAME.modifiers.no_interest = nil
