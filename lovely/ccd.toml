@@ -442,7 +442,11 @@ target = '''functions/common_events.lua'''
 pattern = '''if main_end then'''
 position = "before"
 payload = '''
-if cfg and cfg.cry_multiuse and (not card or (card.bypass_discovery_center or card.config.center.discovered)) and card_type ~= "Locked" then --bit hacky but it works
+if cfg and cfg.slib_infinite_use then
+    local loc = {}
+	localize{type = 'other', key = 'slib_infiniuse', nodes = loc, }
+	desc_nodes[#desc_nodes+1] = loc[1]
+elseif cfg and cfg.cry_multiuse and (not card or (card.bypass_discovery_center or card.config.center.discovered)) and card_type ~= "Locked" then --bit hacky but it works
 	local loc = {}
 	localize{type = 'other', key = 'slib_multiuse', nodes = loc, vars = {cfg.cry_multiuse, colours = { Spectrallib.get_text_colour(card, _c) } }}
 	desc_nodes[#desc_nodes+1] = loc[1]
@@ -461,7 +465,10 @@ end
 '''
 position = "after"
 payload = '''
-if not nc and card.ability.cry_multiuse and (card.ability.cry_multiuse > 1) then
+if not nc and card.ability.slib_infinite_use then
+    nc = true
+    G.slib_infiniuse = true
+elseif not nc and card.ability.cry_multiuse and (card.ability.cry_multiuse > 1) then
 	card.ability.cry_multiuse = card.ability.cry_multiuse - 1
 	nc = true
 	G.cry_muse = true
@@ -476,7 +483,11 @@ target = "functions/button_callbacks.lua"
 pattern = '''if (prev_state == G.STATES.TAROT_PACK or prev_state == G.STATES.PLANET_PACK or'''
 position = "before"
 payload = '''
-if G.cry_muse then
+if G.slib_infiniuse then
+    G.slib_infiniuse = nil
+    card.ability.slib_no_sell_value = true
+    card:set_cost()
+elseif G.cry_muse then
 	G.cry_muse = nil
 	card.ability.slib_no_sell_value = true
 	card:set_cost()

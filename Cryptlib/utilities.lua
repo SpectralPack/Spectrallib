@@ -119,12 +119,16 @@ function SMODS.injectItems(...)
 end
 
 -- Create third card layer
-if not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"}) then
+if --[[not Spectrallib.can_mods_load({"Cryptid", "Cryptlib"})]] true then --this should just work with added back compat in cryptid-main
 	local set_spritesref = Card.set_sprites
 	function Card:set_sprites(_center, _front)
 		set_spritesref(self, _center, _front)
 
 		if not Spectrallib.safe_get(_center, "soul_pos", "extra") then return end
+
+		if self.children.floating_sprite2 then --properly replace any old sprites
+			self.children.floating_sprite2:remove()
+		end
 
 		self.children.floating_sprite2 = SMODS.create_sprite(self.T.x, self.T.y, self.T.w, self.T.h,
 			_center.soul_extra_atlas or _center.atlas or _center.set,
@@ -446,26 +450,16 @@ end
 ---@field areas IterableCardList|table A list of areas to check for cards in.
 
 -- Get all highlighted cards in the specified list of card areas.
----@param args table|Spectrallib.get_highlighted_cards.args
----@param ignore? Card|table (BACK COMPAT) A card to exclude from the highlighted list.
----@param min? number (BACK COMPAT)
----@param max? number (BACK COMPAT) If the count of highlighted cards exceeds this value, returned table will be a max-sized list of randomly selected highlighted cards.
----@param blacklist? string[]|(fun(card: Card): boolean) (BACK COMPAT) If function returns true, card is included into the highlighted list. Table entries are keys of centers to exclude.
----@param seed? string|any (BACK COMPAT) Can be used alongside the `max` parameter.
+---@param args Spectrallib.get_highlighted_cards.args
+---@param ...? any (BACK COMPAT)
 ---@return Card[]
-function Spectrallib.get_highlighted_cards(args, ignore, min, max, blacklist, seed)
-	if ignore or min or max or blacklist or seed then
-		args = {
-			areas = args,
-			min = min,
-			max = max,
-			ignore_func = blacklist,
-			seed = seed,
-			source = ignore
-		}
-	end
+function Spectrallib.get_highlighted_cards(args, ...)
+	args = Spectrallib.params_to_table({
+		"areas", "source", "min", "max", "ignore_func", "seed"
+	}, args, ...) --[[@as Spectrallib.get_highlighted_cards.args]]
+
 	args.min = args.min or 1
-	args.max = args.max or 1
+	args.max = args.max or math.huge
 	-- Convert blacklist tables to function
 	if type(args.ignore_func) == "table" then
 		local t = SMODS.shallow_copy(args.ignore_func)
@@ -500,14 +494,14 @@ function Spectrallib.get_highlighted_cards(args, ignore, min, max, blacklist, se
 			if #highlighted_cards <= args.max then
 				return highlighted_cards
 			else
-				pseudoshuffle(highlighted_cards, seed or "forcehighlight")
-				for i = 1, args.max do
+				pseudoshuffle(highlighted_cards, args.seed or "forcehighlight")
+				for i = 1, args.max do --scary but for limit should never be able to be math.huge here since the code wont be reached with math.huge
 					ret_cards[#ret_cards+1] = highlighted_cards[i]
 				end
 				return ret_cards
 			end
 		else
-			pseudoshuffle(eligible_cards, seed or "forcehighlight")
+			pseudoshuffle(eligible_cards, args.seed or "forcehighlight")
 			for i = 1, args.max do
 				ret_cards[#ret_cards+1] = eligible_cards[i]
 			end

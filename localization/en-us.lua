@@ -116,6 +116,11 @@ return {
 					"Multiuse: {V:1}#1#{} left"
 				}
 			},
+			slib_infiniuse = {
+				text = {
+					"Multiuse: {E:1,C:legendary}Infinite{} left"
+				}
+			},
 			slib_banned_card = {
 				name = "Banished",
 				text = {
