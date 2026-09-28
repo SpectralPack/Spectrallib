@@ -427,5 +427,36 @@ function Spectrallib.unredeem_deck(key, replace_key)
     elseif key == "b_painted" then
         G.hand.config.card_limit = G.hand.config.card_limit - 2
         G.jokers.config.card_limit = G.jokers.config.card_limit + 1
+    else
+        -- rudimentary checks for other decks, could probably use some tinkering if i'm missing some common starters here lmao
+        local deck_config = G.P_CENTERS[key].config
+        if G.GAME.modifiers and #G.GAME.modifiers > 0 then G.GAME.modifiers = {} end
+
+        if deck_config.hands then
+            G.GAME.round_resets.hands = G.GAME.round_resets.hands - deck_config.hands
+            ease_hands_played(-deck_config.hands)
+        end
+        if deck_config.discards then
+            G.GAME.round_resets.discards = G.GAME.round_resets.discards - deck_config.discards
+            ease_discard(-deck_config.discards)
+        end
+        if deck_config.joker_slot then
+            G.jokers.config.card_limit = G.jokers.config.card_limit - deck_config.joker_slot
+        end
+        if deck_config.hand_size then
+            G.hand.config.card_limit = G.hand.config.card_limit - deck_config.hand_size
+        end
+        if deck_config.consumable_slot then
+            G.consumeables.config.card_limit = G.consumeables.config.card_limit + deck_config.consumable_slot
+        end
+        if deck_config.voucher then
+            for j, vkey in pairs(deck_config.voucher) do
+                for i, v in pairs(G.vouchers.cards) do
+                    if v.config.center.key == vkey then
+                        v:unapply_to_run(v.config.center)
+                    end
+                end
+            end
+        end
     end
 end
