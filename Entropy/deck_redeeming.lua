@@ -377,13 +377,13 @@ function Spectrallib.refresh_backs(atlas, pos)
     end
 end
 
-
 function Spectrallib.unredeem_deck(key, replace_key)
     key = key or G.GAME.selected_back.effect and G.GAME.selected_back.effect.center and G.GAME.selected_back.effect.center.key
     replace_key = replace_key or "b_red" --TODO probably implement a default deck that has no effect in slib (HIDDEN)
                                          --but red deck has no effect outside of :apply stuff which G.GAME.selected_back ignores
                                          --so this is purely visual
     G.GAME.selected_back = Back(G.P_CENTERS[replace_key])
+    G.GAME.selected_back_key = G.P_CENTERS[replace_key]
     Spectrallib.refresh_backs(G.P_CENTERS[replace_key].atlas, G.P_CENTERS[replace_key].pos)
     G.deck.cards[1]:juice_up()
     if G.P_CENTERS[key].unredeem then
