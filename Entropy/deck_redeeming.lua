@@ -11,43 +11,38 @@ G.FUNCS.buy_deckorsleeve = function(e)
         deck_card.area:remove_card(deck_card)
     end
 
-    local deck_apply = Spectrallib.safe_get(deck_card, "config", "center", "redeem") or Spectrallib.safe_get(deck_card, "config", "center", "apply")
+    local deck_apply = deck_card.config.center.redeem or deck_card.config.center.apply
     if deck_apply then
         local old_joker_slots = G.GAME.starting_params.joker_slots
-        if deck_card.config.center.set == "Sleeve" then
-            deck_apply(deck_card.config.center)
-        else
-            deck_apply(deck_card.config.center)
-        end
+        deck_apply(deck_card.config.center)
         local joker_slots_difference = G.GAME.starting_params.joker_slots - old_joker_slots
         if joker_slots_difference > 0 then
             Spectrallib.handle_card_limit(G.jokers, joker_slots_difference)
         end
     end
 
-    local deck_config = Spectrallib.safe_get(deck_card, "config", "center", "config")
-
-    for cfg_key, cfg_value in pairs(deck_config or {}) do
-        if Spectrallib.deck_config_apply_effects[cfg_key] then
-            Spectrallib.deck_config_apply_effects[cfg_key](deck_card.config.center, cfg_value)
+    if deck_card.config.center.config then
+        for cfg_key, cfg_value in pairs(deck_card.config.center.config) do
+            if Spectrallib.deck_config_apply_effects[cfg_key] then
+                Spectrallib.deck_config_apply_effects[cfg_key](deck_card.config.center, cfg_value)
+            end
         end
     end
 
-    if deck_config then
-        if deck_card.config.center.key == "b_checkered" or deck_card.config.center.key == "sleeve_casl_checkered" then
-            for _, card in pairs(G.playing_cards) do
-                local new_suit
-                if card:is_suit("Diamonds") then
-                    new_suit = "Hearts"
-                elseif card:is_suit("Clubs") then
-                    new_suit = "Spades"
-                elseif not (card:is_suit("Hearts") or card:is_suit("Spades")) then
-                    new_suit = pseudorandom_element({"Spades", "Hearts"}, pseudoseed("checkered_redeem"))
-                end
-                SMODS.change_base(card, new_suit, nil)
+    if deck_card.config.center.key == "b_checkered" or deck_card.config.center.key == "sleeve_casl_checkered" then
+        for _, card in pairs(G.playing_cards) do
+            local new_suit
+            if card:is_suit("Diamonds") then
+                new_suit = "Hearts"
+            elseif card:is_suit("Clubs") then
+                new_suit = "Spades"
+            elseif not (card:is_suit("Hearts") or card:is_suit("Spades")) then
+                new_suit = pseudorandom_element({"Spades", "Hearts"}, pseudoseed("checkered_redeem"))
             end
-        elseif deck_card.config.center.key == "b_entr_doc" or deck_card.config.center.key == "sleeve_entr_doc" then
+            assert(SMODS.change_base(card, new_suit, nil))
         end
+    elseif deck_card.config.center.key == "b_entr_doc" or deck_card.config.center.key == "sleeve_entr_doc" then
+        -- (cough)
     end
 
     table.insert(G.GAME.entr_bought_decks, deck_card.config.center.key)
@@ -109,37 +104,30 @@ function Card:redeem_deck()
             or (G.GAME.pack_choices or -1) > 0
         )
     )
+
     local function offset_reset(tbl)
         if not tbl then return end
         local offset = tbl.alignment.offset
         offset.y, offset.py = offset.py, nil
     end
-    Spectrallib.event{
-        function ()
-            G.FUNCS.buy_deckorsleeve{ config = { ref_table = self} }
-            if G.booster_pack then
-                Spectrallib.event{
-                    function ()
-                        if (G.GAME.pack_choices or -1) >= 1 then
-                            offset_reset(G.booster_pack)
-                        else
-                            offset_reset(G.shop)
-                        end
-                        return true
-                    end,
-                    trigger = 'after',
-                    delay = 0.5
-                }
-            elseif not in_pack then
-                offset_reset(G.shop)
-                offset_reset(G.blind_select)
-                offset_reset(G.round_eval)
-            end
-            return true
-        end,
-        trigger = 'after',
-        delay = 0.5
-    }
+    Spectrallib.event{delay = 0.5, function ()
+        G.FUNCS.buy_deckorsleeve{ config = { ref_table = self} }
+        if G.booster_pack then
+            Spectrallib.event{delay = 0.5, function ()
+                if (G.GAME.pack_choices or -1) >= 1 then
+                    offset_reset(G.booster_pack)
+                else
+                    offset_reset(G.shop)
+                end
+                return true
+            end}
+        elseif not in_pack then
+            offset_reset(G.shop)
+            offset_reset(G.blind_select)
+            offset_reset(G.round_eval)
+        end
+        return true
+    end}
 
     local function offset_move(tbl, room_relative)
         if not tbl or tbl.alignment.offset.py then return end
@@ -242,7 +230,8 @@ function G.UIDEF.bought_decks()
     {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true}, nodes=deck_areas_in_current_row}
     )
 
-    local t = #decks > 0 and (
+    if #decks > 0 then
+        return
         {n=G.UIT.ROOT, config={align = "cm", colour = G.C.CLEAR}, nodes={
             {n=G.UIT.R, config={align = "cm"}, nodes={
                 {n=G.UIT.O, config={object = DynaText({
@@ -258,7 +247,8 @@ function G.UIDEF.bought_decks()
                 {n=G.UIT.R, config={align = "cm"}, nodes=deck_rows},
             }}
         }}
-    ) or (
+    else
+        return
         {n=G.UIT.ROOT, config={align = "cm", colour = G.C.CLEAR}, nodes={
             {n=G.UIT.O, config={object = DynaText({
                 string = {localize('ph_no_decks')},
@@ -267,8 +257,7 @@ function G.UIDEF.bought_decks()
                 scale = 0.6})
             }}
         }}
-    )
-    return t
+    end
 end
 
 -- Calculate redeemed decks
@@ -390,72 +379,14 @@ function Spectrallib.unredeem_deck(key, replace_key)
         G.P_CENTERS[key]:unredeem()
         return
     end
-    if key == "b_red" then
-        G.GAME.round_resets.discards = G.GAME.round_resets.discards - 1
-        ease_discard(-1)
-    elseif key == "b_blue" then
-        G.GAME.round_resets.hands = G.GAME.round_resets.hands - 1
-        ease_hands_played(-1)
-    elseif key == "b_yellow" then
-        ease_dollars(-10)
-    elseif key == "b_green" then
-        G.GAME.modifiers.no_interest = nil
-        G.GAME.modifiers.money_per_discard = 0
-        G.GAME.modifiers.money_per_hand = 1
-    elseif key == "b_black" then
-        G.jokers.config.card_limit = G.jokers.config.card_limit + 1
-        G.GAME.round_resets.hands = G.GAME.round_resets.hands + 1
-        ease_hands_played(1)
-    elseif key == "b_magic" then
-        for i, v in pairs(G.vouchers.cards) do
-            if v.config.center.key == "v_crystal_ball" then v:unapply_to_run(v.config.center) end
-        end
-    elseif key == "b_nebula" then
-        for i, v in pairs(G.vouchers.cards) do
-            if v.config.center.key == "v_telescope" then v:unapply_to_run(v.config.center) end
-        end
-        G.consumeables.config.card_limit = G.consumeables.config.card_limit + 1
-    elseif key == "b_ghost" then
-        G.GAME.spectral_rate = 0
-    elseif key == "b_zodiac" then
-        for i, v in pairs(G.vouchers.cards) do
-            if v.config.center.key == "v_tarot_merchant" 
-            or v.config.center.key == "v_overstock"
-            or v.config.center.key == "v_planet_merchant"
-            then v:unapply_to_run(v.config.center) end
-        end
-    elseif key == "b_painted" then
-        G.hand.config.card_limit = G.hand.config.card_limit - 2
-        G.jokers.config.card_limit = G.jokers.config.card_limit + 1
-    else
-        -- rudimentary checks for other decks, could probably use some tinkering if i'm missing some common starters here lmao
-        local deck_config = G.P_CENTERS[key].config
-        if G.GAME.modifiers and #G.GAME.modifiers > 0 then G.GAME.modifiers = {} end
 
-        if deck_config.hands then
-            G.GAME.round_resets.hands = G.GAME.round_resets.hands - deck_config.hands
-            ease_hands_played(-deck_config.hands)
-        end
-        if deck_config.discards then
-            G.GAME.round_resets.discards = G.GAME.round_resets.discards - deck_config.discards
-            ease_discard(-deck_config.discards)
-        end
-        if deck_config.joker_slot then
-            G.jokers.config.card_limit = G.jokers.config.card_limit - deck_config.joker_slot
-        end
-        if deck_config.hand_size then
-            G.hand.config.card_limit = G.hand.config.card_limit - deck_config.hand_size
-        end
-        if deck_config.consumable_slot then
-            G.consumeables.config.card_limit = G.consumeables.config.card_limit + deck_config.consumable_slot
-        end
-        if deck_config.voucher then
-            for j, vkey in pairs(deck_config.voucher) do
-                for i, v in pairs(G.vouchers.cards) do
-                    if v.config.center.key == vkey then
-                        v:unapply_to_run(v.config.center)
-                    end
-                end
+    local vanilla_unapply_deck_results = Spectrallib.vanilla_unapply_deck_results[key]
+    if vanilla_unapply_deck_results then
+        vanilla_unapply_deck_results()
+    elseif G.P_CENTERS[key].config then
+        for cfg_key, cfg_value in pairs(G.P_CENTERS[key].config) do
+            if Spectrallib.deck_config_unapply_effects[cfg_key] then
+                Spectrallib.deck_config_unapply_effects[cfg_key](cfg_value)
             end
         end
     end
