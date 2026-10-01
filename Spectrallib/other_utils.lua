@@ -155,14 +155,12 @@ end
 ---@field card? Card A card to directly emplace for presentation.
 ---@field copy_card? Card A card to copy for presentation.
 ---@field center? string The key of a center, which will be used for a card to present.
----@field skip_materialize? boolean If true, the materialize animation is skipped for copy_card and center.
 ---@field flip_back? boolean If true, if the card is facing backwards, it will be flipped.
 ---@field during_func? fun(card: Card, i: integer) The function to run while the card is being presented.
 ---@field stop_disintegrate? boolean If true, the card will not be destroyed; it will remain in the presentation area and require manual emplacement.
 ---@field __on_field_card Card Used internally.
 
 ---@class Spectrallib.redeem_presentation.all_subject_cfg
----@field skip_materialize? boolean If true, the materialize animation is skipped for all cards.
 ---@field flip_back? boolean If true, if any card is facing backwards, it will be flipped.
 ---@field during_func? fun(card: Card, i: integer) The function to run while any card is being presented.
 ---@field stop_disintegrate? boolean If true, all cards will not be destroyed; it will remain in the presentation area and require manual emplacement.
@@ -216,13 +214,9 @@ function Spectrallib.redeem_presentation(args)
             subject.__on_field_card = SMODS.create_card{key=subject.center}
         end
 
-        local do_materialize = (subject.copy_card or subject.center) and not subject_fallback(subject, "skip_materialize")
-        local do_flip = subject.__on_field_card.facing == "back" and subject_fallback(subject, "flip_back")
-
-        if do_materialize then
-            subject.__on_field_card:start_materialize()
-        end
         args.area:emplace(subject.__on_field_card)
+
+        local do_flip = subject.__on_field_card.facing == "back" and subject_fallback(subject, "flip_back")
         if do_flip then
             subject.__on_field_card:flip()
         end
