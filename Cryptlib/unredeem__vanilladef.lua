@@ -7,7 +7,7 @@ local unap = Spectrallib.vanilla_unapply_results
 unap["Overstock"] = function(card, center_table)
     G.E_MANAGER:add_event(Event({
         func = function()
-            change_shop_size(-center_table.extra)
+            change_shop_size(-(center_table.extra or 1))
             return true
         end,
     }))
