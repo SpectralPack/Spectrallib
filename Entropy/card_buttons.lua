@@ -144,10 +144,11 @@ local extended_card_button_definitions = {
     },
     {
         condition = function (card)
+            -- why check G.consumeables? this isn't being checked in some of the other conditions
+            if not G.consumeables then return false end
             local in_set  = card_in_sets(card, {"Booster"})
             local in_area = card_in_areas(card, {G.consumeables, G.jokers})
-            -- why check G.consumeables? this isn't being checked in some of the other conditions
-            return in_area and G.consumeables and in_set
+            return in_area and in_set
         end,
         uidef = function (card)
             local root = sell_and_use_buttons(card, "can_open_booster", "open_booster", localize('b_redeem'))
@@ -156,9 +157,10 @@ local extended_card_button_definitions = {
     },
     {
         condition = function (card)
+            if not G.hand then return false end
             local in_set  = card_in_sets(card, {"Joker"})
             local in_area = card_in_areas(card, {G.hand})
-            return in_area and G.hand and in_set
+            return in_area and in_set
         end,
         uidef = function (card)
             local root = use_only_button(card, "can_reserve_joker", "reserve_joker", localize('b_select'))
@@ -167,9 +169,10 @@ local extended_card_button_definitions = {
     },
     {
         condition = function (card)
+            if not G.hand then return false end
             local in_set  = card_in_sets(card, {"Booster"})
             local in_area = card_in_areas(card, {G.hand})
-            return in_area and G.hand and in_set
+            return in_area and in_set
         end,
         uidef = function (card)
             local root = use_only_button(card, "can_open_booster", "open_booster", localize('b_open'))
@@ -178,9 +181,10 @@ local extended_card_button_definitions = {
     },
     {
         condition = function (card)
+            if not G.hand then return false end
             local in_set  = card_in_sets(card, {"Voucher"})
             local in_area = card_in_areas(card, {G.hand})
-            return in_area and G.hand and in_set
+            return in_area and in_set
         end,
         uidef = function (card)
             local root = use_only_button(card, "can_open_voucher", "open_voucher", localize('b_redeem'))
@@ -189,10 +193,11 @@ local extended_card_button_definitions = {
     },
     {
         condition = function (card)
+            if not G.pack_cards then return false end
             -- let boosters not be recursive
             local in_set  = card_in_sets(card, {"Booster"})
             local in_area = card_in_areas(card, {G.pack_cards})
-            return in_area and G.pack_cards and in_set and not Spectrallib.ConsumablePackBlacklist[SMODS.OPENED_BOOSTER.config.center.key]
+            return in_area and in_set and not Spectrallib.ConsumablePackBlacklist[SMODS.OPENED_BOOSTER.config.center.key]
         end,
         uidef = function (card)
             local root = use_only_button(card, "can_reserve_booster", "reserve_booster", localize('b_select'))
@@ -201,6 +206,7 @@ local extended_card_button_definitions = {
     },
     {
         condition = function (card)
+            if not G.jokers then return false end
             local in_set  = card_in_sets(card, {"Joker"})
             local in_area = card_in_areas(card, {G.jokers, G.consumeables})
             local needs_use_button = (
@@ -211,7 +217,7 @@ local extended_card_button_definitions = {
                     or card.config.center:needs_use_button(card)
                 )
             )
-            return in_area and G.jokers and in_set and needs_use_button
+            return in_area and in_set and needs_use_button
         end,
         uidef = function (card)
             local sell_button =
@@ -260,6 +266,7 @@ local extended_card_button_definitions = {
     },
     {
         condition = function (card)
+            if not G.pack_cards then return false end
             local in_set  = card_in_sets(card, {"Joker"})
             local in_area = card_in_areas(card, {G.pack_cards})
             local needs_use_button = Spectrallib.needs_use_button(card)
@@ -272,7 +279,7 @@ local extended_card_button_definitions = {
                     and (card.ability.consumeable)
                 )
             )
-            return in_area and G.pack_cards and in_set and needs_use_button and poopshit
+            return in_area and in_set and needs_use_button and poopshit
         end,
         uidef = function (card)
             return
@@ -293,6 +300,7 @@ local extended_card_button_definitions = {
     },
     {
         condition = function (card)
+            if not G.pack_cards then return false end
             local in_area = card_in_areas(card, {G.pack_cards})
             local needs_use_button = Spectrallib.needs_use_button(card)
             local poopshit = (
@@ -304,7 +312,7 @@ local extended_card_button_definitions = {
                     and (card.ability.consumeable)
                 )
             )
-            return in_area and G.pack_cards and needs_use_button and poopshit
+            return in_area and needs_use_button and poopshit
         end,
         uidef = function (card)
             return
