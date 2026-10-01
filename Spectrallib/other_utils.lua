@@ -154,7 +154,7 @@ end
 ---@class Spectrallib.redeem_presentation.subject
 ---@field card? Card A card to directly emplace for presentation.
 ---@field copy_card? Card A card to copy for presentation.
----@field center? string The key of a center, which will be used for a card to present.
+---@field key? string The key of a center, which will be used for a card to present.
 ---@field flip_back? boolean If true, if the card is facing backwards, it will be flipped.
 ---@field during_func? fun(card: Card, i: integer) The function to run while the card is being presented.
 ---@field stop_disintegrate? boolean If true, the card will not be destroyed; it will remain in the presentation area and require manual emplacement.
@@ -202,16 +202,16 @@ function Spectrallib.redeem_presentation(args)
     end
 
     for i,subject in ipairs(args.subjects) do
-        assert(subject.card or subject.copy_card or subject.center,
-        ([[Subject %s does not define field `card`, `copy_card`, or `center`]]):format(i))
+        assert(subject.card or subject.copy_card or subject.key,
+        ([[Subject %s does not define field `card`, `copy_card`, or `key`]]):format(i))
 
         if subject.card and getmetatable(subject.card) == Card then
             subject.__on_field_card = subject.card
             subject.card.area:remove_card(subject.card)
         elseif subject.copy_card and getmetatable(subject.copy_card) == Card then
             subject.__on_field_card = copy_card(subject.copy_card)
-        elseif subject.center and type(subject.center) == "string" then
-            subject.__on_field_card = SMODS.create_card{key=subject.center}
+        elseif subject.key and type(subject.key) == "string" then
+            subject.__on_field_card = SMODS.create_card{key=subject.key}
         end
 
         args.area:emplace(subject.__on_field_card)
