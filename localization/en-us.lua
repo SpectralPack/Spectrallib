@@ -395,7 +395,8 @@ return {
 
 			slib_per_level = "Per-level Stats: ",
 			slib_base_stats = "Base Stats: ",
-			k_back = "Deck"
+			k_back = "Deck",
+            k_unredeemed_ex="Unredeemed!",
         },
         v_dictionary = {
         	a_xchips = "X#1# Chips",

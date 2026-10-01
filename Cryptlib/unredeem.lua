@@ -11,7 +11,7 @@ function Card:unredeem()
 		Spectrallib.redeem_animation(self, {
 			colour = G.C.RED,
 			sounds = {'card1', 'timpani'},
-			btm_txt = localize("cry_unredeemed"),
+			btm_txt = localize("k_unredeemed_ex"),
 			during_func = function()
 				if not self.debuff then
 					self:unapply_to_run()
