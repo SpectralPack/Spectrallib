@@ -44,8 +44,8 @@ end
 ---@field colour? [number, number, number, number] Text colour. Defaults to white.
 ---@field scale? number Text scale. Defaults to 0.9.
 ---@field sounds? string[] The keys of sounds to play during the animation. Defaults to `{'card1', 'coin1'}`.
----@field top_txt? string|any Text to display at the top. Defaults to `card`'s name.
----@field btm_txt? string|any Text to display at the bottom. Defaults to the localization of "Redemed!"
+---@field top_txt? string|""|any Text to display at the top. Defaults to `card`'s name. Supports empty string.
+---@field btm_txt? string|""|any Text to display at the bottom. Defaults to the localization of "Redemed!". Supports empty string.
 ---@field during_func? function A function to run after displaying text, but before removing it.
 
 -- Play the voucher redeem animation, with customization options.
@@ -94,23 +94,31 @@ function Spectrallib.redeem_animation(card, cfg)
     local top_dynatext, btm_dynatext
 
     Spectrallib.event{delay=0.4, function ()
-        top_dynatext = redeem_dynatext{
-            string = cfg.top_txt,
-            rotate = 1, pop_in = 0.6
-        }
-        btm_dynatext = redeem_dynatext{
-            string = cfg.btm_txt,
-            rotate = 2, pop_in = 1.4,
-            pitch_shift = 0.25,
-        }
+        if cfg.top_txt ~= "" then
+            top_dynatext = redeem_dynatext{
+                string = cfg.top_txt,
+                rotate = 1, pop_in = 0.6
+            }
+        end
+        if cfg.btm_txt ~= "" then
+            btm_dynatext = redeem_dynatext{
+                string = cfg.btm_txt,
+                rotate = 2, pop_in = 1.4,
+                pitch_shift = 0.25,
+            }
+        end
 
         card:juice_up(0.3, 0.5)
         for _,sound_key in ipairs(cfg.sounds) do
             play_sound(sound_key)
         end
 
-        card.children.top_disp = redeem_uibox("tm", top_dynatext)
-        card.children.bot_disp = redeem_uibox("bm", btm_dynatext)
+        if top_dynatext then
+            card.children.top_disp = redeem_uibox("tm", top_dynatext)
+        end
+        if btm_dynatext then
+            card.children.bot_disp = redeem_uibox("bm", btm_dynatext)
+        end
 
         return true
     end}
@@ -121,16 +129,24 @@ function Spectrallib.redeem_animation(card, cfg)
 
     delay(0.6)
     Spectrallib.event{delay=2.6, function ()
-        top_dynatext:pop_out(4)
-        btm_dynatext:pop_out(4)
+        if top_dynatext then
+            top_dynatext:pop_out(4)
+        end
+        if btm_dynatext then
+            btm_dynatext:pop_out(4)
+        end
         return true
     end}
     Spectrallib.event{delay=0.5, function ()
         card.states.hover.can = true
-        card.children.top_disp:remove()
-        card.children.top_disp = nil
-        card.children.bot_disp:remove()
-        card.children.bot_disp = nil
+        if top_dynatext then
+            card.children.top_disp:remove()
+            card.children.top_disp = nil
+        end
+        if btm_dynatext then
+            card.children.bot_disp:remove()
+            card.children.bot_disp = nil
+        end
         return true
     end}
 end
