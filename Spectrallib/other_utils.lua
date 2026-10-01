@@ -135,6 +135,100 @@ function Spectrallib.redeem_animation(card, cfg)
     end}
 end
 
+---@class Spectrallib.redeem_presentation.subject
+---@field card? Card A card to directly emplace for presentation.
+---@field copy_card? Card A card to copy for presentation.
+---@field center? string The key of a center, which will be used for a card to present.
+---@field skip_materialize? boolean If true, the materialize animation is skipped for copy_card and center.
+---@field flip_back? boolean If true, if the card is facing backwards, it will be flipped.
+---@field during_func? fun(card: Card, i: integer) The function to run while the card is being presented.
+---@field stop_disintegrate? boolean If true, the card will not be destroyed; it will remain in the presentation area and require manual emplacement.
+---@field __on_field_card Card Used internally.
+
+---@class Spectrallib.redeem_presentation.all_subject_cfg
+---@field skip_materialize? boolean If true, the materialize animation is skipped for all cards.
+---@field flip_back? boolean If true, if any card is facing backwards, it will be flipped.
+---@field during_func? fun(card: Card, i: integer) The function to run while any card is being presented.
+---@field stop_disintegrate? boolean If true, all cards will not be destroyed; it will remain in the presentation area and require manual emplacement.
+
+---@class Spectrallib.redeem_presentation.args
+---@field subjects Spectrallib.redeem_presentation.subject[]
+---@field area? CardArea
+---@field all_subject_cfg? Spectrallib.redeem_presentation.all_subject_cfg
+
+-- Present a set of cards before possibly destroying them, in a manner akin to vouchers.
+---@param args Spectrallib.redeem_presentation.args
+---@return nil
+function Spectrallib.redeem_presentation(args)
+    args = args or {}
+    assert(args.subjects, "List `subjects` must be defined")
+    assert(#args.subjects > 0, "List `subjects` must have at least 1 item")
+
+    if args.area then
+        -- Past this, args.area is undefined
+    elseif G.STATE == G.STATES.HAND_PLAYED then
+        if not G.redeemed_vouchers_during_hand then
+            G.redeemed_vouchers_during_hand = CardArea(
+                G.play.T.x, G.play.T.y,
+                G.play.T.w, G.play.T.h,
+                { type = "play", card_limit = 5 }
+            )
+        end
+        args.area = G.redeemed_vouchers_during_hand
+    else
+        args.area = G.play
+    end
+    args.all_subject_cfg = args.all_subject_cfg or {}
+
+    local function subject_fallback(subject, key)
+        if type(subject[key]) ~= "nil" then
+            return subject[key]
+        end
+        return args.all_subject_cfg[key]
+    end
+
+    for i,subject in ipairs(args.subjects) do
+        assert(subject.card or subject.copy_card or subject.center,
+        ([[Subject %s does not define field `card`, `copy_card`, or `center`]]):format(i))
+
+        if subject.card and getmetatable(subject.card) == Card then
+            subject.__on_field_card = subject.card
+            subject.card.area:remove_card(subject.card)
+        elseif subject.copy_card and getmetatable(subject.copy_card) == Card then
+            subject.__on_field_card = copy_card(subject.copy_card)
+        elseif subject.center and type(subject.center) == "string" then
+            subject.__on_field_card = SMODS.create_card{key=subject.center}
+        end
+
+        local do_materialize = (subject.copy_card or subject.center) and not subject_fallback(subject, "skip_materialize")
+        local do_flip = subject.__on_field_card.facing == "back" and subject_fallback(subject, "flip_back")
+
+        if do_materialize then
+            subject.__on_field_card:start_materialize()
+        end
+        args.area:emplace(subject.__on_field_card)
+        if do_flip then
+            subject.__on_field_card:flip()
+        end
+    end
+
+    for i,subject in ipairs(args.subjects) do
+        local during_func = subject_fallback(subject, "during_func")
+        assert(type(during_func) == "function",
+        ([[Subject %s does not define function `during_func`, and fallback `args.all_subject_cfg.during_func` is not defined]]):format(i))
+
+        during_func(subject.__on_field_card, i)
+
+        local do_disintegrate = not subject_fallback(subject, "stop_disintegrate")
+        if do_disintegrate then
+            Spectrallib.event{delay=0, function ()
+                subject.__on_field_card:start_dissolve()
+                return true
+            end}
+        end
+    end
+end
+
 -- Get the interest rate;
 -- intended to be hooked for additional sources.
 ---@return number
