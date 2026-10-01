@@ -60,7 +60,7 @@ local function sell_and_use_buttons(card, use_draw, use_click, text)
         maxw = 1.25,
         hover = true, shadow = true,
         colour = G.C.UI.BACKGROUND_INACTIVE,
-        button = use_draw, func = use_click, handy_insta_action = 'use',
+        button = use_click, func = use_draw, handy_insta_action = 'use',
         one_press = true,
     }
 
