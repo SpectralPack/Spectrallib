@@ -20,10 +20,7 @@ function Card:unredeem()
 		})
 	end
 
-	Spectrallib.event{function ()
-		Spectrallib.update_used_vouchers()
-		return true
-	end}
+	Spectrallib.update_used_vouchers()
 end
 
 -- Remove a voucher and its effects from the run.
