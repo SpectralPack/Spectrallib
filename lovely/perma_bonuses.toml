@@ -3,8 +3,32 @@ version = "1.0.0"
 dump_lua = true
 priority = -1
 
+# Ability init is moved on latest smods. the patch below this exists for back compat with current latest release smods
+[[patches]]
+[patches.pattern]
+target = '''=[SMODS _ "src/overrides.lua"]'''
+pattern = "perma_h_x_blind_size = card.ability.perma_h_x_blind_size or 0,"
+position = "after"
+payload = """
+slib_perma_xlog_chips = card.ability and card.ability.slib_perma_xlog_chips or 0,
+slib_perma_h_xlog_chips = card.ability and card.ability.slib_perma_h_xlog_chips or 0,
+slib_perma_xlog_mult = card.ability and card.ability.slib_perma_xlog_mult or 0,
+slib_perma_h_xlog_mult = card.ability and card.ability.slib_perma_h_xlog_mult or 0,
+slib_perma_plus_asc = card.ability and card.ability.slib_perma_plus_asc or 0,
+slib_perma_h_plus_asc = card.ability and card.ability.slib_perma_h_plus_asc or 0,
+slib_perma_x_asc = card.ability and card.ability.slib_perma_x_asc or 0,
+slib_perma_h_x_asc = card.ability and card.ability.slib_perma_h_x_asc or 0,
+slib_perma_exp_asc = card.ability and card.ability.slib_perma_exp_asc or 0,
+slib_perma_h_exp_asc = card.ability and card.ability.slib_perma_h_exp_asc or 0,
+slib_perma_e_chips = card.ability and card.ability.slib_perma_e_chips or 0,
+slib_perma_h_e_chips = card.ability and card.ability.slib_perma_h_e_chips or 0,
+slib_perma_e_mult = card.ability and card.ability.slib_perma_e_mult or 0,
+slib_perma_h_e_mult = card.ability and card.ability.slib_perma_h_e_mult or 0,
+slib_bonus_effects = card.ability and card.ability.slib_bonus_effects or {}, --TODO: decide if this should persist through set_ability or not, needs special logic if not
+"""
+match_indent = true
 
-
+# DO NOT REMOVE UNTIL NEXT SMODS RELEASE AT LEAST
 [[patches]]
 [patches.pattern]
 target = 'card.lua'
