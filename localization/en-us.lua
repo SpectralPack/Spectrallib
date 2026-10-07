@@ -397,7 +397,7 @@ return {
 			slib_base_stats = "Base Stats: ",
 			k_back = "Deck",
 			k_tag = "Tag",
-			k_blind = "Blind"
+			k_blind = "Blind",
             k_unredeemed_ex="Unredeemed!",
         },
         v_dictionary = {
