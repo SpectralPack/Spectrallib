@@ -209,9 +209,14 @@ local extended_card_button_definitions = {
             if not G.jokers then return false end
             local in_set  = card_in_sets(card, {"Joker"})
             local in_area = card_in_areas(card, {G.jokers, G.consumeables})
+            local use_button_config = Spectrallib.gather_button_config(card.config.center, card)
+            local use = false
+            for i, v in pairs(use_button_config) do
+                if card.config.center[v.use_func] then use = true end
+            end
             local needs_use_button = (
                 not card.debuff
-                and card.config.center.use
+                and use
                 and (
                     not card.config.center.needs_use_button
                     or card.config.center:needs_use_button(card)
@@ -237,29 +242,30 @@ local extended_card_button_definitions = {
             }}
 
             local use_button_config = Spectrallib.gather_button_config(card.config.center, card)
-            card._spectrallib_use_key = localize(use_button_config.key)
-
-            local use_button =
-            {n=G.UIT.C, config={align = "cr"}, nodes={
-                {n=G.UIT.C, config={ref_table = card, align = "cm",padding = 0.1, r=0.08, minw = 1.25, minh = 0.8, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, button = 'use_joker', func = use_button_config.func, handy_insta_action = 'use'}, nodes={
-                    {n=G.UIT.B, config = {w=0.1,h=use_button_config.h}},
-                    {n=G.UIT.C, config={align = "cm"}, nodes={
-                        {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
-                            {n=G.UIT.T, config={ref_table = card, ref_value = "_spectrallib_use_key", colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+            local buttons = {}
+            for i, v in pairs(use_button_config) do
+                card["_spectrallib_use_key"..i] = localize(v.key)
+                buttons[#buttons+1] = {n=G.UIT.R, config={align = 'cl'}, nodes={
+                     {n=G.UIT.C, config={align = "cr"}, nodes={
+                        {n=G.UIT.C, config={ref_table = card, align = "cm",padding = 0.1, r=0.08, minw = 1.25, minh = 0.8, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, button = 'use_joker', func = v.func, use_func = v.use_func, condition_func = v.condition_func, use_key_key = "_spectrallib_use_key"..i, use_key = v.key, button_colour = v.colour,  handy_insta_action = 'use'}, nodes={
+                            {n=G.UIT.B, config = {w=0.1,h=v.h}},
+                            {n=G.UIT.C, config={align = "cm"}, nodes={
+                                {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
+                                    {n=G.UIT.T, config={ref_table = card, ref_value = "_spectrallib_use_key"..i, colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+                                }},
+                            }},
                         }},
-                    }},
-                }},
-            }}
-
+                     }}
+                }}
+            end
+            
             return
             {n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
                 {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
                     {n=G.UIT.R, config={align = 'cl'}, nodes={
                         sell_button
                     }},
-                    {n=G.UIT.R, config={align = 'cl'}, nodes={
-                        use_button
-                    }},
+                    unpack(buttons)
                 }},
             }}
         end
@@ -660,14 +666,13 @@ end
 G.FUNCS.can_use_joker = function(e)
     local center = e.config.ref_table.config.center
     local card = e.config.ref_table
-    local config = Spectrallib.gather_button_config(card.config.center, card)
-    card._spectrallib_use_key = localize(config.key)
+    card[e.config.use_key_key] = localize(e.config.use_key)
     if
-        center.can_use and center:can_use(e.config.ref_table) and not e.config.ref_table.debuff
+        center.can_use and center[e.config.condition_func](center, e.config.ref_table) and not e.config.ref_table.debuff
         and G.STATE ~= G.STATES.HAND_PLAYED and G.STATE ~= G.STATES.DRAW_TO_HAND and G.STATE ~= G.STATES.PLAY_TAROT
         and not (((G.play and #G.play.cards > 0) or (G.CONTROLLER.locked) or (G.GAME.STOP_USE and G.GAME.STOP_USE > 0)))
     then
-        e.config.colour = config.colour
+        e.config.colour = e.config.button_colour
         e.config.button = "use_joker"
     else
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
@@ -680,8 +685,8 @@ G.FUNCS.use_joker = function(e)
     local center = e.config.ref_table.config.center
     local card = e.config.ref_table
     local config = Spectrallib.gather_button_config(center, card)
-    if center.use then
-        center:use(e.config.ref_table)
+    if center[e.config.use_func] then
+        center[e.config.use_func](center, e.config.ref_table)
     end
     e.config.ref_table:juice_up()
     G.TAROT_INTERRUPT = int
@@ -696,13 +701,30 @@ function Spectrallib.gather_button_config(center, card)
     local config = center.use_button_config and copy_table(center.use_button_config) or {
         key = center.use_key
     }
-    for i, v in pairs(config) do
-        if type(v) == "function" then config[i] = v(center, card, config) end
+    if config[1] then
+        for i, c in ipairs(config) do
+            for i, v in pairs(c) do
+                if type(v) == "function" then c[i] = v(center, card, c) end
+            end
+            c.key = c.key or "b_use"
+            c.colour = c.colour or G.C.RED
+            c.h = c.h or 0.6
+            c.func = c.func or "can_use_joker"
+            c.use_func = c.use_func or "use"
+            c.condition_func = c.condition_func or "can_use"
+        end
+    else
+        for i, v in pairs(config) do
+            if type(v) == "function" then config[i] = v(center, card, config) end
+        end
+        config.key = config.key or "b_use"
+        config.colour = config.colour or G.C.RED
+        config.h = config.h or 0.6
+        config.func = config.func or "can_use_joker"
+        config.use_func = config.use_func or "use"
+        config.condition_func = config.condition_func or "can_use"
+        config = {config}
     end
-    config.key = config.key or "b_use"
-    config.colour = config.colour or G.C.RED
-    config.h = config.h or 0.6
-    config.func = config.func or "can_use_joker"
     return config
 end
 
