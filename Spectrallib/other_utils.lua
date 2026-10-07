@@ -44,15 +44,16 @@ end
 ---@field colour? [number, number, number, number] Text colour. Defaults to white.
 ---@field scale? number Text scale. Defaults to 0.9.
 ---@field sounds? string[] The keys of sounds to play during the animation. Defaults to `{'card1', 'coin1'}`.
----@field top_txt? string|any Text to display at the top. Defaults to `card`'s name.
----@field btm_txt? string|any Text to display at the bottom. Defaults to the localization of "Redemed!"
+---@field top_txt? string|""|any Text to display at the top. Defaults to `card`'s name. Supports empty string.
+---@field btm_txt? string|""|any Text to display at the bottom. Defaults to the localization of "Redemed!". Supports empty string.
 ---@field during_func? function A function to run after displaying text, but before removing it.
 
 -- Play the voucher redeem animation, with customization options.
 ---@param card Card
----@param cfg Spectrallib.redeem_animation.cfg
+---@param cfg? Spectrallib.redeem_animation.cfg
 ---@return nil
 function Spectrallib.redeem_animation(card, cfg)
+    cfg = cfg or {}
     cfg.colour = cfg.colour or G.C.WHITE
     cfg.scale  = cfg.scale or 0.9
     cfg.sounds = cfg.sounds or {'card1', 'coin1'}
@@ -61,7 +62,7 @@ function Spectrallib.redeem_animation(card, cfg)
         set = card.config.center.set,
         key = card.config.center.key
     })
-    cfg.btm_txt = localize('k_redeemed_ex')
+    cfg.btm_txt = cfg.btm_txt or localize('k_redeemed_ex')
 
     local function redeem_dynatext(args)
         return DynaText {
@@ -92,55 +93,150 @@ function Spectrallib.redeem_animation(card, cfg)
     card.states.hover.can = false
     local top_dynatext, btm_dynatext
 
-    Spectrallib.event{
-        function ()
+    Spectrallib.event{delay=0.4, function ()
+        if cfg.top_txt ~= "" then
             top_dynatext = redeem_dynatext{
                 string = cfg.top_txt,
                 rotate = 1, pop_in = 0.6
             }
+        end
+        if cfg.btm_txt ~= "" then
             btm_dynatext = redeem_dynatext{
                 string = cfg.btm_txt,
                 rotate = 2, pop_in = 1.4,
                 pitch_shift = 0.25,
             }
+        end
 
-            card:juice_up(0.3, 0.5)
-            for _,sound_key in ipairs(cfg.sounds) do
-                play_sound(sound_key)
-            end
+        card:juice_up(0.3, 0.5)
+        for _,sound_key in ipairs(cfg.sounds) do
+            play_sound(sound_key)
+        end
 
+        if top_dynatext then
             card.children.top_disp = redeem_uibox("tm", top_dynatext)
+        end
+        if btm_dynatext then
             card.children.bot_disp = redeem_uibox("bm", btm_dynatext)
+        end
 
-            return true
-        end,
-        trigger = 'after',
-        delay = 0.4,
-    }
+        return true
+    end}
 
-    if cfg.during_func then cfg.during_func() end
+    if cfg.during_func then
+        cfg.during_func()
+    end
 
-    Spectrallib.event(0.6)
-    Spectrallib.event{
-        function ()
+    delay(0.6)
+    Spectrallib.event{delay=2.6, function ()
+        if top_dynatext then
             top_dynatext:pop_out(4)
+        end
+        if btm_dynatext then
             btm_dynatext:pop_out(4)
-            return true
-        end,
-        trigger = 'after',
-        delay = 2.6
-    }
-    Spectrallib.event{
-        function ()
+        end
+        return true
+    end}
+    Spectrallib.event{delay=0.5, function ()
+        card.states.hover.can = true
+        if top_dynatext then
             card.children.top_disp:remove()
             card.children.top_disp = nil
+        end
+        if btm_dynatext then
             card.children.bot_disp:remove()
             card.children.bot_disp = nil
-            return true
-        end,
-        trigger = 'after',
-        delay = 0.5
-    }
+        end
+        return true
+    end}
+end
+
+---@class Spectrallib.redeem_presentation.subject
+---@field card? Card A card to directly emplace for presentation.
+---@field copy_card? Card A card to copy for presentation.
+---@field key? string The key of a center, which will be used for a card to present.
+---@field flip_back? boolean If true, if the card is facing backwards, it will be flipped.
+---@field during_func? fun(card: Card, i: integer) The function to run while the card is being presented.
+---@field stop_disintegrate? boolean If true, the card will not be destroyed; it will remain in the presentation area and require manual emplacement.
+---@field __on_field_card Card Used internally.
+
+---@class Spectrallib.redeem_presentation.all_subject_cfg
+---@field flip_back? boolean If true, if any card is facing backwards, it will be flipped.
+---@field during_func? fun(card: Card, i: integer) The function to run while any card is being presented.
+---@field stop_disintegrate? boolean If true, all cards will not be destroyed; it will remain in the presentation area and require manual emplacement.
+
+---@class Spectrallib.redeem_presentation.args
+---@field subjects Spectrallib.redeem_presentation.subject[]
+---@field area? CardArea
+---@field all_subject_cfg? Spectrallib.redeem_presentation.all_subject_cfg
+
+-- Present a set of cards before possibly destroying them, in a manner akin to vouchers.
+---@param args Spectrallib.redeem_presentation.args
+---@return nil
+function Spectrallib.redeem_presentation(args)
+    args = args or {}
+    assert(args.subjects, "List `subjects` must be defined")
+    assert(#args.subjects > 0, "List `subjects` must have at least 1 item")
+
+    if args.area then
+        -- Past this, args.area is undefined
+    elseif G.STATE == G.STATES.HAND_PLAYED then
+        if not G.redeemed_vouchers_during_hand then
+            G.redeemed_vouchers_during_hand = CardArea(
+                G.play.T.x, G.play.T.y,
+                G.play.T.w, G.play.T.h,
+                { type = "play", card_limit = 5 }
+            )
+        end
+        args.area = G.redeemed_vouchers_during_hand
+    else
+        args.area = G.play
+    end
+    args.all_subject_cfg = args.all_subject_cfg or {}
+
+    local function subject_fallback(subject, key)
+        if type(subject[key]) ~= "nil" then
+            return subject[key]
+        end
+        return args.all_subject_cfg[key]
+    end
+
+    for i,subject in ipairs(args.subjects) do
+        assert(subject.card or subject.copy_card or subject.key,
+        ([[Subject %s does not define field `card`, `copy_card`, or `key`]]):format(i))
+
+        if subject.card and getmetatable(subject.card) == Card then
+            subject.__on_field_card = subject.card
+            subject.card.area:remove_card(subject.card)
+        elseif subject.copy_card and getmetatable(subject.copy_card) == Card then
+            subject.__on_field_card = copy_card(subject.copy_card)
+        elseif subject.key and type(subject.key) == "string" then
+            subject.__on_field_card = SMODS.create_card{key=subject.key}
+        end
+
+        args.area:emplace(subject.__on_field_card)
+
+        local do_flip = subject.__on_field_card.facing == "back" and subject_fallback(subject, "flip_back")
+        if do_flip then
+            subject.__on_field_card:flip()
+        end
+    end
+
+    for i,subject in ipairs(args.subjects) do
+        local during_func = subject_fallback(subject, "during_func")
+        assert(type(during_func) == "function",
+        ([[Subject %s does not define function `during_func`, and fallback `args.all_subject_cfg.during_func` is not defined]]):format(i))
+
+        during_func(subject.__on_field_card, i)
+
+        local do_disintegrate = not subject_fallback(subject, "stop_disintegrate")
+        if do_disintegrate then
+            Spectrallib.event{delay=0, function ()
+                subject.__on_field_card:start_dissolve()
+                return true
+            end}
+        end
+    end
 end
 
 -- Get the interest rate;

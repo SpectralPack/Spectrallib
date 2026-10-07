@@ -233,6 +233,7 @@ function Spectrallib.forcetriggerConsumableCheck(card)
 	return card and (
 		card.config.center.forcetrigger_compat
 		or card.config.center.demicoloncompat
+		or type(card.config.center.force_use) == "function"
 		or not card.config.center.original_mod
 	) or false
 end

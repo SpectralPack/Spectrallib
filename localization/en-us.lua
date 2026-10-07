@@ -398,6 +398,7 @@ return {
 			k_back = "Deck",
 			k_tag = "Tag",
 			k_blind = "Blind"
+            k_unredeemed_ex="Unredeemed!",
         },
         v_dictionary = {
         	a_xchips = "X#1# Chips",

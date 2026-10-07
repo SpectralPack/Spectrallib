@@ -1,309 +1,345 @@
+-------------------
+-- SUPPLEMENTARY --
+-------------------
+
+local function card_in_sets(card, sets)
+    for _,set_name in ipairs(sets) do
+        if (
+            card.config.center.set == set_name
+            or card.ability.set == set_name
+        ) then return true end
+    end
+    return false
+end
+
+local function card_in_areas(card, areas)
+    for _,area in ipairs(areas) do
+        if card.area == area then return true end
+    end
+    return false
+end
+
+local function use_only_button(card, use_draw, use_click, text)
+    local use_button_cfg = {
+        ref_table = card,
+        align = "bm",
+        padding = 0.1, r = 0.08,
+        minw = 0.5*card.T.w - 0.15, minh = 0.3*card.T.h,
+        maxw = 0.9*card.T.w - 0.15,
+        hover = true, shadow = true,
+        colour = G.C.UI.BACKGROUND_INACTIVE,
+        button = use_click, func = use_draw, handy_insta_action = 'buy_or_sell',
+        one_press = true,
+    }
+
+    return
+    {n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+        {n=G.UIT.R, config=use_button_cfg, nodes={
+            {n=G.UIT.T, config={text = text, colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
+        }},
+    }}
+end
+
+local function sell_and_use_buttons(card, use_draw, use_click, text)
+    local sell_button_cfg = {
+        ref_table = card,
+        align = "cr",
+        padding = 0.1, r = 0.08,
+        minw = 1.25,
+        hover = true, shadow = true,
+        colour = G.C.UI.BACKGROUND_INACTIVE,
+        button = 'sell_card', func = 'can_sell_card', handy_insta_action = 'sell',
+        one_press = true,
+    }
+
+    local use_button_cfg = {
+        ref_table = card,
+        align = "cr",
+        padding = 0.1, r = 0.08,
+        minw = 1.25, minh = (card.area and card.area.config.type == 'joker') and 0 or 1,
+        maxw = 1.25,
+        hover = true, shadow = true,
+        colour = G.C.UI.BACKGROUND_INACTIVE,
+        button = use_click, func = use_draw, handy_insta_action = 'use',
+        one_press = true,
+    }
+
+    local sell_button =
+    {n=G.UIT.C, config={align = "cr"}, nodes={
+        {n=G.UIT.C, config=sell_button_cfg, nodes={
+            {n=G.UIT.B, config = {w=0.1,h=0.6}},
+            {n=G.UIT.C, config={align = "tm"}, nodes={
+                {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
+                    {n=G.UIT.T, config={text = localize('b_sell'),colour = G.C.UI.TEXT_LIGHT, scale = 0.4, shadow = true}}
+                }},
+                {n=G.UIT.R, config={align = "cm"}, nodes={
+                    {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.4, shadow = true}},
+                    {n=G.UIT.T, config={ref_table = card, ref_value = 'sell_cost_label',colour = G.C.WHITE, scale = 0.55, shadow = true}}
+                }}
+            }}
+        }},
+    }}
+
+    local use_button =
+    {n=G.UIT.C, config={align = "cr"}, nodes={
+        {n=G.UIT.C, config=use_button_cfg, nodes={
+            {n=G.UIT.B, config = {w=0.1,h=0.6}},
+            {n=G.UIT.T, config={text = text, colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+        }}
+    }}
+
+    local root =
+    {n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+        {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
+            {n=G.UIT.R, config={align = 'cl'}, nodes={
+                sell_button
+            }},
+            {n=G.UIT.R, config={align = 'cl'}, nodes={
+                use_button
+            }},
+        }},
+    }}
+
+    return root
+end
+
+---------------------------
+-- CARD BUTTON EXTENSION --
+---------------------------
+
+---@type {condition: fun(card): boolean; uidef: fun(card): table}[]
+local extended_card_button_definitions = {
+    {
+        condition = function (card)
+            local in_set  = card_in_sets(card, {"Voucher"})
+            local in_area = card_in_areas(card, {G.consumeables, G.jokers})
+            return in_area and in_set
+        end,
+        uidef = function (card)
+            local root = sell_and_use_buttons(card, "can_open_voucher", "open_voucher", localize('b_redeem'))
+            return root
+        end
+    },
+    {
+        condition = function (card)
+            local in_set  = card_in_sets(card, {"Back", "Sleeve"})
+            local in_area = card_in_areas(card, {G.hand, G.pack_cards})
+            return in_area and in_set
+        end,
+        uidef = function (card)
+            local root = use_only_button(card, "can_buy_deckorsleeve", "buy_deckorsleeve", localize('b_redeem'))
+            return root
+        end
+    },
+    {
+        condition = function (card)
+            local in_set  = card_in_sets(card, {"Back", "Sleeve"})
+            local in_area = card_in_areas(card, {G.consumeables, G.jokers})
+            return in_area and in_set
+        end,
+        uidef = function (card)
+            local root = sell_and_use_buttons(card, "can_buy_deckorsleeve", "buy_deckorsleeve", localize('b_redeem'))
+            return root
+        end
+    },
+    {
+        condition = function (card)
+            -- why check G.consumeables? this isn't being checked in some of the other conditions
+            if not G.consumeables then return false end
+            local in_set  = card_in_sets(card, {"Booster"})
+            local in_area = card_in_areas(card, {G.consumeables, G.jokers})
+            return in_area and in_set
+        end,
+        uidef = function (card)
+            local root = sell_and_use_buttons(card, "can_open_booster", "open_booster", localize('b_redeem'))
+            return root
+        end
+    },
+    {
+        condition = function (card)
+            if not G.hand then return false end
+            local in_set  = card_in_sets(card, {"Joker"})
+            local in_area = card_in_areas(card, {G.hand})
+            return in_area and in_set
+        end,
+        uidef = function (card)
+            local root = use_only_button(card, "can_reserve_joker", "reserve_joker", localize('b_select'))
+            return root
+        end
+    },
+    {
+        condition = function (card)
+            if not G.hand then return false end
+            local in_set  = card_in_sets(card, {"Booster"})
+            local in_area = card_in_areas(card, {G.hand})
+            return in_area and in_set
+        end,
+        uidef = function (card)
+            local root = use_only_button(card, "can_open_booster", "open_booster", localize('b_open'))
+            return root
+        end
+    },
+    {
+        condition = function (card)
+            if not G.hand then return false end
+            local in_set  = card_in_sets(card, {"Voucher"})
+            local in_area = card_in_areas(card, {G.hand})
+            return in_area and in_set
+        end,
+        uidef = function (card)
+            local root = use_only_button(card, "can_open_voucher", "open_voucher", localize('b_redeem'))
+            return root
+        end
+    },
+    {
+        condition = function (card)
+            if not G.pack_cards then return false end
+            -- let boosters not be recursive
+            local in_set  = card_in_sets(card, {"Booster"})
+            local in_area = card_in_areas(card, {G.pack_cards})
+            return in_area and in_set and not Spectrallib.ConsumablePackBlacklist[SMODS.OPENED_BOOSTER.config.center.key]
+        end,
+        uidef = function (card)
+            local root = use_only_button(card, "can_reserve_booster", "reserve_booster", localize('b_select'))
+            return root
+        end
+    },
+    {
+        condition = function (card)
+            if not G.jokers then return false end
+            local in_set  = card_in_sets(card, {"Joker"})
+            local in_area = card_in_areas(card, {G.jokers, G.consumeables})
+            local needs_use_button = (
+                not card.debuff
+                and card.config.center.use
+                and (
+                    not card.config.center.needs_use_button
+                    or card.config.center:needs_use_button(card)
+                )
+            )
+            return in_area and in_set and needs_use_button
+        end,
+        uidef = function (card)
+            local sell_button =
+            {n=G.UIT.C, config={align = "cr"}, nodes={
+                {n=G.UIT.C, config={ref_table = card, align = "cr",padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card', handy_insta_action = 'sell'}, nodes={
+                    {n=G.UIT.B, config = {w=0.1,h=0.6}},
+                    {n=G.UIT.C, config={align = "tm"}, nodes={
+                        {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
+                            {n=G.UIT.T, config={text = localize('b_sell'),colour = G.C.UI.TEXT_LIGHT, scale = 0.4, shadow = true}}
+                        }},
+                        {n=G.UIT.R, config={align = "cm"}, nodes={
+                            {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.4, shadow = true}},
+                            {n=G.UIT.T, config={ref_table = card, ref_value = 'sell_cost_label',colour = G.C.WHITE, scale = 0.55, shadow = true}}
+                        }}
+                    }}
+                }},
+            }}
+
+            local use_button_config = Spectrallib.gather_button_config(card.config.center, card)
+            card._spectrallib_use_key = localize(use_button_config.key)
+
+            local use_button =
+            {n=G.UIT.C, config={align = "cr"}, nodes={
+                {n=G.UIT.C, config={ref_table = card, align = "cm",padding = 0.1, r=0.08, minw = 1.25, minh = 0.8, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, button = 'use_joker', func = use_button_config.func, handy_insta_action = 'use'}, nodes={
+                    {n=G.UIT.B, config = {w=0.1,h=use_button_config.h}},
+                    {n=G.UIT.C, config={align = "cm"}, nodes={
+                        {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
+                            {n=G.UIT.T, config={ref_table = card, ref_value = "_spectrallib_use_key", colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+                        }},
+                    }},
+                }},
+            }}
+
+            return
+            {n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+                {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
+                    {n=G.UIT.R, config={align = 'cl'}, nodes={
+                        sell_button
+                    }},
+                    {n=G.UIT.R, config={align = 'cl'}, nodes={
+                        use_button
+                    }},
+                }},
+            }}
+        end
+    },
+    {
+        condition = function (card)
+            if not G.pack_cards then return false end
+            local in_set  = card_in_sets(card, {"Joker"})
+            local in_area = card_in_areas(card, {G.pack_cards})
+            local needs_use_button = Spectrallib.needs_use_button(card)
+            local poopshit = (
+                Spectrallib.needs_pull_button(card)
+                or (
+                    not SMODS.OPENED_BOOSTER
+                    or not SMODS.OPENED_BOOSTER.draw_hand
+                    and card.children.front
+                    and (card.ability.consumeable)
+                )
+            )
+            return in_area and in_set and needs_use_button and poopshit
+        end,
+        uidef = function (card)
+            return
+            {n = G.UIT.ROOT, config = { padding = -0.1, colour = G.C.CLEAR }, nodes = {
+                {n = G.UIT.R, config = { ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5 * card.T.w - 0.15, minh = 0.1 * card.T.h or 0.7 * card.T.h, maxw = 0.7 * card.T.w - 0.15, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = "use_card", func = card:is_playing_card() and "can_reserve_card_to_deck" or "can_reserve_card", handy_insta_action = 'use'}, nodes = {
+                    {n = G.UIT.T,config = {text = Spectrallib.needs_pull_button(card),colour = G.C.UI.TEXT_LIGHT,scale = 0.55,shadow = true}},
+                }},
+                {n = G.UIT.R, config = { ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5 * card.T.w - 0.15, maxw = 0.9 * card.T.w - 0.15, minh = 0.1 * card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = "Do you know that this parameter does nothing?", func = "can_use_consumeable", handy_insta_action = 'use'}, nodes = {
+                    {n = G.UIT.T,config = { text = localize("b_use"), colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
+                }},
+                {n = G.UIT.R, config = { align = "bm", w = 7.7 * card.T.w }},
+                {n = G.UIT.R, config = { align = "bm", w = 7.7 * card.T.w }},
+                {n = G.UIT.R, config = { align = "bm", w = 7.7 * card.T.w }},
+                {n = G.UIT.R, config = { align = "bm", w = 7.7 * card.T.w }},
+            }}
+            -- Betmma can't explain it, neither can I
+        end
+    },
+    {
+        condition = function (card)
+            if not G.pack_cards then return false end
+            local in_area = card_in_areas(card, {G.pack_cards})
+            local needs_use_button = Spectrallib.needs_use_button(card)
+            local poopshit = (
+                Spectrallib.needs_pull_button(card)
+                or (
+                    not SMODS.OPENED_BOOSTER
+                    or not SMODS.OPENED_BOOSTER.draw_hand
+                    and card.children.front
+                    and (card.ability.consumeable)
+                )
+            )
+            return in_area and needs_use_button and poopshit
+        end,
+        uidef = function (card)
+            return
+            {n = G.UIT.ROOT, config = { padding = -0.1, colour = G.C.CLEAR }, nodes = {
+                {n = G.UIT.R, config = {ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5 * card.T.w - 0.15, minh = 0.7 * card.T.h, maxw = 0.7 * card.T.w - 0.15, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = "Do you know that this parameter does nothing?", func = card:is_playing_card() and "can_reserve_card_to_deck" or "can_reserve_card", handy_insta_action = 'use' }, nodes = {
+                    {n = G.UIT.T, config = {text = Spectrallib.needs_pull_button(card), colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true} }
+                }},
+            }}
+            -- Betmma can't explain it, neither can I
+        end
+    }
+}
+
 local G_UIDEF_use_and_sell_buttons_ref = G.UIDEF.use_and_sell_buttons
 function G.UIDEF.use_and_sell_buttons(card)
 	local abc = G_UIDEF_use_and_sell_buttons_ref(card)
-	-- Allow code cards to be reserved
-    if (card.area == G.consumeables or card.area == G.jokers) and (card.config.center.set == "Voucher" or card.ability.set == "Voucher") then
-        local sell = {n=G.UIT.C, config={align = "cr"}, nodes={
-            {n=G.UIT.C, config={ref_table = card, align = "cr",padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card', handy_insta_action = 'sell'}, nodes={
-              {n=G.UIT.B, config = {w=0.1,h=0.6}},
-              {n=G.UIT.C, config={align = "tm"}, nodes={
-                {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
-                  {n=G.UIT.T, config={text = localize('b_sell'),colour = G.C.UI.TEXT_LIGHT, scale = 0.4, shadow = true}}
-                }},
-                {n=G.UIT.R, config={align = "cm"}, nodes={
-                  {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.4, shadow = true}},
-                  {n=G.UIT.T, config={ref_table = card, ref_value = 'sell_cost_label',colour = G.C.WHITE, scale = 0.55, shadow = true}}
-                }}
-              }}
-            }},
-          }}
-        local use = 
-        {n=G.UIT.C, config={align = "cr"}, nodes={
-          
-          {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = (card.area and card.area.config.type == 'joker') and 0 or 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'open_voucher', func = 'can_open_voucher', handy_insta_action = 'use'}, nodes={
-            {n=G.UIT.B, config = {w=0.1,h=0.6}},
-            {n=G.UIT.T, config={text = localize('b_redeem'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
-          }}
-        }}
-        return {
-            n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
-              {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
-                {n=G.UIT.R, config={align = 'cl'}, nodes={
-                  sell
-                }},
-                {n=G.UIT.R, config={align = 'cl'}, nodes={
-                  use
-                }},
-              }},
-          }}
-    end
-    if (card.ability.set == "Back" or card.ability.set == "Sleeve" or card.config.center.set == "Back" or card.config.center.set == "Sleeve") then
-        if card.area == G.hand or card.area == G.pack_cards then
-        return  {
-            n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
-              {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.3*card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'buy_deckorsleeve', func = 'can_buy_deckorsleeve', handy_insta_action = 'buy_or_sell'}, nodes={
-                {n=G.UIT.T, config={text = localize('b_redeem'),colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
-              }},
-          }}
+    for _,buttondef in ipairs(extended_card_button_definitions) do
+        if buttondef.condition(card) then
+            return buttondef.uidef(card)
         end
-        if card.area == G.consumeables or card.area == G.jokers then
-            local sell = {n=G.UIT.C, config={align = "cr"}, nodes={
-                {n=G.UIT.C, config={ref_table = card, align = "cr",padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card', handy_insta_action = "sell"}, nodes={
-                  {n=G.UIT.B, config = {w=0.1,h=0.6}},
-                  {n=G.UIT.C, config={align = "tm"}, nodes={
-                    {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
-                      {n=G.UIT.T, config={text = localize('b_sell'),colour = G.C.UI.TEXT_LIGHT, scale = 0.4, shadow = true}}
-                    }},
-                    {n=G.UIT.R, config={align = "cm"}, nodes={
-                      {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.4, shadow = true}},
-                      {n=G.UIT.T, config={ref_table = card, ref_value = 'sell_cost_label',colour = G.C.WHITE, scale = 0.55, shadow = true}}
-                    }}
-                  }}
-                }},
-              }}
-            local use = 
-            {n=G.UIT.C, config={align = "cr"}, nodes={
-              
-              {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = (card.area and card.area.config.type == 'joker') and 0 or 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'buy_deckorsleeve', func = 'can_buy_deckorsleeve', handy_insta_action = 'use'}, nodes={
-                {n=G.UIT.B, config = {w=0.1,h=0.6}},
-                {n=G.UIT.T, config={text = localize('b_redeem'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
-              }}
-            }}
-            return {
-                n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
-                  {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
-                    {n=G.UIT.R, config={align = 'cl'}, nodes={
-                      sell
-                    }},
-                    {n=G.UIT.R, config={align = 'cl'}, nodes={
-                      use
-                    }},
-                  }},
-              }}
-        end
-    end
-    if ((card.area == G.consumeables or card.area == G.jokers) and G.consumeables and card.config.center.set == "Booster") then
-        local sell = {n=G.UIT.C, config={align = "cr"}, nodes={
-            {n=G.UIT.C, config={ref_table = card, align = "cr",padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card', handy_insta_action = 'sell'}, nodes={
-              {n=G.UIT.B, config = {w=0.1,h=0.6}},
-              {n=G.UIT.C, config={align = "tm"}, nodes={
-                {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
-                  {n=G.UIT.T, config={text = localize('b_sell'),colour = G.C.UI.TEXT_LIGHT, scale = 0.4, shadow = true}}
-                }},
-                {n=G.UIT.R, config={align = "cm"}, nodes={
-                  {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.4, shadow = true}},
-                  {n=G.UIT.T, config={ref_table = card, ref_value = 'sell_cost_label',colour = G.C.WHITE, scale = 0.55, shadow = true}}
-                }}
-              }}
-            }},
-          }}
-        local use = 
-        {n=G.UIT.C, config={align = "cr"}, nodes={
-          
-          {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = (card.area and card.area.config.type == 'joker') and 0 or 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'open_booster', func = 'can_open_booster', handy_insta_action = 'use'}, nodes={
-            {n=G.UIT.B, config = {w=0.1,h=0.6}},
-            {n=G.UIT.T, config={text = localize('b_open'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
-          }}
-        }}
-        return {
-            n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
-              {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
-                {n=G.UIT.R, config={align = 'cl'}, nodes={
-                  sell
-                }},
-                {n=G.UIT.R, config={align = 'cl'}, nodes={
-                  use
-                }},
-              }},
-          }}
-    end
-    if (card.area == G.hand and G.hand) then --Add a use button
-		if card.config.center.set == "Joker" then
-			return  {
-                n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
-                  {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.3*card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'reserve_joker', func = 'can_reserve_joker', handy_insta_action = 'buy_or_sell'}, nodes={
-                    {n=G.UIT.T, config={text = localize('b_select'),colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
-                  }},
-              }}
-		end
-        if card.config.center.set == "Booster" then
-			return  {
-                n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
-                  {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.3*card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'open_booster', func = 'can_open_booster', handy_insta_action = 'buy_or_sell'}, nodes={
-                    {n=G.UIT.T, config={text = localize('b_open'),colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
-                  }},
-              }}
-		end
-        if card.config.center.set == "Voucher" then
-			return  {
-                n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
-                  {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.3*card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'open_voucher', func = 'can_open_voucher', handy_insta_action = 'buy_or_sell'}, nodes={
-                    {n=G.UIT.T, config={text = localize('b_redeem'),colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
-                  }},
-              }}
-		end
-	end
-    --let boosters not be recursive
-    if (card.area == G.pack_cards and G.pack_cards) and card.config.center.set == "Booster" and not Spectrallib.ConsumablePackBlacklist[SMODS.OPENED_BOOSTER.config.center.key] then
-        return  {
-            n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
-              {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.3*card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'reserve_booster', func = 'can_reserve_booster', handy_insta_action = 'buy_or_sell'}, nodes={
-                {n=G.UIT.T, config={text = localize('b_select'),colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
-              }},
-          }}
-    end
-    if ((card.area == G.jokers or card.area == G.consumeables) and G.jokers and card.config.center.use) and not card.debuff and card.config.center.set == "Joker" and (not card.config.center.needs_use_button or card.config.center:needs_use_button(card)) then
-        local sell = {n=G.UIT.C, config={align = "cr"}, nodes={
-            {n=G.UIT.C, config={ref_table = card, align = "cr",padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card', handy_insta_action = 'sell'}, nodes={
-              {n=G.UIT.B, config = {w=0.1,h=0.6}},
-              {n=G.UIT.C, config={align = "tm"}, nodes={
-                {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
-                  {n=G.UIT.T, config={text = localize('b_sell'),colour = G.C.UI.TEXT_LIGHT, scale = 0.4, shadow = true}}
-                }},
-                {n=G.UIT.R, config={align = "cm"}, nodes={
-                  {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.4, shadow = true}},
-                  {n=G.UIT.T, config={ref_table = card, ref_value = 'sell_cost_label',colour = G.C.WHITE, scale = 0.55, shadow = true}}
-                }}
-              }}
-            }},
-        }}
-        local config = Spectrallib.gather_button_config(card.config.center, card)
-        card._spectrallib_use_key = localize(config.key)
-        local transition = {n=G.UIT.C, config={align = "cr"}, nodes={
-            {n=G.UIT.C, config={ref_table = card, align = "cm",padding = 0.1, r=0.08, minw = 1.25, minh = 0.8, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, button = 'use_joker', func = config.func, handy_insta_action = 'use'}, nodes={
-              {n=G.UIT.B, config = {w=0.1,h=config.h}},
-              {n=G.UIT.C, config={align = "cm"}, nodes={
-                {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
-                  {n=G.UIT.T, config={ref_table = card, ref_value = "_spectrallib_use_key", colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
-                }},
-              }},
-            }},
-        }}
-        return {
-            n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
-              {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
-                {n=G.UIT.R, config={align = 'cl'}, nodes={
-                  sell
-                }},
-                {n=G.UIT.R, config={align = 'cl'}, nodes={
-                  transition
-                }},
-            }},
-        }}
-    end
-    if Spectrallib.needs_use_button(card) and card.area == G.pack_cards and G.pack_cards and (Spectrallib.needs_pull_button(card) or (not SMODS.OPENED_BOOSTER or not SMODS.OPENED_BOOSTER.draw_hand and card.children.front and (card.ability.consumeable))) then
-        return {
-            n = G.UIT.ROOT,
-            config = { padding = -0.1, colour = G.C.CLEAR },
-            nodes = {
-                {
-                    n = G.UIT.R,
-                    config = {
-                        ref_table = card,
-                        r = 0.08,
-                        padding = 0.1,
-                        align = "bm",
-                        minw = 0.5 * card.T.w - 0.15,
-                        minh = 0.1 * card.T.h or 0.7 * card.T.h,
-                        maxw = 0.7 * card.T.w - 0.15,
-                        hover = true,
-                        shadow = true,
-                        colour = G.C.UI.BACKGROUND_INACTIVE,
-                        one_press = true,
-                        button = "use_card",
-                        func = card:is_playing_card() and "can_reserve_card_to_deck" or "can_reserve_card",
-                        handy_insta_action = 'use'
-                    },
-                    nodes = {
-                        {
-                            n = G.UIT.T,
-                            config = {
-                                text = Spectrallib.needs_pull_button(card),
-                                colour = G.C.UI.TEXT_LIGHT,
-                                scale = 0.55,
-                                shadow = true,
-                            },
-                        },
-                    },
-                },
-                {
-                    n = G.UIT.R,
-                    config = {
-                        ref_table = card,
-                        r = 0.08,
-                        padding = 0.1,
-                        align = "bm",
-                        minw = 0.5 * card.T.w - 0.15,
-                        maxw = 0.9 * card.T.w - 0.15,
-                        minh = 0.1 * card.T.h,
-                        hover = true,
-                        shadow = true,
-                        colour = G.C.UI.BACKGROUND_INACTIVE,
-                        one_press = true,
-                        button = "Do you know that this parameter does nothing?",
-                        func = "can_use_consumeable",
-                        handy_insta_action = 'use'
-                    },
-                    nodes = {
-                        {
-                            n = G.UIT.T,
-                            config = {
-                                text = localize("b_use"),
-                                colour = G.C.UI.TEXT_LIGHT,
-                                scale = 0.45,
-                                shadow = true,
-                            },
-                        },
-                    },
-                },
-                { n = G.UIT.R, config = { align = "bm", w = 7.7 * card.T.w } },
-                { n = G.UIT.R, config = { align = "bm", w = 7.7 * card.T.w } },
-                { n = G.UIT.R, config = { align = "bm", w = 7.7 * card.T.w } },
-                { n = G.UIT.R, config = { align = "bm", w = 7.7 * card.T.w } },
-                -- Betmma can't explain it, neither can I
-            },
-        }
-    elseif card.area == G.pack_cards and G.pack_cards and (Spectrallib.needs_pull_button(card) or (not SMODS.OPENED_BOOSTER or not SMODS.OPENED_BOOSTER.draw_hand and card.children.front and (card.ability.consumeable))) then
-        return {
-            n = G.UIT.ROOT,
-                config = { padding = -0.1, colour = G.C.CLEAR },
-                nodes = {
-                    {
-                    n = G.UIT.R,
-                    config = {
-                        ref_table = card,
-                        r = 0.08,
-                        padding = 0.1,
-                        align = "bm",
-                        minw = 0.5 * card.T.w - 0.15,
-                        minh = 0.7 * card.T.h,
-                        maxw = 0.7 * card.T.w - 0.15,
-                        hover = true,
-                        shadow = true,
-                        colour = G.C.UI.BACKGROUND_INACTIVE,
-                        one_press = true,
-                        button = "Do you know that this parameter does nothing?",
-                        func = card:is_playing_card() and "can_reserve_card_to_deck" or "can_reserve_card",
-                        handy_insta_action = 'use'
-                    },
-                    nodes = {
-                        {
-                            n = G.UIT.T,
-                            config = {
-                                text = Spectrallib.needs_pull_button(card),
-                                colour = G.C.UI.TEXT_LIGHT,
-                                scale = 0.55,
-                                shadow = true,
-                            },
-                        },
-                    },
-                },
-                -- Betmma can't explain it, neither can I
-            },
-        }
     end
     return abc
 end
+
+---------------------------
+-- CARD BUTTON FUNCTIONS --
+---------------------------
 
 G.FUNCS.can_reserve_joker = function(e)
     local c1 = e.config.ref_table
