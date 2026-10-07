@@ -391,3 +391,106 @@ if _c.set == 'Back' then
 elseif _c.set == 'Other' then
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''
+center = G.P_CENTERS[forced_key]
+'''
+position = "at"
+payload = '''
+center = G.P_CENTERS[forced_key] or G.P_BLINDS[forced_key] or G.P_TAGS[forced_key]
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''
+ for k, v in pairs(G.P_CENTERS) do
+    if center == v then self.config.center_key = k end
+end
+
+'''
+position = "after"
+payload = '''
+if G.P_BLINDS[center.key] or G.P_TAGS[center.key] then
+    local cen = (G.P_BLINDS[center.key] or G.P_TAGS[center.key])
+    self.config.center_key = center.key
+end
+center.config = center.config or {}
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''
+if self.playing_card and not initial then check_for_unlock({type = 'modify_deck'}) 
+'''
+position = "after"
+payload = '''
+if not self.ability then
+    local center = self.config.center
+    self.ability = copy_table(center.config) or {}
+    self.ability.set = G.P_BLINDS[center.key] and "Blind" or G.P_TAGS[center.key] and "Tag" or ""
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''
+if self.ability.set == 'Default' and self.config.center and self.config.center.key == 'c_base' and self.seal then
+'''
+position = "before"
+payload = '''
+if not self.ability then
+    local center = self.config.center
+    self.ability = copy_table(center.config) or {}
+    self.ability.set = G.P_BLINDS[center.key] and "Blind" or G.P_TAGS[center.key] and "Tag" or ""
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+self.children.center = SMODS.create_sprite(self.T.x, self.T.y, self.T.w, self.T.h, _center.atlas or 'centers', _center.pos, _center.sprite_args)
+'''
+position = "at"
+payload = '''
+self.children.center = SMODS.create_sprite(self.T.x, self.T.y, self.T.w, self.T.h, (_center.atlas or (G.P_BLINDS[_center.key] and "blind_chips") or (G.P_TAGS[_center.key] and "tags")) or 'centers', _center.pos, _center.sprite_args)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = '''
+if _center.pixel_size and _center.pixel_size.w and (_center.discovered or self.bypass_discovery_center) then
+'''
+position = "before"
+payload = '''
+if (G.P_BLINDS[_center.key] and "blind_chips") or (G.P_TAGS[_center.key] and "tags") then
+    local atlas = SMODS.get_atlas((_center.atlas or (G.P_BLINDS[_center.key] and "blind_chips") or (G.P_TAGS[_center.key] and "tags")) or 'centers')
+    G.E_MANAGER:add_event(Event{
+        trigger = "after",
+        blockable = false,
+        delay = 0.01,
+        blocking = false,
+        func = function()
+            self.children.center.T.h = self.children.center.T.w * atlas.py/atlas.px
+            if G.P_TAGS[_center.key] then
+                self.children.center.T.h = self.children.center.T.h / 1.5
+                self.children.center.T.w = self.children.center.T.w / 1.5
+            end
+            return true
+        end
+    })
+end
+'''
+match_indent = true

@@ -360,8 +360,14 @@ end
 
 local get_type_colour_ref = get_type_colour
 function get_type_colour(type, ...)
-    if type and type.set == "Back" then
-        return G.C.PERISHABLE
+    if type then
+        if type.set == "Back" then
+            return G.C.PERISHABLE
+        elseif type.set == "Tag" then
+            return G.C.ETERNAL
+        elseif type.set == "Blind" then
+            return G.C.GOLD
+        end
     end
     return get_type_colour_ref(type, ...)
 end
