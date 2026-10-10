@@ -1604,3 +1604,38 @@ Spectrallib.card_area_preview = function(cardArea, desc_nodes, config)
     end
     return uiEX, cardArea
 end
+
+local add_stickerref = Card.add_sticker
+function Card:add_sticker(sticker, bypass_check)
+    add_stickerref(self, sticker, bypass_check)
+    SMODS.calculate_context({slib_card_modified = true, other_card = self})
+end
+
+local set_sealref = Card.set_seal
+function Card:set_seal(_seal, silent, immediate)
+    set_sealref(self, _seal, silent, immediate)
+    SMODS.calculate_context({slib_card_modified = true, other_card = self})
+end
+
+local set_abilityref = Card.set_ability
+function Card:set_ability(center, initial, delay)
+SMODS.calculate_context({card_modified = true, other_card = self})
+    set_abilityref(self, center, initial, delay)
+    if self:is_playing_card() and not initial then
+        SMODS.calculate_context({slib_card_modified = true, other_card = self})
+    end
+end
+
+local set_editionref = Card.set_edition
+function Card:set_edition(edition, immediate, silent)
+    set_editionref(self, edition, immediate, silent)
+    SMODS.calculate_context({slib_card_modified = true, other_card = self})
+end
+
+local set_base_ref = Card.set_base
+function Card:set_base(card, initial, manual_sprites)
+    set_base_ref(self, card, initial, manual_sprites)
+    if self:is_playing_card() then
+        SMODS.calculate_context({slib_card_modified = true, other_card = self})
+    end
+end
