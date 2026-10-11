@@ -257,11 +257,19 @@ payload = '''
 if cfg and cfg.slib_infinite_use then
     local loc = {}
 	localize{type = 'other', key = 'slib_infiniuse', nodes = loc, }
-	desc_nodes[#desc_nodes+1] = loc[1]
+	if full_UI_table.multi_box then
+        full_UI_table.multi_box[#full_UI_table.multi_box+1] = {loc[1]}
+	else
+        desc_nodes[#desc_nodes+1] = loc[1]
+	end
 elseif cfg and cfg.cry_multiuse and (not card or (card.bypass_discovery_center or card.config.center.discovered)) and card_type ~= "Locked" then --bit hacky but it works
 	local loc = {}
 	localize{type = 'other', key = 'slib_multiuse', nodes = loc, vars = {cfg.cry_multiuse, colours = { Spectrallib.get_text_colour(card, _c) } }}
-	desc_nodes[#desc_nodes+1] = loc[1]
+	if full_UI_table.multi_box then
+        full_UI_table.multi_box[#full_UI_table.multi_box+1] = {loc[1]}
+	else
+        desc_nodes[#desc_nodes+1] = loc[1]
+	end
 end
 '''
 match_indent = true
