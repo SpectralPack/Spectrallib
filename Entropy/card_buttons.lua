@@ -834,6 +834,7 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
 end
 local set_cost_ref = Card.set_cost
 function Card:set_cost()
+    if not self.config then return end
 	if self.config.center.set == "Back" or self.config.center.set == "Sleeve" then
 		self.config.center.cost = 15
 		self.base_cost = 15

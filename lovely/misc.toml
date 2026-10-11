@@ -109,3 +109,13 @@ payload = '''
 assembled_string = assembled_string..(type(subpart) == 'string' and subpart or (Spectrallib.pluralize and Spectrallib.pluralize(subpart[1], args.vars)) or format_ui_value(args.vars[tonumber(subpart[1])]) or 'ERROR')
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = '''engine/event.lua'''
+pattern = '''        other = {}'''
+position = "after"
+payload = ''',
+slib_desc = {},
+'''
+match_indent = true
