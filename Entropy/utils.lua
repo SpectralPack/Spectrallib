@@ -263,7 +263,7 @@ end
 ---@param center SMODS.Center The prototype of the card.
 ---@param area CardArea
 ---@param from_card Card The card that creates the dummy card.
----@param silent boolean If true, ??? todo: figure this out
+---@param silent? boolean If true, ??? todo: figure this out
 ---@return table
 function Spectrallib.get_dummy(center, area, from_card, silent)
     local abil = copy_table(center.config) or {}
