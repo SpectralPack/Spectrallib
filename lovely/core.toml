@@ -494,3 +494,31 @@ if (G.P_BLINDS[_center.key] and "blind_chips") or (G.P_TAGS[_center.key] and "ta
 end
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = '''=[SMODS _ "src/utils.lua"]'''
+pattern = '''
+local in_scoring = scoring_hand and SMODS.in_scoring(card, context.scoring_hand)
+'''
+position = "at"
+payload = '''
+local area = context.scoring_hand
+if context.cardarea == G.play and G.rubber_cards then area = G.rubber_cards.cards; context.scoring_hand = G.rubber_cards.cards; scoring_hand = G.rubber_cards.cards end
+local in_scoring = scoring_hand and SMODS.in_scoring(card, area)
+if (area[1]) == card and card.config.center.key == "j_entr_false_vacuum_collapse" then
+  in_scoring = true
+end
+if G.rescore_messages and G.rescore_messages[_] and G.rescore_messages[_].message then
+  card_eval_status_text(
+    G.rescore_messages[_].card,
+    "extra",
+    nil,
+    nil,
+    nil,
+    { message = G.rescore_messages[_].message, colour = G.C.PURPLE}
+  )
+end
+'''
+match_indent = true
+times = 1

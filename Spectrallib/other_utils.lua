@@ -697,3 +697,71 @@ Spectrallib.card_area_preview = function(cardArea, desc_nodes, config)
     end
     return uiEX, cardarea
 end
+
+
+local calc_main_scoring = SMODS.calculate_main_scoring
+function SMODS.calculate_main_scoring(context, scoring_hand)
+    local cards, messages
+    if G.rescore_cards and G.rescore_cards.cards then
+        cards = G.rescore_cards.cards
+        messages = G.rescore_messages
+    else
+        local cs, ms = Spectrallib.get_scored_cards(context.scoring_hand)
+        cards = cs
+        messages = ms
+    end
+    if context.cardarea == G.play and cards then
+        G.rescore_messages = messages or {}
+	    if not G.rescore_cards or #G.rescore_cards.cards == 0 then
+            G.rescore_cards = {cards = cards}
+        end
+		context.cardarea = G.rescore_cards
+        context.scoring_hand = G.rescore_cards.cards
+		local ret = calc_main_scoring(context, G.rescore_cards.cards)
+		context.cardarea = G.play
+		G.E_MANAGER:add_event(Event{
+            func = function()
+                G.rescore_cards = nil
+                G.rescore_messages = {}
+                return true
+            end
+        })
+        return ret
+    else
+        return calc_main_scoring(context, scoring_hand)
+    end
+end
+
+function Spectrallib.get_scored_cards(scored_cards)
+    local messages = {}
+    local cards
+    local first = true
+    --TODO: make this use calculate_context
+    for i, v in pairs(SMODS.get_card_areas("jokers")) do
+        for _, card in pairs(v.cards) do
+            local ret = card:calculate_joker({set_scoring_cards_check = true, scoring_hand = scored_cards, first = first})
+            if ret and ret.scoring_hand then
+                cards = cards or {}
+                for i, v in pairs(ret.scoring_hand) do
+                    cards[#cards+1] = v
+                end
+            end
+
+            local ret2 = card:calculate_joker({add_scoring_cards_check = true, scoring_hand = scored_cards, first = first})
+            first = false
+            if ret2 and ret2.scoring_hand then
+                if not cards then
+                    cards = {}
+                    for i, v in pairs(scored_cards) do
+                        cards[#cards+1] = v
+                    end
+                end
+                for i, v in pairs(ret2.scoring_hand) do
+                    cards[#cards+1] = v
+                    messages[#cards] = {message = ret2.message, card = ret2.card or card}
+                end
+            end
+        end
+    end
+    return cards, messages
+end
