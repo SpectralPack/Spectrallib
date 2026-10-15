@@ -376,6 +376,8 @@ return {
 			slib_plus_back = "+1 Deck",
 			slib_plus_sleeve = "+1 Sleeve",
 			slib_plus_booster = "+1 Booster",
+			slib_plus_blind = "+1 Blind",
+			slib_plus_tag = "+1 Tag", --I know a_tag exists but like this makes sense to have imo
 
 			k_level_chips = "Chips per level",
 			k_level_mult = "Mult per level",
