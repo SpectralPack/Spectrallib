@@ -175,6 +175,14 @@ end
 ---@return nil
 function Spectrallib.redeem_presentation(args)
     args = args or {}
+    if args.num or args.key or args.set or args.subject then
+        args.subjects = {
+            args.subject
+        }
+        for i = 1, args.num or 1 do
+            args.subjects[#args.subjects+1] = {key = args.key, set = args.set, during_func = args.during_func, stop_disintegrate = args.stop_disintegrate, flip_back = args.flip_back}
+        end
+    end
     assert(args.subjects, "List `subjects` must be defined")
     assert(#args.subjects > 0, "List `subjects` must have at least 1 item")
 
@@ -202,8 +210,8 @@ function Spectrallib.redeem_presentation(args)
     end
 
     for i,subject in ipairs(args.subjects) do
-        assert(subject.card or subject.copy_card or subject.key,
-        ([[Subject %s does not define field `card`, `copy_card`, or `key`]]):format(i))
+        assert(subject.card or subject.copy_card or subject.key or subject.set,
+        ([[Subject %s does not define field `card`, `copy_card`, set, or `key`]]):format(i))
 
         if subject.card and getmetatable(subject.card) == Card then
             subject.__on_field_card = subject.card
@@ -212,6 +220,8 @@ function Spectrallib.redeem_presentation(args)
             subject.__on_field_card = copy_card(subject.copy_card)
         elseif subject.key and type(subject.key) == "string" then
             subject.__on_field_card = SMODS.create_card{key=subject.key}
+        elseif subject.set and type(subject.set == "string") then
+            subject.__on_field_card = SMODS.create_card{set=subject.set}
         end
 
         args.area:emplace(subject.__on_field_card)
