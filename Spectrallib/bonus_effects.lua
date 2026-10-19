@@ -203,8 +203,9 @@ function Spectrallib.generate_ui_multiboxes(args2)
         for i, args in pairs(args2) do
             if not args.func or args:func(card) then
                 local keys = type(args.key) == "table" and args.key or {args.key}
-                for _, k in pairs(keys) do
-                    local vars = args.loc_vars and (args:loc_vars({}, card) or {}).vars or {}
+                for i, k in pairs(keys) do
+                    local vars_func = type(args.loc_vars) == "function" and args.loc_vars or type(args.loc_vars) == "table" and args.loc_vars[i]
+                    local vars = vars_func and (vars_func(args, {}, card) or {}).vars or {}
                     local lines = SMODS.shallow_copy(G.localization.misc.v_dictionary_parsed[k] or {})
                     local vtext = localize{ type = "variable", key = k, vars = vars } -- the var doesn't matter here
                     Spectrallib.create_vtext(vtext, full_UI_table, desc_nodes, vars, lines, num)
@@ -213,8 +214,9 @@ function Spectrallib.generate_ui_multiboxes(args2)
                     end
                 end
                 local texts = type(args.localized_text) == "table" and args.localized_text or {args.localized_text}
-                for _, k in pairs(texts) do
-                    local vars = args.loc_vars and (args:loc_vars({}, card) or {}).vars or {}
+                for i, k in pairs(texts) do
+                    local vars_func = type(args.loc_vars) == "function" and args.loc_vars or type(args.loc_vars) == "table" and args.loc_vars[i]
+                    local vars = vars_func and (vars_func(args, {}, card) or {}).vars or {}
                     local vtext = type(k) == "string" and {k} or k or {}
                     Spectrallib.parse_string(vtext)
                     Spectrallib.create_vtext(nil, full_UI_table, desc_nodes, vars, vtext, num)
