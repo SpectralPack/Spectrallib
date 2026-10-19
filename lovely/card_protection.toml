@@ -1,0 +1,148 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# function G.FUNCS.discard_cards_from_highlighted
+# Prevent a card from getting discarded if it is not discardable
+# (but permit other effects regardless)
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''
+G.hand.highlighted[i].ability.discarded = true
+draw_card(G.hand, Spectrallib.return_to_deck() and G.deck or G.discard, i*100/highlighted_count, 'down', false, G.hand.highlighted[i])
+'''
+position = 'at'
+payload = '''
+if G.hand.highlighted[i]:protected_from_discard() then
+    eval_card(G.hand.highlighted[i], {protected_from_discard = true})
+    SMODS.calculate_context{
+        discard_protection_occurred = true,
+        card = G.hand.highlighted[i]
+    }
+else
+    G.hand.highlighted[i].ability.discarded = true
+    draw_card(G.hand, Spectrallib.return_to_deck() and G.deck or G.discard, i*100/highlighted_count, 'down', false, G.hand.highlighted[i])
+end
+'''
+match_indent = true
+
+# function G.FUNCS.draw_from_play_to_discard
+# Prevent a card from being sent to discard if it is not discardable
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''
+draw_card(G.play,G.discard, it*100/play_count,'down', false, v)
+it = it + 1
+'''
+position = "at"
+payload = '''
+if v:protected_from_discard() then
+    eval_card(v, {protected_from_discard = true})
+    SMODS.calculate_context{
+        discard_protection_occurred = true,
+        card = v
+    }
+    draw_card(G.play,G.hand, it*100/play_count,'down', false, v)
+    it = it + 1
+else
+    draw_card(G.play,G.discard, it*100/play_count,'down', false, v)
+    it = it + 1
+end
+'''
+match_indent = true
+
+# function Card:sell_card
+# Card:protected_from_selling implementation
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''
+if self.children.use_button then self.children.use_button:remove(); self.children.use_button = nil end
+if self.children.select_button then self.children.select_button:remove(); self.children.select_button = nil end
+if self.children.sell_button then self.children.sell_button:remove(); self.children.sell_button = nil end
+'''
+position = "at"
+payload = '''
+if not self:protected_from_selling() then
+    if self.children.use_button then self.children.use_button:remove(); self.children.use_button = nil end
+    if self.children.select_button then self.children.select_button:remove(); self.children.select_button = nil end
+    if self.children.sell_button then self.children.sell_button:remove(); self.children.sell_button = nil end
+else
+    self.area:remove_from_highlighted(self)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''
+ease_dollars(self.sell_cost)
+self:start_dissolve({G.C.GOLD})
+delay(0.3)
+'''
+position = "at"
+payload = '''
+ease_dollars(self.sell_cost)
+if not self:protected_from_selling() then
+    self:start_dissolve({G.C.GOLD})
+end
+delay(0.3)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''
+inc_career_stat('c_cards_sold', 1)
+if self.ability.set == 'Joker' then 
+    inc_career_stat('c_jokers_sold', 1)
+end
+'''
+position = "at"
+payload = '''
+if not self:protected_from_selling() then
+    inc_career_stat('c_cards_sold', 1)
+    if self.ability.set == 'Joker' then 
+        inc_career_stat('c_jokers_sold', 1)
+    end
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''
+G.CONTROLLER.locks.selling_card = nil
+G.CONTROLLER:recall_cardarea_focus(area == G.jokers and 'jokers' or 'consumeables')
+'''
+position = "after"
+payload = '''
+if self:protected_from_selling() then
+    eval_card(self, {protected_from_selling = true})
+    SMODS.calculate_context{
+        selling_protection_occurred = true,
+        card = self
+    }
+end
+'''
+match_indent = true
+
+# function G.FUNCS.draw_from_play_to_discard
+# Fix for protected glass cards
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''
+if (not v.shattered) and (not v.destroyed) then
+'''
+position = "at"
+payload = '''
+if (not v.shattered) and (not v.destroyed) or v:protected_from_destruction() then
+'''
+match_indent = true
