@@ -155,10 +155,11 @@ end
 ---@field card? Card A card to directly emplace for presentation.
 ---@field copy_card? Card A card to copy for presentation.
 ---@field key? string The key of a center, which will be used for a card to present.
+---@field set? string The name of a set; a random card from this set will be presented.
 ---@field flip_back? boolean If true, if the card is facing backwards, it will be flipped.
 ---@field during_func? fun(card: Card, i: integer) The function to run while the card is being presented.
 ---@field stop_disintegrate? boolean If true, the card will not be destroyed; it will remain in the presentation area and require manual emplacement.
----@field __on_field_card Card Used internally.
+---@field __on_field_card? Card Used internally.
 
 ---@class Spectrallib.redeem_presentation.all_subject_cfg
 ---@field flip_back? boolean If true, if any card is facing backwards, it will be flipped.
@@ -166,12 +167,17 @@ end
 ---@field stop_disintegrate? boolean If true, all cards will not be destroyed; it will remain in the presentation area and require manual emplacement.
 
 ---@class Spectrallib.redeem_presentation.args
----@field subjects Spectrallib.redeem_presentation.subject[]
+-- The number of subjects to automatically create;
+-- these subjects will share the same `key`, `set`, `during_func`, `stop_disintegrate`, and `flip_back`,
+-- which are taken from this function's args.
+---@field num? integer
+---@field subject? Spectrallib.redeem_presentation.subject
+---@field subjects? Spectrallib.redeem_presentation.subject[]
 ---@field area? CardArea
 ---@field all_subject_cfg? Spectrallib.redeem_presentation.all_subject_cfg
 
 -- Present a set of cards before possibly destroying them, in a manner akin to vouchers.
----@param args Spectrallib.redeem_presentation.args
+---@param args Spectrallib.redeem_presentation.args|Spectrallib.redeem_presentation.subject
 ---@return nil
 function Spectrallib.redeem_presentation(args)
     args = args or {}
@@ -179,8 +185,14 @@ function Spectrallib.redeem_presentation(args)
         args.subjects = {
             args.subject
         }
-        for i = 1, args.num or 1 do
-            args.subjects[#args.subjects+1] = {key = args.key, set = args.set, during_func = args.during_func, stop_disintegrate = args.stop_disintegrate, flip_back = args.flip_back}
+        for _ = 1, args.num or 1 do
+            args.subjects[#args.subjects+1] = {
+                key = args.key,
+                set = args.set,
+                during_func = args.during_func,
+                stop_disintegrate = args.stop_disintegrate,
+                flip_back = args.flip_back
+            }
         end
     end
     assert(args.subjects, "List `subjects` must be defined")
