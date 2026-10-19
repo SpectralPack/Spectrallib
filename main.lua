@@ -69,6 +69,7 @@ local files = {
     {path = "Spectrallib/credits"},
     {path = "Spectrallib/hand_stuff"},
     {path = "Spectrallib/context"},
+    {path = "Spectrallib/card_protection"},
 
     {path = "Cryptlib/main", redirect = "Cryptid"},
     {path = "Cryptlib/utilities", redirect = "Cryptid"},
