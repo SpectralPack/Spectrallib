@@ -16,7 +16,7 @@
 ---@field inject_class? fun(self: Spectrallib.BonusEffect|table) Injects all direct instances of class objects by calling `obj:inject` and `obj:process_loc_text`. Also injects anything necessary for the class itself. Only called if class has defined both `obj_table` and `obj_buffer`. 
 ---@field inject? fun(self: Spectrallib.BonusEffect|table, i?: number) Called during `inject_class`. Injects the object into the game. 
 ---@field take_ownership? fun(self: Spectrallib.BonusEffect|table, key: string, obj: Spectrallib.BonusEffect|table, silent?: boolean): nil|table|Spectrallib.BonusEffect Takes control of existing objects. Child class must have get_obj for this to function. 
----@field apply? fun(self: Spectrallib.BonusEffect|table, card: Card|table, config: table, index?: integer) Handles adding this BonusEffect to the given `card`. 
+---@field apply? fun(self: Spectrallib.BonusEffect|table, card: Card|table, config?: table, index?: integer) Handles adding this BonusEffect to the given `card`. 
 ---@field remove? fun(self: Spectrallib.BonusEffect|table, card: Card|table, eff_table: table, index: integer) Handles removing this BonusEffect from the given `card`. 
 ---@field on_apply? fun(self: Spectrallib.BonusEffect|table, card: Card|table, eff_table: table) Handles running effects that should happen after the effect is applied, such as setting default values. Runs before add_to_deck. 
 ---@field on_remove? fun(self: Spectrallib.BonusEffect|table, card: Card|table, eff_table: table) Handles running effects that should happen before the effect is removed. Runs before remove_from_deck. 

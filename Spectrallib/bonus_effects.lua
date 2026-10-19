@@ -54,8 +54,8 @@ Spectrallib.BonusEffect = SMODS.GameObject:extend{
 ---Adds a given Spectrallib.BonusEffect to a given card
 ---@param card Card|balatro.Card the card object to add the effect to
 ---@param key string the key of the BonusEffect to add to the card. class prefix may be omitted
----@param config table the config table for the BonusEffect to recieve. At least an `extra` field is typically expected
----@param forced_index integer? index to insert the effect at. ignored if greater than the total number of effects on the card
+---@param config? table the config table for the BonusEffect to recieve. At least an `extra` field is typically expected
+---@param forced_index? integer index to insert the effect at. ignored if greater than the total number of effects on the card
 function Spectrallib.add_bonus_effect(card, key, config, forced_index)
     if key:sub(0, 4) ~= "sbe_" then --allow omitting class prefix
         key = "sbe_"..key
