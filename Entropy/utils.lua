@@ -1629,7 +1629,9 @@ end
 local set_editionref = Card.set_edition
 function Card:set_edition(edition, immediate, silent)
     set_editionref(self, edition, immediate, silent)
-    SMODS.calculate_context({slib_card_modified = true, other_card = self})
+    if self:is_playing_card() then
+        SMODS.calculate_context({slib_card_modified = true, other_card = self})
+    end
 end
 
 local set_base_ref = Card.set_base
