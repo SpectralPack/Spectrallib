@@ -47,7 +47,7 @@ end
 ---@field max? number Max for `Spectrallib.log_random`.
 ---@field seed? string|any Used to generate a seed for `Spectrallib.log_random`.
 ---Iterated over each value, overriding Spectrallib.manipulate_value.
----@field func? fun(tbl_value: number, args: table|Spectrallib.manipulate.args, is_big: boolean, value_key: string): number
+---@field func? fun(tbl_value: number, args: table|Spectrallib.manipulate.args, is_big: boolean, value_key: string, full_path: string): number
 ---@field dont_stack? boolean If true, each table value is temporarily reset before manipulation.
 ---@field no_deck_effects? boolean
 ---@field bypass_checks? boolean
