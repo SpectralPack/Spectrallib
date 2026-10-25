@@ -30,10 +30,9 @@ Spectrallib.misprintize_value_cap = { --yeahh.. this is mostly just for retrigge
 ---@param max number
 ---@return number
 function Spectrallib.log_random(seed, min, max)
-	math.randomseed(seed)
-	local lmin = math.log(min, 2.718281828459045)
-	local lmax = math.log(max, 2.718281828459045)
-	local poll = math.random() * (lmax - lmin) + lmin
+	local lmin = math.log(min) --Base defaults to e here
+	local lmax = math.log(max)
+	local poll = pseudorandom(seed) * (lmax - lmin) + lmin
 	return math.exp(poll)
 end
 
