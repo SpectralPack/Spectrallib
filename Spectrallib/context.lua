@@ -72,7 +72,7 @@ function Card:use_consumeable(area, copier)
     for _, eff in ipairs(retrig_effects) do
         if bulk_use_ref and eff.bulk_use_threshold and (eff.repetitions or 0) >= eff.bulk_use_threshold and Overflow.can_bulk_use(self) then
             if not eff.no_message then card_eval_status_text(eff.message_card or eff.card or self, "extra", nil, nil, nil, { message = eff.bulk_use_message or eff.message or localize("k_again_ex"), colour = eff.colour or G.C.FILTER }) end
-            bulk_use_ref(self, area, eff.reptitions)
+            bulk_use_ref(self, area, eff.repetitions)
         else
             for _ = 1, math.floor(eff.repetitions or 0) do
                 if not self:can_use_consumeable(true, true) then return end --if the consumable can no longer be used, abort
