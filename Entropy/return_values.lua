@@ -146,7 +146,7 @@ SMODS.Scoring_Parameter:take_ownership('chips', {
             if effect.card and effect.card ~= scored_card then juice_card(effect.card) end
             self:modify(amount - self.current)
             if not Spectrallib.should_skip_animations() then
-                Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'chips', amount, percent, nil, nil, localize{ type = "variable", key = "a_eq_chips", vars = {amount}}, effect.colour or from_edition and G.C.EDITION or G.C.BLUE)
+                Spectrallib.card_eval_status_text_eq(scored_card or effect.card or effect.focus, 'chips', amount, percent, nil, nil, localize{ type = "variable", key = "a_eq_chips", vars = {amount}}, effect.colour or from_edition and G.C.EDITION or G.C.BLUE, "chips1")
             end
             return true
         end
