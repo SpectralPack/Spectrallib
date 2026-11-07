@@ -111,6 +111,16 @@ end
 local extended_card_button_definitions = {
     {
         condition = function (card)
+            local in_area = card_in_areas(card, {G.pack_cards})
+            return in_area and card.ability.consumeable
+        end,
+        uidef = function (card)
+            local root = use_only_button(card, "can_pull_ccd", "pull_ccd", localize('b_select'))
+            return root
+        end
+    },
+    {
+        condition = function (card)
             local in_set  = card_in_sets(card, {"Voucher"})
             local in_area = card_in_areas(card, {G.consumeables, G.jokers})
             return in_area and in_set
@@ -856,3 +866,33 @@ function Game:update(dt)
     end
 end
 
+G.FUNCS.can_pull_ccd = function(e)
+    e.config.colour = G.C.GREEN
+    e.config.button = "pull_ccd"
+end
+G.FUNCS.pull_ccd = function(e)
+    local card = e.config.ref_table
+    G.playing_card = (G.playing_card and G.playing_card + 1) or 1
+    G.deck:emplace(card)
+    play_sound('card1', 0.8, 0.6)
+    play_sound('generic1')
+    card:highlight()
+    card.area:remove_from_highlighted(card)
+    card.area:remove_card(card)
+    card.playing_card = G.playing_card
+    playing_card_joker_effects({card})
+    card:add_to_deck()
+    table.insert(G.playing_cards, card)
+    if G.GAME.pack_choices and G.GAME.pack_choices > 1 then
+        if G.booster_pack.alignment.offset.py then 
+            G.booster_pack.alignment.offset.y = G.booster_pack.alignment.offset.py
+            G.booster_pack.alignment.offset.py = nil
+        end
+        G.GAME.pack_choices = G.GAME.pack_choices - 1
+    else
+        G.CONTROLLER.interrupt.focus = true
+        if prev_state == G.STATES.SMODS_BOOSTER_OPENED and booster_obj.name:find('Arcana') then inc_career_stat('c_tarot_reading_used', 1) end
+        if prev_state == G.STATES.SMODS_BOOSTER_OPENED and booster_obj.name:find('Celestial') then inc_career_stat('c_planetarium_used', 1) end
+        G.FUNCS.end_consumeable(nil, delay_fac)
+    end
+end
