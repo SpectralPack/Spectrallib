@@ -112,7 +112,7 @@ local extended_card_button_definitions = {
     {
         condition = function (card)
             local in_area = card_in_areas(card, {G.pack_cards})
-            return in_area and card.ability.consumeable
+            return in_area and card.ability.consumeable and SMODS.is_playing_card(card)
         end,
         uidef = function (card)
             local root = use_only_button(card, "can_pull_ccd", "pull_ccd", localize('b_select'))
