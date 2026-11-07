@@ -872,13 +872,13 @@ G.FUNCS.can_pull_ccd = function(e)
 end
 G.FUNCS.pull_ccd = function(e)
     local card = e.config.ref_table
+    card:highlight()
+    card.area:remove_from_highlighted(card)
+    card.area:remove_card(card)
     G.playing_card = (G.playing_card and G.playing_card + 1) or 1
     G.deck:emplace(card)
     play_sound('card1', 0.8, 0.6)
     play_sound('generic1')
-    card:highlight()
-    card.area:remove_from_highlighted(card)
-    card.area:remove_card(card)
     card.playing_card = G.playing_card
     playing_card_joker_effects({card})
     card:add_to_deck()
