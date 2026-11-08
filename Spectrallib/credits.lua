@@ -177,9 +177,9 @@ Spectrallib.CreditsStyle {
 
 Spectrallib.CreditsStyle {
     key = "info_queue",
-    generate_ui = function(self, center, info_queue)
+    generate_ui = function(self, center, info_queue, _, _, _, _, _, _, _, card)
         local credits = center.slib_credits
-        if credits then
+        if credits and not (card and card.fake_card) then
             for _, v in ipairs({ "idea", "art", "code" }) do
                 if credits and credits[v] then
                     if type(credits[v]) == "string" then credits[v] = {credits[v]} end
