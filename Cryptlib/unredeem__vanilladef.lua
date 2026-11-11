@@ -134,7 +134,7 @@ unap["Antimatter"] = function(card, center_table)
     G.E_MANAGER:add_event(Event({
         func = function()
             if G.jokers then
-                G.jokers.config.card_limit = G.jokers.config.card_limit - center_table.extra
+                G.jokers.config.card_limit = G.jokers.config.card_limit - 1 --center table just has a random arbitrary number and the +1 is hardcoded it seems??
             end
             return true
         end,
