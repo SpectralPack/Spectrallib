@@ -114,8 +114,8 @@ match_indent = true
 [patches.pattern]
 target = '''engine/event.lua'''
 pattern = '''        other = {}'''
-position = "after"
-payload = ''',
+position = "before"
+payload = '''
 slib_desc = {},
 '''
 match_indent = true
